@@ -1,0 +1,61 @@
+name: ClipFlow
+options:
+  bundleIdPrefix: com.clipflow
+  deploymentTarget:
+    macOS: "13.0"
+  xcodeVersion: "15.0"
+  generateEmptyDirectories: true
+  createIntermediateGroups: true
+  settingPresets: app
+
+settings:
+  base:
+    PRODUCT_BUNDLE_IDENTIFIER: com.clipflow.ClipFlow
+    MARKETING_VERSION: "1.0"
+    CURRENT_PROJECT_VERSION: "1"
+    SWIFT_VERSION: "5.9"
+    MACOSX_DEPLOYMENT_TARGET: "13.0"
+    ENABLE_HARDENED_RUNTIME: YES
+    CODE_SIGN_STYLE: Automatic
+    SWIFT_STRICT_CONCURRENCY: complete
+
+targets:
+  ClipFlow:
+    type: application
+    platform: macOS
+    deploymentTarget: "13.0"
+    sources:
+      - path: ClipFlow
+        excludes:
+          - "**/.DS_Store"
+    resources:
+      - path: ClipFlow/Resources/Assets.xcassets
+      - path: ClipFlow/Resources/Info.plist
+    info:
+      path: ClipFlow/Resources/Info.plist
+      properties:
+        CFBundleDisplayName: ClipFlow
+        CFBundleShortVersionString: "1.0"
+        CFBundleVersion: "1"
+        NSPasteboardUsageDescription: "ClipFlow stores your clipboard history locally on your Mac so you can access it anytime."
+        NSSupportsAutomaticTermination: false
+        NSSupportsSuddenTermination: false
+    settings:
+      base:
+        INFOPLIST_FILE: ClipFlow/Resources/Info.plist
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+        ENABLE_HARDENED_RUNTIME: YES
+        SWIFT_STRICT_CONCURRENCY: complete
+
+  ClipFlowTests:
+    type: bundle.unit-test
+    platform: macOS
+    deploymentTarget: "13.0"
+    sources:
+      - path: ClipFlowTests
+    dependencies:
+      - target: ClipFlow
+    settings:
+      base:
+        SWIFT_VERSION: "5.9"
