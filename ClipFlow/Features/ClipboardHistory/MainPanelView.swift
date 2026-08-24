@@ -8,6 +8,12 @@ struct MainPanelView: View {
     @ObservedObject var store: ClipboardStore
     @StateObject private var viewModel: ClipboardHistoryViewModel
     @State private var selectedTab: PanelTab = .clipboard
+    
+    // Animation States
+    @State private var windowScale: CGFloat = 0.92
+    @State private var windowOpacity: Double = 0.0
+    @State private var windowBlur: CGFloat = 10.0
+    
     let onClose: () -> Void
 
     init(store: ClipboardStore, onClose: @escaping () -> Void) {
@@ -38,9 +44,35 @@ struct MainPanelView: View {
         }
         .background(.regularMaterial)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .blur(radius: windowBlur)
+        .opacity(windowOpacity)
+        .scaleEffect(windowScale)
         // Ensure the blur material inherits the user's system theme or force light if preferred.
-        // For standard "fluent" design, it usually follows system setting, but we'll stick to forced light to preserve our exact design tokens for now.
         .preferredColorScheme(.light)
+        .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("clipFlowWindowWillOpen"))) { _ in
+            triggerAnimation()
+        }
+        .onAppear {
+            triggerAnimation()
+        }
+    }
+    
+    private func triggerAnimation() {
+        // Reset state instantly
+        windowScale = 0.92
+        windowOpacity = 0.0
+        windowBlur = 10.0
+        
+        // 0-180ms: window expands and clears blur
+        withAnimation(.easeOut(duration: 0.18)) {
+            windowOpacity = 1.0
+            windowBlur = 0.0
+        }
+        
+        // End: 2-3% bounce settling at 1.0
+        withAnimation(.spring(response: 0.35, dampingFraction: 0.65, blendDuration: 0)) {
+            windowScale = 1.0
+        }
     }
 
     // MARK: - Coming Soon Stub

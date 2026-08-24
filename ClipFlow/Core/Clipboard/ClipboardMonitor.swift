@@ -71,6 +71,9 @@ final class ClipboardMonitor {
         let selfBundle = Bundle.main.bundleIdentifier
         let sourceApp  = (frontmost?.bundleIdentifier == selfBundle) ? nil : frontmost
 
+        // Enforce Privacy (Private Mode and Excluded Apps)
+        guard PrivacyManager.shared.canRecord(sourceAppBundleId: sourceApp?.bundleIdentifier) else { return }
+
         guard let item = reader.read(from: pasteboard, sourceApp: sourceApp) else { return }
         store.add(item)
     }

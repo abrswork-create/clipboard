@@ -10,8 +10,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
 
     // MARK: Private Properties
 
+    static let windowWillOpenNotification = Notification.Name("clipFlowWindowWillOpen")
+
     private var window: NSWindow?
     private var hotkeyObserver: NSObjectProtocol?
+    private var statusItem: NSStatusItem?
 
     // Core clipboard pipeline — owned here and injected downward
     private let clipboardStore   = ClipboardStore()
@@ -42,16 +45,48 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
     // MARK: NSWindowDelegate
 
     func windowWillClose(_ notification: Notification) {
-        // When the window is closed, fully quit the app.
-        NSApp.terminate(nil)
+        // When the window is closed, hide it but keep the app running in the background.
+        window?.orderOut(nil)
     }
 
     // MARK: - Setup
 
     private func setupApplication() {
-        // Show in Dock as a regular app.
-        NSApp.setActivationPolicy(.regular)
-        NSApp.activate(ignoringOtherApps: true)
+        // Run as a Menu Bar accessory (no Dock icon)
+        NSApp.setActivationPolicy(.accessory)
+        
+        statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
+        if let button = statusItem?.button {
+            // Using a custom image named "MenuBarIcon" from Assets.xcassets
+            if let customIcon = NSImage(named: "MenuBarIcon") {
+                customIcon.isTemplate = true // Ensures it adapts to light/dark mode
+                button.image = customIcon
+            } else {
+                // Fallback if your custom icon isn't found
+                button.image = NSImage(systemSymbolName: "doc.on.clipboard", accessibilityDescription: "ClipFlow")
+            }
+            button.action = #selector(statusBarButtonClicked(_:))
+            button.target = self
+            button.sendAction(on: [.leftMouseUp, .rightMouseUp])
+        }
+        
+        // Enforce system start at login preference
+        let settings = SettingsRepository.shared.load()
+        LaunchAtLoginManager.shared.setLaunchAtLogin(settings.launchAtLogin)
+    }
+    
+    @objc @MainActor private func statusBarButtonClicked(_ sender: Any) {
+        guard let event = NSApp.currentEvent else { return }
+        
+        if event.type == .rightMouseUp || (event.modifierFlags.contains(.control)) {
+            // Right-click: Show native menu to allow quitting
+            let menu = NSMenu()
+            menu.addItem(NSMenuItem(title: "Quit ClipFlow", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q"))
+            statusItem?.popUpMenu(menu)
+        } else {
+            // Left-click: Toggle the main clipboard window
+            toggleWindow()
+        }
     }
 
     private func setupDatabase() {
@@ -93,6 +128,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         } else {
             // Reposition near cursor then bring forward
             moveWindowNearCursor(win)
+            NotificationCenter.default.post(name: AppDelegate.windowWillOpenNotification, object: nil)
             win.makeKeyAndOrderFront(nil)
             NSApp.activate(ignoringOtherApps: true)
         }
@@ -104,8 +140,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
             return
         }
 
-        let panelView = MainPanelView(store: clipboardStore, onClose: {
-            NSApp.terminate(nil)
+        let panelView = MainPanelView(store: clipboardStore, onClose: { [weak self] in
+            self?.window?.orderOut(nil)
         })
 
         let hostingController = NSHostingController(rootView: panelView)
@@ -139,6 +175,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
 
         moveWindowNearCursor(win)
         win.delegate = self
+        NotificationCenter.default.post(name: AppDelegate.windowWillOpenNotification, object: nil)
         win.makeKeyAndOrderFront(nil)
 
         self.window = win
@@ -170,5 +207,32 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         y = max(visible.minY, min(y, visible.maxY - size.height))
 
         win.setFrameOrigin(NSPoint(x: x, y: y))
+    }
+}
+
+// MARK: - LaunchAtLoginManager
+import ServiceManagement
+
+final class LaunchAtLoginManager {
+    static let shared = LaunchAtLoginManager()
+    
+    private init() {}
+    
+    func setLaunchAtLogin(_ enabled: Bool) {
+        do {
+            if enabled {
+                if SMAppService.mainApp.status == .notRegistered {
+                    try SMAppService.mainApp.register()
+                    print("Successfully registered to launch at login.")
+                }
+            } else {
+                if SMAppService.mainApp.status == .enabled {
+                    try SMAppService.mainApp.unregister()
+                    print("Successfully unregistered from launch at login.")
+                }
+            }
+        } catch {
+            print("Failed to set launch at login: \(error.localizedDescription)")
+        }
     }
 }

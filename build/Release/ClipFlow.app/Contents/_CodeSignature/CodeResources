@@ -10,29 +10,11 @@
 		</data>
 		<key>Resources/Assets.car</key>
 		<data>
-		2vbk5t1lBNeR/wPuuV/vsD5JBIQ=
+		rWwTJFi5CK0u5ipF3/URFSTBuj0=
 		</data>
 	</dict>
 	<key>files2</key>
 	<dict>
-		<key>MacOS/ClipFlow.debug.dylib</key>
-		<dict>
-			<key>cdhash</key>
-			<data>
-			pi66HMtscrOi2i+IqxEr8MWztFc=
-			</data>
-			<key>requirement</key>
-			<string>cdhash H"a62eba1ccb6c72b3a2da2f88ab112bf0c5b3b457"</string>
-		</dict>
-		<key>MacOS/__preview.dylib</key>
-		<dict>
-			<key>cdhash</key>
-			<data>
-			yOfizK2H84tLx3w3GQ0M8gz68MY=
-			</data>
-			<key>requirement</key>
-			<string>cdhash H"c8e7e2ccad87f38b4bc77c37190d0cf20cfaf0c6"</string>
-		</dict>
 		<key>Resources/AppIcon.icns</key>
 		<dict>
 			<key>hash2</key>
@@ -44,7 +26,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			ulcIQc1lKXVsfoteB/fyw53aRQrNS8AhYiMC+XLSksc=
+			QR4FT595VDk1sy5S6yETW8DY5B8sWe3CP2hUOkvzjbs=
 			</data>
 		</dict>
 	</dict>

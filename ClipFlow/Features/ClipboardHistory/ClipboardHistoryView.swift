@@ -6,6 +6,9 @@ import SwiftUI
 struct ClipboardHistoryView: View {
     @ObservedObject var viewModel: ClipboardHistoryViewModel
     @ObservedObject var store: ClipboardStore
+    
+    @State private var headerAppeared = false
+    @State private var cardsAppeared = false
 
     private var displayItems: [ClipboardItem] {
         SearchService.search(items: store.items, query: viewModel.searchQuery)
@@ -14,9 +17,12 @@ struct ClipboardHistoryView: View {
     var body: some View {
         VStack(spacing: 0) {
             listHeader
+                .opacity(headerAppeared ? 1 : 0)
+                .offset(y: headerAppeared ? 0 : 8)
+                
             Divider()
                 .padding(.horizontal, 12)
-                .opacity(0.5)
+                .opacity(headerAppeared ? 0.5 : 0)
 
             if displayItems.isEmpty {
                 if !viewModel.searchQuery.isEmpty {
@@ -26,6 +32,33 @@ struct ClipboardHistoryView: View {
                 }
             } else {
                 itemList
+                    .opacity(cardsAppeared ? 1 : 0)
+                    .offset(y: cardsAppeared ? 0 : 12)
+            }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("clipFlowWindowWillOpen"))) { _ in
+            triggerAnimation()
+        }
+        .onAppear {
+            triggerAnimation()
+        }
+    }
+    
+    private func triggerAnimation() {
+        headerAppeared = false
+        cardsAppeared = false
+        
+        // 250-450ms: Title and search appear
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
+            withAnimation(.easeOut(duration: 0.2)) {
+                headerAppeared = true
+            }
+        }
+        
+        // 300-500ms: Cards appear
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.30) {
+            withAnimation(.easeOut(duration: 0.2)) {
+                cardsAppeared = true
             }
         }
     }

@@ -7,7 +7,7 @@ import Foundation
 struct AppSettings: Codable {
 
     // General
-    var launchAtLogin: Bool = false
+    var launchAtLogin: Bool = true
 
     // Clipboard
     var historyLimit: Int = 500
