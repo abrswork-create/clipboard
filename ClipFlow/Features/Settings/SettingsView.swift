@@ -244,12 +244,35 @@ struct AppearanceSettingsView: View {
 
 // MARK: - ShortcutsSettingsView
 struct ShortcutsSettingsView: View {
+    @State private var settings = SettingsRepository.shared.load()
+    
     var body: some View {
-        SettingsSection {
-            SettingsRow(title: "Global Shortcut", subtitle: "To change the global shortcut, go to the General tab.", showDivider: false) {
-                EmptyView()
+        VStack(spacing: 24) {
+            SettingsSection {
+                SettingsRow(title: "Quick Clipboard", subtitle: "Open ClipFlow from anywhere.", showDivider: true) {
+                    ShortcutRecorderView(shortcut: $settings.quickClipboardShortcut) {
+                        save()
+                    }
+                }
+                
+                SettingsRow(title: "Smart Screen Capture", subtitle: "Extracts Text/URLs or saves Image.", showDivider: true) {
+                    ShortcutRecorderView(shortcut: $settings.screenCaptureShortcut) {
+                        save()
+                    }
+                }
+                
+                SettingsRow(title: "Capture Image Only", subtitle: "Bypasses AI and strictly saves the image.", showDivider: false) {
+                    ShortcutRecorderView(shortcut: $settings.screenCaptureImageOnlyShortcut) {
+                        save()
+                    }
+                }
             }
         }
+    }
+    
+    private func save() {
+        SettingsRepository.shared.save(settings)
+        GlobalHotkeyManager.shared.rebind()
     }
 }
 

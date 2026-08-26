@@ -85,6 +85,12 @@ struct AppSettings: Codable {
         modifiers: UInt32(optionKey | cmdKey),
         displayString: "⌥⌘C"
     )
+    
+    var screenCaptureImageOnlyShortcut: AppShortcut = AppShortcut(
+        keyCode: 0x08, // C
+        modifiers: UInt32(controlKey | optionKey | cmdKey),
+        displayString: "⌃⌥⌘C"
+    )
 }
 
 struct AppShortcut: Codable, Equatable {

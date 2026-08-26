@@ -36,6 +36,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         }
         
         setupHotkey()
+        
+        // Hide the main window when the user clicks outside (app loses focus)
+        NotificationCenter.default.addObserver(
+            forName: NSApplication.didResignActiveNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            self?.window?.orderOut(nil)
+        }
     }
 
     func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
@@ -175,8 +184,18 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
             forName: .clipFlowCaptureHotkeyFired,
             object: nil,
             queue: .main
-        ) { @MainActor _ in
-            ScreenCaptureService.shared.startCapture()
+        ) { @MainActor [weak self] _ in
+            self?.window?.orderOut(nil)
+            ScreenCaptureService.shared.startCapture(forceImageOnly: false)
+        }
+        
+        NotificationCenter.default.addObserver(
+            forName: .clipFlowCaptureImageOnlyHotkeyFired,
+            object: nil,
+            queue: .main
+        ) { @MainActor [weak self] _ in
+            self?.window?.orderOut(nil)
+            ScreenCaptureService.shared.startCapture(forceImageOnly: true)
         }
     }
 

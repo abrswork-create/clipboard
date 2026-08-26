@@ -8,9 +8,13 @@ final class ScreenCaptureService {
     
     private var overlayWindows: [NSWindow] = []
     
+    private var isImageOnlyCapture: Bool = false
+    
     private init() {}
     
-    func startCapture() {
+    func startCapture(forceImageOnly: Bool = false) {
+        self.isImageOnlyCapture = forceImageOnly
+        
         // Preflight Screen Recording Permissions
         if !CGPreflightScreenCaptureAccess() {
             let granted = CGRequestScreenCaptureAccess()
@@ -43,6 +47,9 @@ final class ScreenCaptureService {
     }
     
     private func handleSelection(rect: CGRect, on screen: NSScreen) {
+        // Capture state in case of multiple overlays closing
+        let imageOnly = self.isImageOnlyCapture
+        
         // Defer teardown to the next run loop iteration to avoid crashing
         // while the SwiftUI drag gesture is still unwinding.
         DispatchQueue.main.async { [weak self] in
@@ -62,11 +69,13 @@ final class ScreenCaptureService {
             // `CGWindowListCreateImage` expects global CoreGraphics (top-left) coordinates.
             let globalRect = self.convertToCGCoordinateSpace(rect: rect, screen: screen)
             
-            self.captureAndCopyToPasteboard(globalRect: globalRect)
+            self.captureAndCopyToPasteboard(globalRect: globalRect, forceImageOnly: imageOnly)
         }
     }
     
-    private func captureAndCopyToPasteboard(globalRect: CGRect) {
+    private let contentDetector = ContentDetectionService()
+    
+    private func captureAndCopyToPasteboard(globalRect: CGRect, forceImageOnly: Bool) {
         // Wait a tiny bit for the overlay windows to fully disappear from screen
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
             guard let cgImage = CGWindowListCreateImage(globalRect, .optionOnScreenOnly, kCGNullWindowID, .bestResolution) else {
@@ -74,17 +83,34 @@ final class ScreenCaptureService {
                 return
             }
             
-            let nsImage = NSImage(cgImage: cgImage, size: NSSize(width: cgImage.width, height: cgImage.height))
-            
-            // We want ClipFlow's monitor to pick this up, so we DO NOT use PasteService.willWriteToPasteboard
-            // Wait, we need it to go to history, but not necessarily trigger an infinite loop if we paste it.
-            // If we just write it to Pasteboard, ClipboardMonitor will pick it up automatically.
-            
-            let pasteboard = NSPasteboard.general
-            pasteboard.clearContents()
-            pasteboard.writeObjects([nsImage])
-            
-            print("Successfully wrote captured image to pasteboard.")
+            Task {
+                if forceImageOnly {
+                    let pasteboard = NSPasteboard.general
+                    pasteboard.clearContents()
+                    let nsImage = NSImage(cgImage: cgImage, size: NSSize(width: cgImage.width, height: cgImage.height))
+                    pasteboard.writeObjects([nsImage])
+                    print("ScreenCapture: Successfully wrote IMAGE (forced) to pasteboard.")
+                    return
+                }
+                
+                let content = await self.contentDetector.analyze(image: cgImage)
+                
+                let pasteboard = NSPasteboard.general
+                pasteboard.clearContents()
+                
+                switch content {
+                case .text(let text):
+                    pasteboard.setString(text, forType: .string)
+                    print("ScreenCapture: Successfully wrote TEXT to pasteboard.")
+                case .url(let url, let originalText):
+                    pasteboard.setString(url.absoluteString, forType: .URL)
+                    pasteboard.setString(originalText, forType: .string)
+                    print("ScreenCapture: Successfully wrote URL to pasteboard.")
+                case .image(let nsImage):
+                    pasteboard.writeObjects([nsImage])
+                    print("ScreenCapture: Successfully wrote IMAGE to pasteboard.")
+                }
+            }
         }
     }
     

@@ -25,6 +25,7 @@ final class GlobalHotkeyManager: @unchecked Sendable {
     // Carbon hotkey IDs
     private let quickClipboardID = EventHotKeyID(signature: OSType(0x434C4950), id: 1) // "CLIP"
     private let screenCaptureID = EventHotKeyID(signature: OSType(0x434C4950), id: 2)
+    private let screenCaptureImageOnlyID = EventHotKeyID(signature: OSType(0x434C4950), id: 3)
 
     private init() {}
 
@@ -42,6 +43,10 @@ final class GlobalHotkeyManager: @unchecked Sendable {
         // Register Screen Capture
         let sc = settings.screenCaptureShortcut
         registerHotKey(id: screenCaptureID, keyCode: sc.keyCode, modifiers: sc.modifiers)
+        
+        // Register Screen Capture (Image Only)
+        let scImageOnly = settings.screenCaptureImageOnlyShortcut
+        registerHotKey(id: screenCaptureImageOnlyID, keyCode: scImageOnly.keyCode, modifiers: scImageOnly.modifiers)
     }
 
     func unregister() {
@@ -85,7 +90,10 @@ final class GlobalHotkeyManager: @unchecked Sendable {
 
     private func registerHotKey(id: EventHotKeyID, keyCode: UInt32, modifiers: UInt32) {
         var ref: EventHotKeyRef?
-        RegisterEventHotKey(keyCode, modifiers, id, GetApplicationEventTarget(), 0, &ref)
+        let status = RegisterEventHotKey(keyCode, modifiers, id, GetApplicationEventTarget(), 0, &ref)
+        if status != noErr {
+            print("WARNING: Failed to register hotkey with ID \(id.id). It is likely already in use by another app. OSStatus: \(status)")
+        }
         if let ref = ref {
             hotKeyRefs[id.id] = ref
         }
@@ -108,6 +116,8 @@ final class GlobalHotkeyManager: @unchecked Sendable {
                 NotificationCenter.default.post(name: .clipFlowHotkeyFired, object: nil)
             } else if firedID.id == self.screenCaptureID.id {
                 NotificationCenter.default.post(name: .clipFlowCaptureHotkeyFired, object: nil)
+            } else if firedID.id == self.screenCaptureImageOnlyID.id {
+                NotificationCenter.default.post(name: .clipFlowCaptureImageOnlyHotkeyFired, object: nil)
             }
         }
     }
@@ -118,4 +128,5 @@ final class GlobalHotkeyManager: @unchecked Sendable {
 extension Notification.Name {
     static let clipFlowHotkeyFired = Notification.Name("com.clipflow.hotkeyFired")
     static let clipFlowCaptureHotkeyFired = Notification.Name("com.clipflow.captureHotkeyFired")
+    static let clipFlowCaptureImageOnlyHotkeyFired = Notification.Name("com.clipflow.captureImageOnlyHotkeyFired")
 }
