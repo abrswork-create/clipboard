@@ -7,9 +7,6 @@ struct ClipFlowApp: App {
 
     var body: some Scene {
         // ClipFlow is a menu bar only app.
-        // The Settings window is opened programmatically from AppDelegate.
-        Settings {
-            EmptyView()
-        }
+        // The Settings window is managed programmatically via AppDelegate.
     }
 }

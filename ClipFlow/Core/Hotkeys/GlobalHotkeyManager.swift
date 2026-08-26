@@ -11,7 +11,7 @@ import Carbon
 // Listen for activations via NotificationCenter:
 //   .clipFlowHotkeyFired
 
-final class GlobalHotkeyManager {
+final class GlobalHotkeyManager: @unchecked Sendable {
 
     // MARK: Shared Instance
 
@@ -19,40 +19,53 @@ final class GlobalHotkeyManager {
 
     // MARK: Private
 
-    private var hotKeyRef: EventHotKeyRef?
+    private var hotKeyRefs: [UInt32: EventHotKeyRef] = [:]
     private var eventHandlerRef: EventHandlerRef?
 
-    // Carbon hotkey ID
-    private let hotkeyID = EventHotKeyID(signature: OSType(0x434C4950), id: 1) // "CLIP"
-
-    // Option (⌥) + Command (⌘) + V
-    // kVK_ANSI_V = 0x09
-    private let keyCode:   UInt32 = 0x09
-    private let modifiers: UInt32 = UInt32(optionKey | cmdKey)
+    // Carbon hotkey IDs
+    private let quickClipboardID = EventHotKeyID(signature: OSType(0x434C4950), id: 1) // "CLIP"
+    private let screenCaptureID = EventHotKeyID(signature: OSType(0x434C4950), id: 2)
 
     private init() {}
 
     // MARK: - Public API
 
     func register() {
+        let settings = SettingsRepository.shared.load()
+        
         installEventHandler()
-        registerHotKey()
+        
+        // Register Quick Clipboard
+        let qc = settings.quickClipboardShortcut
+        registerHotKey(id: quickClipboardID, keyCode: qc.keyCode, modifiers: qc.modifiers)
+        
+        // Register Screen Capture
+        let sc = settings.screenCaptureShortcut
+        registerHotKey(id: screenCaptureID, keyCode: sc.keyCode, modifiers: sc.modifiers)
     }
 
     func unregister() {
-        if let ref = hotKeyRef {
+        for (_, ref) in hotKeyRefs {
             UnregisterEventHotKey(ref)
-            hotKeyRef = nil
         }
+        hotKeyRefs.removeAll()
+        
         if let ref = eventHandlerRef {
             RemoveEventHandler(ref)
             eventHandlerRef = nil
         }
     }
+    
+    func rebind() {
+        unregister()
+        register()
+    }
 
     // MARK: - Private
 
     private func installEventHandler() {
+        guard eventHandlerRef == nil else { return }
+        
         var eventType = EventTypeSpec(eventClass: OSType(kEventClassKeyboard),
                                      eventKind:  OSType(kEventHotKeyPressed))
 
@@ -70,9 +83,12 @@ final class GlobalHotkeyManager {
         )
     }
 
-    private func registerHotKey() {
-        var id = hotkeyID
-        RegisterEventHotKey(keyCode, modifiers, id, GetApplicationEventTarget(), 0, &hotKeyRef)
+    private func registerHotKey(id: EventHotKeyID, keyCode: UInt32, modifiers: UInt32) {
+        var ref: EventHotKeyRef?
+        RegisterEventHotKey(keyCode, modifiers, id, GetApplicationEventTarget(), 0, &ref)
+        if let ref = ref {
+            hotKeyRefs[id.id] = ref
+        }
     }
 
     private func handleHotKeyEvent(_ event: EventRef?) {
@@ -84,12 +100,15 @@ final class GlobalHotkeyManager {
                                 nil,
                                 MemoryLayout<EventHotKeyID>.size,
                                 nil,
-                                &firedID) == noErr,
-              firedID.id == hotkeyID.id
+                                &firedID) == noErr
         else { return }
 
         DispatchQueue.main.async {
-            NotificationCenter.default.post(name: .clipFlowHotkeyFired, object: nil)
+            if firedID.id == self.quickClipboardID.id {
+                NotificationCenter.default.post(name: .clipFlowHotkeyFired, object: nil)
+            } else if firedID.id == self.screenCaptureID.id {
+                NotificationCenter.default.post(name: .clipFlowCaptureHotkeyFired, object: nil)
+            }
         }
     }
 }
@@ -98,4 +117,5 @@ final class GlobalHotkeyManager {
 
 extension Notification.Name {
     static let clipFlowHotkeyFired = Notification.Name("com.clipflow.hotkeyFired")
+    static let clipFlowCaptureHotkeyFired = Notification.Name("com.clipflow.captureHotkeyFired")
 }

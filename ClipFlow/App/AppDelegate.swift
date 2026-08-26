@@ -13,6 +13,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
     static let windowWillOpenNotification = Notification.Name("clipFlowWindowWillOpen")
 
     private var window: NSWindow?
+    private var settingsWindow: NSWindow?
+    private var onboardingWindow: NSWindow?
     private var hotkeyObserver: NSObjectProtocol?
     private var statusItem: NSStatusItem?
 
@@ -26,7 +28,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         setupApplication()
         setupDatabase()
         setupClipboardPipeline()
-        openMainWindow()
+        
+        if UserDefaults.standard.bool(forKey: "hasCompletedOnboarding") {
+            openMainWindow()
+        } else {
+            openOnboardingWindow()
+        }
+        
         setupHotkey()
     }
 
@@ -55,24 +63,40 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         // Run as a Menu Bar accessory (no Dock icon)
         NSApp.setActivationPolicy(.accessory)
         
-        statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
-        if let button = statusItem?.button {
-            // Using a custom image named "MenuBarIcon" from Assets.xcassets
-            if let customIcon = NSImage(named: "MenuBarIcon") {
-                customIcon.isTemplate = true // Ensures it adapts to light/dark mode
-                button.image = customIcon
-            } else {
-                // Fallback if your custom icon isn't found
-                button.image = NSImage(systemSymbolName: "doc.on.clipboard", accessibilityDescription: "ClipFlow")
-            }
-            button.action = #selector(statusBarButtonClicked(_:))
-            button.target = self
-            button.sendAction(on: [.leftMouseUp, .rightMouseUp])
-        }
+        let settings = SettingsRepository.shared.load()
+        updateMenuBarIcon(show: settings.showInMenuBar)
         
         // Enforce system start at login preference
-        let settings = SettingsRepository.shared.load()
         LaunchAtLoginManager.shared.setLaunchAtLogin(settings.launchAtLogin)
+        
+        NotificationCenter.default.addObserver(forName: NSNotification.Name("clipFlowShowInMenuBarChanged"), object: nil, queue: .main) { @MainActor [weak self] _ in
+            let show = SettingsRepository.shared.load().showInMenuBar
+            self?.updateMenuBarIcon(show: show)
+        }
+    }
+    
+    private func updateMenuBarIcon(show: Bool) {
+        if show {
+            if statusItem == nil {
+                statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
+                if let button = statusItem?.button {
+                    if let customIcon = NSImage(named: "MenuBarIcon") {
+                        customIcon.isTemplate = true
+                        button.image = customIcon
+                    } else {
+                        button.image = NSImage(systemSymbolName: "doc.on.clipboard", accessibilityDescription: "ClipFlow")
+                    }
+                    button.action = #selector(statusBarButtonClicked(_:))
+                    button.target = self
+                    button.sendAction(on: [.leftMouseUp, .rightMouseUp])
+                }
+            }
+        } else {
+            if let item = statusItem {
+                NSStatusBar.system.removeStatusItem(item)
+                statusItem = nil
+            }
+        }
     }
     
     @objc @MainActor private func statusBarButtonClicked(_ sender: Any) {
@@ -81,12 +105,42 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         if event.type == .rightMouseUp || (event.modifierFlags.contains(.control)) {
             // Right-click: Show native menu to allow quitting
             let menu = NSMenu()
+            menu.addItem(NSMenuItem(title: "Settings...", action: #selector(openSettings), keyEquivalent: ","))
+            menu.addItem(NSMenuItem.separator())
             menu.addItem(NSMenuItem(title: "Quit ClipFlow", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q"))
             statusItem?.popUpMenu(menu)
         } else {
             // Left-click: Toggle the main clipboard window
             toggleWindow()
         }
+    }
+    
+    @objc private func openSettings() {
+        if let existing = settingsWindow {
+            existing.makeKeyAndOrderFront(nil)
+            NSApp.activate(ignoringOtherApps: true)
+            return
+        }
+        
+        let settingsView = SettingsView(store: clipboardStore)
+        let hostingController = NSHostingController(rootView: settingsView)
+        
+        let win = NSWindow(
+            contentRect: NSRect(x: 0, y: 0, width: 750, height: 600),
+            styleMask: [.titled, .closable, .miniaturizable, .fullSizeContentView, .resizable],
+            backing: .buffered,
+            defer: false
+        )
+        win.titlebarAppearsTransparent = true
+        win.titleVisibility = .hidden
+        win.contentViewController = hostingController
+        win.center()
+        win.isReleasedWhenClosed = false
+        win.minSize = NSSize(width: 700, height: 500)
+        
+        settingsWindow = win
+        win.makeKeyAndOrderFront(nil)
+        NSApp.activate(ignoringOtherApps: true)
     }
 
     private func setupDatabase() {
@@ -108,12 +162,21 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
 
     private func setupHotkey() {
         GlobalHotkeyManager.shared.register()
+        
         hotkeyObserver = NotificationCenter.default.addObserver(
             forName: .clipFlowHotkeyFired,
             object: nil,
             queue: .main
-        ) { [weak self] _ in
+        ) { @MainActor [weak self] _ in
             self?.toggleWindow()
+        }
+        
+        NotificationCenter.default.addObserver(
+            forName: .clipFlowCaptureHotkeyFired,
+            object: nil,
+            queue: .main
+        ) { @MainActor _ in
+            ScreenCaptureService.shared.startCapture()
         }
     }
 
@@ -132,6 +195,47 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
             win.makeKeyAndOrderFront(nil)
             NSApp.activate(ignoringOtherApps: true)
         }
+    }
+    
+    private func openOnboardingWindow() {
+        if let existing = onboardingWindow {
+            existing.makeKeyAndOrderFront(nil)
+            NSApp.activate(ignoringOtherApps: true)
+            return
+        }
+        
+        let viewModel = OnboardingViewModel()
+        viewModel.onComplete = { [weak self] in
+            self?.onboardingWindow?.close()
+            self?.onboardingWindow = nil
+            self?.openMainWindow()
+        }
+        
+        let hostingController = NSHostingController(rootView: OnboardingView(viewModel: viewModel))
+        
+        let win = NSWindow(
+            contentRect: NSRect(x: 0, y: 0, width: 500, height: 400),
+            styleMask: [.titled, .closable, .fullSizeContentView],
+            backing: .buffered,
+            defer: false
+        )
+        win.titlebarAppearsTransparent = true
+        win.titleVisibility = .hidden
+        win.isMovableByWindowBackground = true
+        win.contentViewController = hostingController
+        win.center()
+        win.isReleasedWhenClosed = false
+        win.backgroundColor = .clear
+        win.isOpaque = false
+        
+        // Hide window buttons
+        win.standardWindowButton(.closeButton)?.isHidden = true
+        win.standardWindowButton(.miniaturizeButton)?.isHidden = true
+        win.standardWindowButton(.zoomButton)?.isHidden = true
+        
+        onboardingWindow = win
+        win.makeKeyAndOrderFront(nil)
+        NSApp.activate(ignoringOtherApps: true)
     }
 
     private func openMainWindow() {

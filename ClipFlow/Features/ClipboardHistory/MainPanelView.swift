@@ -14,6 +14,9 @@ struct MainPanelView: View {
     @State private var windowOpacity: Double = 0.0
     @State private var windowBlur: CGFloat = 10.0
     
+    // Theme State
+    @State private var appTheme: AppTheme = SettingsRepository.shared.load().theme
+    
     let onClose: () -> Void
 
     init(store: ClipboardStore, onClose: @escaping () -> Void) {
@@ -47,8 +50,10 @@ struct MainPanelView: View {
         .blur(radius: windowBlur)
         .opacity(windowOpacity)
         .scaleEffect(windowScale)
-        // Ensure the blur material inherits the user's system theme or force light if preferred.
-        .preferredColorScheme(.light)
+        .preferredColorScheme(colorScheme)
+        .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("clipFlowThemeChanged"))) { _ in
+            appTheme = SettingsRepository.shared.load().theme
+        }
         .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("clipFlowWindowWillOpen"))) { _ in
             triggerAnimation()
         }
@@ -72,6 +77,16 @@ struct MainPanelView: View {
         // End: 2-3% bounce settling at 1.0
         withAnimation(.spring(response: 0.35, dampingFraction: 0.65, blendDuration: 0)) {
             windowScale = 1.0
+        }
+    }
+    
+    // MARK: - Computed Properties
+    
+    private var colorScheme: ColorScheme? {
+        switch appTheme {
+        case .light: return .light
+        case .dark: return .dark
+        case .system: return nil
         }
     }
 

@@ -9,6 +9,8 @@ struct ClipboardHistoryView: View {
     
     @State private var headerAppeared = false
     @State private var cardsAppeared = false
+    
+    @State private var interfaceStyle: InterfaceStyle = SettingsRepository.shared.load().interfaceStyle
 
     private var displayItems: [ClipboardItem] {
         SearchService.search(items: store.items, query: viewModel.searchQuery)
@@ -39,8 +41,32 @@ struct ClipboardHistoryView: View {
         .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("clipFlowWindowWillOpen"))) { _ in
             triggerAnimation()
         }
+        .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("clipFlowInterfaceStyleChanged"))) { _ in
+            interfaceStyle = SettingsRepository.shared.load().interfaceStyle
+        }
         .onAppear {
             triggerAnimation()
+        }
+        .alert("You seem to be enjoying ClipFlow!", isPresented: $viewModel.showEngagementPrompt) {
+            Button("Share on Reddit") {
+                let title = "I found an amazing clipboard manager for Mac called ClipFlow"
+                let text = "I have been using ClipFlow to manage my clipboard history and it has completely transformed my workflow. It is incredibly fast, easy to use, and keeps all my copied text and images perfectly organized. Highly recommend checking it out if you want to boost your productivity!"
+                if let titleEncoded = title.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
+                   let textEncoded = text.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
+                   let url = URL(string: "https://reddit.com/submit?url=https://clipflow.app&title=\(titleEncoded)&text=\(textEncoded)") {
+                    NSWorkspace.shared.open(url)
+                }
+            }
+            Button("Share on Facebook") {
+                let text = "I have been using ClipFlow to manage my clipboard history and it has completely transformed my workflow. It is incredibly fast, easy to use, and keeps all my copied text and images perfectly organized. Highly recommend checking it out if you want to boost your productivity!"
+                if let textEncoded = text.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
+                   let url = URL(string: "https://www.facebook.com/sharer/sharer.php?u=https://clipflow.app&quote=\(textEncoded)") {
+                    NSWorkspace.shared.open(url)
+                }
+            }
+            Button("Maybe Later", role: .cancel) { }
+        } message: {
+            Text("Would you mind sharing it with your friends?")
         }
     }
     
@@ -157,7 +183,8 @@ struct ClipboardHistoryView: View {
             onDelete:      { viewModel.deleteItem(item.id) },
             onPin:         { viewModel.togglePin(item.id) },
             onFavorite:    { viewModel.toggleFavorite(item.id) },
-            onPaste:       { viewModel.paste(item.id) }
+            onPaste:       { viewModel.paste(item.id) },
+            style:         interfaceStyle
         )
     }
 

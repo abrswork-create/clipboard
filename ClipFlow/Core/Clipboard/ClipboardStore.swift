@@ -104,4 +104,38 @@ final class ClipboardStore: ObservableObject {
         }
         items.removeAll { !$0.isPinned }
     }
+
+    // MARK: - Enforcement (Limits & Retention)
+    
+    /// Trims the oldest non-pinned items until the total count is within the limit.
+    func enforceLimit(_ limit: Int) {
+        guard items.count > limit else { return }
+        
+        var deletionCount = items.count - limit
+        var i = items.count - 1
+        
+        while deletionCount > 0 && i >= 0 {
+            if !items[i].isPinned {
+                let idToDelete = items[i].id
+                if let path = items[i].imagePath { FileStorage.delete(at: path) }
+                do { try repository.delete(idToDelete) }
+                catch { print("Failed to delete item from DB on limit enforcement: \\(error)") }
+                
+                items.remove(at: i)
+                deletionCount -= 1
+            }
+            i -= 1
+        }
+    }
+    
+    /// Deletes all non-pinned items older than the specified number of days (or hours if converted).
+    func enforceRetention(hours: Int) {
+        guard hours > 0 else { return }
+        let cutoffDate = Calendar.current.date(byAdding: .hour, value: -hours, to: Date())!
+        
+        let toDelete = items.filter { !$0.isPinned && $0.createdAt < cutoffDate }
+        for item in toDelete {
+            delete(item.id)
+        }
+    }
 }

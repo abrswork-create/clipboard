@@ -13,6 +13,7 @@ struct ClipboardItemRow: View {
     let onPin: () -> Void
     let onFavorite: () -> Void
     let onPaste: () -> Void
+    let style: InterfaceStyle // New
 
     @State private var isHovered = false
     @State private var showActions = false
@@ -74,14 +75,14 @@ struct ClipboardItemRow: View {
                     Image(nsImage: nsImage)
                         .resizable()
                         .aspectRatio(contentMode: .fit)
-                        .frame(maxWidth: .infinity, maxHeight: 80, alignment: .leading)
+                        .frame(maxWidth: .infinity, maxHeight: style == .compact ? 50 : (style == .spacious ? 110 : 80), alignment: .leading)
                         .clipShape(RoundedRectangle(cornerRadius: 6))
                         .padding(.vertical, 4)
                 } else {
                     Text(displayText)
-                        .font(.system(size: 13, weight: .regular))
+                        .font(.system(size: style == .compact ? 11 : (style == .spacious ? 14 : 13), weight: .regular))
                         .foregroundStyle(item.type == .url ? CFColor.urlText : CFColor.primaryText)
-                        .lineLimit(4)
+                        .lineLimit(style == .compact ? 2 : (style == .spacious ? 6 : 4))
                         .multilineTextAlignment(.leading)
                         .frame(maxWidth: .infinity, alignment: .leading)
                 }
@@ -90,8 +91,8 @@ struct ClipboardItemRow: View {
 
                 typeBadge
             }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 10)
+            .padding(.horizontal, style == .compact ? 8 : (style == .spacious ? 16 : 12))
+            .padding(.vertical, style == .compact ? 6 : (style == .spacious ? 14 : 10))
             .frame(maxWidth: .infinity, alignment: .leading)
             .contentShape(Rectangle())
             .onTapGesture {
@@ -140,8 +141,8 @@ struct ClipboardItemRow: View {
                     .help(item.isPinned ? "Unpin" : "Pin")
                 }
             }
-            .padding(.vertical, 10)
-            .padding(.trailing, 12)
+            .padding(.vertical, style == .compact ? 6 : (style == .spacious ? 14 : 10))
+            .padding(.trailing, style == .compact ? 8 : (style == .spacious ? 16 : 12))
         }
         .background(
             RoundedRectangle(cornerRadius: CFRadius.card, style: .continuous)

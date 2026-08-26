@@ -134,7 +134,16 @@ final class ClipboardReader {
               let url = urls.first
         else { return nil }
 
-        let path = url.path
+        let mode = SettingsRepository.shared.load().fileStorageMode
+        let originalPath = url.path
+        let finalPath: String
+        
+        if mode == .copyContents {
+            finalPath = FileStorage.copyFile(at: originalPath) ?? originalPath
+        } else {
+            finalPath = originalPath
+        }
+
         let now  = Date()
 
         return ClipboardItem(
@@ -143,12 +152,12 @@ final class ClipboardReader {
             createdAt: now,
             updatedAt: now,
             text: url.lastPathComponent,
-            filePath: path,
+            filePath: finalPath,
             sourceAppName: sourceApp?.localizedName,
             sourceBundleIdentifier: sourceApp?.bundleIdentifier,
             isPinned: false,
             isFavorite: false,
-            contentHash: ContentHasher.hash(string: path)
+            contentHash: ContentHasher.hash(string: finalPath)
         )
     }
 }

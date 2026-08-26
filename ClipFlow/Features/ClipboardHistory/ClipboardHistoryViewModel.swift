@@ -2,6 +2,7 @@ import AppKit
 import Combine
 import Foundation
 import SwiftUI
+import StoreKit
 
 // MARK: - ClipboardHistoryViewModel
 // Bridges ClipboardStore (data layer) to ClipboardHistoryView (UI layer).
@@ -16,6 +17,7 @@ final class ClipboardHistoryViewModel: ObservableObject {
     /// The active search query from the UI.
     @Published var searchQuery: String = ""
     @Published var selectedItemID: UUID? = nil
+    @Published var showEngagementPrompt: Bool = false
 
     // MARK: Private
     private let store: ClipboardStore
@@ -34,6 +36,7 @@ final class ClipboardHistoryViewModel: ObservableObject {
         
         if let item = store.items.first(where: { $0.id == id }) {
             PasteService.paste(item)
+            checkEngagement()
         }
     }
 
@@ -65,5 +68,30 @@ final class ClipboardHistoryViewModel: ObservableObject {
     func paste(_ id: UUID) {
         guard let item = store.items.first(where: { $0.id == id }) else { return }
         PasteService.paste(item)
+        checkEngagement()
+    }
+    
+    private func checkEngagement() {
+        let defaults = UserDefaults.standard
+        guard !defaults.bool(forKey: "hasSeenEngagementPrompt") else { return }
+        
+        let count = defaults.integer(forKey: "successfulPasteCount") + 1
+        defaults.set(count, forKey: "successfulPasteCount")
+        
+        if count >= 10 {
+            defaults.set(true, forKey: "hasSeenEngagementPrompt")
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                let isAppStoreInstall: Bool = {
+                    guard let receiptUrl = Bundle.main.appStoreReceiptURL else { return false }
+                    return FileManager.default.fileExists(atPath: receiptUrl.path)
+                }()
+                
+                if isAppStoreInstall {
+                    SKStoreReviewController.requestReview()
+                } else {
+                    self.showEngagementPrompt = true
+                }
+            }
+        }
     }
 }

@@ -6,6 +6,7 @@ import SwiftUI
 struct FavoritesView: View {
     @ObservedObject var store: ClipboardStore
     @State private var selectedItemID: UUID? = nil
+    @State private var interfaceStyle: InterfaceStyle = SettingsRepository.shared.load().interfaceStyle
 
     var body: some View {
         VStack(spacing: 0) {
@@ -20,6 +21,9 @@ struct FavoritesView: View {
             } else {
                 itemList(favorites)
             }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("clipFlowInterfaceStyleChanged"))) { _ in
+            interfaceStyle = SettingsRepository.shared.load().interfaceStyle
         }
     }
 
@@ -50,7 +54,8 @@ struct FavoritesView: View {
                         onDelete:      { store.delete(item.id) },
                         onPin:         { store.togglePin(item.id) },
                         onFavorite:    { store.toggleFavorite(item.id) },
-                        onPaste:       { PasteService.paste(item) }
+                        onPaste:       { PasteService.paste(item) },
+                        style:         interfaceStyle
                     )
                 }
             }

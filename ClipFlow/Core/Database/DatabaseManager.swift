@@ -5,7 +5,7 @@ import SQLite3
 // Manages the SQLite connection and schema setup via the C API.
 // Implemented in TASK 7.
 
-final class DatabaseManager {
+final class DatabaseManager: @unchecked Sendable {
     static let shared = DatabaseManager()
 
     private(set) var db: OpaquePointer?

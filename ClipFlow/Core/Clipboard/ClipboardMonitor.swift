@@ -28,11 +28,11 @@ final class ClipboardMonitor {
         self.store = store
         self.lastChangeCount = NSPasteboard.general.changeCount
         
-        NotificationCenter.default.addObserver(forName: PasteService.willWriteToPasteboard, object: nil, queue: .main) { [weak self] _ in
+        NotificationCenter.default.addObserver(forName: PasteService.willWriteToPasteboard, object: nil, queue: .main) { @MainActor [weak self] _ in
             self?.isWritingToPasteboard = true
         }
         
-        NotificationCenter.default.addObserver(forName: PasteService.didWriteToPasteboard, object: nil, queue: .main) { [weak self] _ in
+        NotificationCenter.default.addObserver(forName: PasteService.didWriteToPasteboard, object: nil, queue: .main) { @MainActor [weak self] _ in
             self?.isWritingToPasteboard = false
             self?.lastChangeCount = NSPasteboard.general.changeCount // Reset count to ignore the write
         }
@@ -59,10 +59,16 @@ final class ClipboardMonitor {
     private func checkPasteboard() {
         guard !isWritingToPasteboard else { return }
 
+        let settings = SettingsRepository.shared.load()
+        guard settings.enableHistory else { return }
+
         let pasteboard  = NSPasteboard.general
         let changeCount = pasteboard.changeCount
         guard changeCount != lastChangeCount else { return }
         lastChangeCount = changeCount
+        
+        // Background housekeeping: enforce retention policy
+        store.enforceRetention(hours: settings.autoDeleteHistory.rawValue)
 
         // Capture the frontmost app at the moment of copy.
         // Filter out ClipFlow itself to avoid self-attribution.
@@ -75,6 +81,28 @@ final class ClipboardMonitor {
         guard PrivacyManager.shared.canRecord(sourceAppBundleId: sourceApp?.bundleIdentifier) else { return }
 
         guard let item = reader.read(from: pasteboard, sourceApp: sourceApp) else { return }
+        
+        // 1. Sensitive Content Interception
+        if item.type == .text || item.type == .url, let text = item.text {
+            if PrivacyManager.shared.containsSensitiveContent(text) {
+                if settings.sensitiveContentAction == .dontSave {
+                    print("Intercepted sensitive content. Dropping.")
+                    return
+                }
+            }
+        }
+        
+        // 2. Data Type Exclusions
+        if item.type == .text && !settings.saveText { return }
+        if item.type == .image && !settings.saveImages { return }
+        if item.type == .file && !settings.saveFiles { return }
+        
+        // Store the item
         store.add(item)
+        
+        // 3. Enforce Capacity Limits
+        if settings.historyLimit > 0 {
+            store.enforceLimit(settings.historyLimit)
+        }
     }
 }
