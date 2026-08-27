@@ -61,7 +61,10 @@ final class OCRService {
             
             for obs in sortedObservations {
                 guard let topCandidate = obs.topCandidates(1).first else { continue }
-                guard topCandidate.confidence > 0.4 else { continue }
+                
+                // When Arabic is prioritized, English text confidence drops to ~0.3. 
+                // We must lower the threshold to avoid filtering valid text.
+                guard topCandidate.confidence >= 0.2 else { continue }
                 
                 if let y = currentY {
                     let yDiff = abs(obs.boundingBox.minY - y)
