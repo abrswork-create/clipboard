@@ -111,7 +111,7 @@ final class GlobalHotkeyManager: @unchecked Sendable {
                                 &firedID) == noErr
         else { return }
 
-        DispatchQueue.main.async {
+        DispatchQueue.main.async { [firedID] in
             if firedID.id == self.quickClipboardID.id {
                 NotificationCenter.default.post(name: .clipFlowHotkeyFired, object: nil)
             } else if firedID.id == self.screenCaptureID.id {

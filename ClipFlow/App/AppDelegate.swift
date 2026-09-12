@@ -45,6 +45,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         ) { [weak self] _ in
             self?.window?.orderOut(nil)
         }
+        
+        // Expose onboarding to settings
+        NotificationCenter.default.addObserver(forName: NSNotification.Name("clipFlowShowOnboarding"), object: nil, queue: .main) { @MainActor [weak self] _ in
+            self?.openOnboardingWindow()
+        }
     }
 
     func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
@@ -69,8 +74,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
     // MARK: - Setup
 
     private func setupApplication() {
-        // Run as a Menu Bar accessory (no Dock icon)
-        NSApp.setActivationPolicy(.accessory)
+        // Run as a regular app during onboarding so the user doesn't lose the window,
+        // otherwise run as an accessory (menu bar only) app.
+        if UserDefaults.standard.bool(forKey: "hasCompletedOnboarding") {
+            NSApp.setActivationPolicy(.accessory)
+        } else {
+            NSApp.setActivationPolicy(.regular)
+        }
         
         let settings = SettingsRepository.shared.load()
         updateMenuBarIcon(show: settings.showInMenuBar)
@@ -93,7 +103,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
                         customIcon.isTemplate = true
                         button.image = customIcon
                     } else {
-                        button.image = NSImage(systemSymbolName: "doc.on.clipboard", accessibilityDescription: "ClipFlow")
+                        button.image = NSImage(systemSymbolName: "doc.on.clipboard", accessibilityDescription: "Clipmory")
                     }
                     button.action = #selector(statusBarButtonClicked(_:))
                     button.target = self
@@ -116,7 +126,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
             let menu = NSMenu()
             menu.addItem(NSMenuItem(title: "Settings...", action: #selector(openSettings), keyEquivalent: ","))
             menu.addItem(NSMenuItem.separator())
-            menu.addItem(NSMenuItem(title: "Quit ClipFlow", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q"))
+            menu.addItem(NSMenuItem(title: "Quit Clipmory", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q"))
             statusItem?.popUpMenu(menu)
         } else {
             // Left-click: Toggle the main clipboard window
@@ -146,6 +156,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         win.center()
         win.isReleasedWhenClosed = false
         win.minSize = NSSize(width: 700, height: 500)
+        win.collectionBehavior = [.moveToActiveSpace]
         
         settingsWindow = win
         win.makeKeyAndOrderFront(nil)
@@ -208,9 +219,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
             // Window is visible and app is front — hide it
             win.orderOut(nil)
         } else {
+            if NSApp.isHidden {
+                NSApp.unhideWithoutActivation()
+            }
             // Reposition near cursor then bring forward
             moveWindowNearCursor(win)
             NotificationCenter.default.post(name: AppDelegate.windowWillOpenNotification, object: nil)
+            win.orderFrontRegardless()
             win.makeKeyAndOrderFront(nil)
             NSApp.activate(ignoringOtherApps: true)
         }
@@ -225,6 +240,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         
         let viewModel = OnboardingViewModel()
         viewModel.onComplete = { [weak self] in
+            NSApp.setActivationPolicy(.accessory)
             self?.onboardingWindow?.close()
             self?.onboardingWindow = nil
             self?.openMainWindow()
@@ -233,7 +249,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         let hostingController = NSHostingController(rootView: OnboardingView(viewModel: viewModel))
         
         let win = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 500, height: 400),
+            contentRect: NSRect(x: 0, y: 0, width: 900, height: 900),
             styleMask: [.titled, .closable, .fullSizeContentView],
             backing: .buffered,
             defer: false
@@ -242,7 +258,19 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         win.titleVisibility = .hidden
         win.isMovableByWindowBackground = true
         win.contentViewController = hostingController
-        win.center()
+        win.hidesOnDeactivate = false
+        win.level = .normal
+        
+        // Ensure it always spawns in the exact center of the main screen
+        if let screen = NSScreen.main {
+            let screenRect = screen.visibleFrame
+            let newX = screenRect.midX - 450 // 900 / 2
+            let newY = screenRect.midY - 450 // 900 / 2
+            win.setFrameOrigin(NSPoint(x: newX, y: newY))
+        } else {
+            win.center()
+        }
+        
         win.isReleasedWhenClosed = false
         win.backgroundColor = .clear
         win.isOpaque = false
@@ -259,7 +287,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
 
     private func openMainWindow() {
         if let existing = window {
+            if NSApp.isHidden {
+                NSApp.unhideWithoutActivation()
+            }
+            moveWindowNearCursor(existing)
+            NotificationCenter.default.post(name: AppDelegate.windowWillOpenNotification, object: nil)
+            existing.orderFrontRegardless()
             existing.makeKeyAndOrderFront(nil)
+            NSApp.activate(ignoringOtherApps: true)
             return
         }
 
@@ -277,7 +312,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
             defer: false
         )
 
-        win.title = "ClipFlow"
+        win.title = "Clipmory"
         win.titlebarAppearsTransparent = true
         win.titleVisibility = .hidden
         win.isMovableByWindowBackground = true
@@ -290,6 +325,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         win.backgroundColor = .clear
         win.isOpaque = false
         win.hasShadow = true
+        win.level = .floating
+        win.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
 
         // Hide all three traffic light buttons
         win.standardWindowButton(.closeButton)?.isHidden = true
@@ -299,6 +336,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         moveWindowNearCursor(win)
         win.delegate = self
         NotificationCenter.default.post(name: AppDelegate.windowWillOpenNotification, object: nil)
+        win.orderFrontRegardless()
         win.makeKeyAndOrderFront(nil)
 
         self.window = win

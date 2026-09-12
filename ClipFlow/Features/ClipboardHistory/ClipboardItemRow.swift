@@ -86,10 +86,6 @@ struct ClipboardItemRow: View {
                         .multilineTextAlignment(.leading)
                         .frame(maxWidth: .infinity, alignment: .leading)
                 }
-
-                Spacer(minLength: 8)
-
-                typeBadge
             }
             .padding(.horizontal, style == .compact ? 8 : (style == .spacious ? 16 : 12))
             .padding(.vertical, style == .compact ? 6 : (style == .spacious ? 14 : 10))
@@ -158,35 +154,6 @@ struct ClipboardItemRow: View {
         .cfShadow(isSelected ? CFShadow.cardSelected : CFShadow.card)
     }
 
-    // MARK: - Type Badge
-
-    private var typeBadge: some View {
-        Group {
-            switch item.type {
-            case .url:
-                badgeLabel("URL", color: CFColor.urlText)
-            case .image:
-                badgeLabel("Image", color: .purple)
-            case .file:
-                badgeLabel("File", color: .orange)
-            case .richText:
-                badgeLabel("Rich Text", color: .green)
-            default:
-                EmptyView()
-            }
-        }
-    }
-
-    private func badgeLabel(_ text: String, color: Color) -> some View {
-        Text(text)
-            .font(.system(size: 9, weight: .semibold))
-            .foregroundStyle(color)
-            .padding(.horizontal, 6)
-            .padding(.vertical, 3)
-            .background(
-                Capsule().fill(color.opacity(0.15))
-            )
-    }
 
     // MARK: - Helpers
 

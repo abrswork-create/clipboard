@@ -15,24 +15,6 @@
 	</dict>
 	<key>files2</key>
 	<dict>
-		<key>MacOS/ClipFlow.debug.dylib</key>
-		<dict>
-			<key>cdhash</key>
-			<data>
-			qWpoRwyCCmXLq0YnaFCxhOkNeOo=
-			</data>
-			<key>requirement</key>
-			<string>cdhash H"a96a68470c820a65cbab46276850b184e90d78ea"</string>
-		</dict>
-		<key>MacOS/__preview.dylib</key>
-		<dict>
-			<key>cdhash</key>
-			<data>
-			yOfizK2H84tLx3w3GQ0M8gz68MY=
-			</data>
-			<key>requirement</key>
-			<string>cdhash H"c8e7e2ccad87f38b4bc77c37190d0cf20cfaf0c6"</string>
-		</dict>
 		<key>Resources/AppIcon.icns</key>
 		<dict>
 			<key>hash2</key>

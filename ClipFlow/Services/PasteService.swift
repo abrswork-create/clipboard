@@ -14,13 +14,13 @@ enum PasteService {
     @MainActor
     static func paste(_ item: ClipboardItem) {
         // 1. Check for Accessibility Permissions
-        let options = [kAXTrustedCheckOptionPrompt.takeUnretainedValue() as String: true] as CFDictionary
+        let options = ["AXTrustedCheckOptionPrompt": true] as CFDictionary
         let isTrusted = AXIsProcessTrustedWithOptions(options)
         
         guard isTrusted else {
             let alert = NSAlert()
             alert.messageText = "Accessibility Permission Required"
-            alert.informativeText = "ClipFlow needs Accessibility permissions to simulate the ⌘V keystroke for auto-pasting. Please enable it in System Settings > Privacy & Security > Accessibility."
+            alert.informativeText = "Clipmory needs Accessibility permissions to simulate the ⌘V keystroke for auto-pasting. Please enable it in System Settings > Privacy & Security > Accessibility."
             alert.alertStyle = .warning
             alert.addButton(withTitle: "OK")
             alert.addButton(withTitle: "Open System Settings")

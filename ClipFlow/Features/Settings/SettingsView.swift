@@ -20,7 +20,7 @@ struct SettingsView: View {
         } detail: {
             ScrollView {
                 VStack(alignment: .leading, spacing: 24) {
-                    Text("ClipFlow Settings")
+                    Text("Clipmory Settings")
                         .font(.system(size: 17, weight: .bold))
                         .padding(.bottom, 8)
                         
@@ -76,19 +76,19 @@ struct GeneralSettingsView: View {
                 
                 SettingsToggleRow(
                     title: "Launch at Login",
-                    subtitle: "Start ClipFlow automatically when you log in.",
+                    subtitle: "Start Clipmory automatically when you log in.",
                     showDivider: true,
                     isOn: $launchAtLogin
                 )
                 
-                SettingsRow(title: "Open ClipFlow", subtitle: "Use a global shortcut to open ClipFlow from anywhere.", showDivider: true) {
+                SettingsRow(title: "Open Clipmory", subtitle: "Use a global shortcut to open Clipmory from anywhere.", showDivider: true) {
                     ShortcutRecorderView(shortcut: $settings.quickClipboardShortcut) {
                         save()
                         GlobalHotkeyManager.shared.rebind()
                     }
                 }
                 
-                SettingsRow(title: "When ClipFlow Opens", subtitle: "Choose what you want to see when ClipFlow opens.", showDivider: false) {
+                SettingsRow(title: "When Clipmory Opens", subtitle: "Choose what you want to see when Clipmory opens.", showDivider: false) {
                     Picker("", selection: .constant("Show clipboard history")) {
                         Text("Show clipboard history").tag("Show clipboard history")
                         Text("Show search").tag("Show search")
@@ -102,7 +102,7 @@ struct GeneralSettingsView: View {
             SettingsSection {
                 SettingsToggleRow(
                     title: "Menu Bar",
-                    subtitle: "Show ClipFlow in the menu bar.",
+                    subtitle: "Show Clipmory in the menu bar.",
                     showDivider: true,
                     isOn: $settings.showInMenuBar
                 )
@@ -249,7 +249,7 @@ struct ShortcutsSettingsView: View {
     var body: some View {
         VStack(spacing: 24) {
             SettingsSection {
-                SettingsRow(title: "Quick Clipboard", subtitle: "Open ClipFlow from anywhere.", showDivider: true) {
+                SettingsRow(title: "Quick Clipboard", subtitle: "Open Clipmory from anywhere.", showDivider: true) {
                     ShortcutRecorderView(shortcut: $settings.quickClipboardShortcut) {
                         save()
                     }
@@ -347,12 +347,20 @@ struct PrivacySettingsView: View {
 // MARK: - AdvancedSettingsView
 struct AdvancedSettingsView: View {
     var body: some View {
-        SettingsSection {
-            SettingsRow(title: "Database Location", subtitle: "The local path where SQLite data is stored.", showDivider: false) {
-                Button("Reveal in Finder") {
-                    let supportDir = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
-                        .appendingPathComponent("ClipFlow", isDirectory: true)
-                    NSWorkspace.shared.selectFile(supportDir.path, inFileViewerRootedAtPath: "")
+        VStack(spacing: 24) {
+            SettingsSection {
+                SettingsRow(title: "Database Location", subtitle: "The local path where SQLite data is stored.", showDivider: true) {
+                    Button("Reveal in Finder") {
+                        let supportDir = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
+                            .appendingPathComponent("ClipFlow", isDirectory: true)
+                        NSWorkspace.shared.selectFile(supportDir.path, inFileViewerRootedAtPath: "")
+                    }
+                }
+                
+                SettingsRow(title: "Show Onboarding", subtitle: "Preview the onboarding experience again.", showDivider: false) {
+                    Button("Show Onboarding") {
+                        NotificationCenter.default.post(name: NSNotification.Name("clipFlowShowOnboarding"), object: nil)
+                    }
                 }
             }
         }
@@ -375,14 +383,14 @@ struct AboutSettingsView: View {
                 .shadow(color: .black.opacity(0.1), radius: 8, x: 0, y: 4)
             
             VStack(spacing: 8) {
-                Text("ClipFlow")
+                Text("Clipmory")
                     .font(.system(size: 28, weight: .bold))
                 
                 Text("Version 1.0.0 (Build 102)")
                     .font(.system(size: 13))
                     .foregroundColor(.secondary)
                 
-                Text("© 2026 ClipFlow Inc. All rights reserved.")
+                Text("© 2026 Clipmory Inc. All rights reserved.")
                     .font(.system(size: 11))
                     .foregroundStyle(.tertiary)
                     .padding(.top, 4)
@@ -390,7 +398,11 @@ struct AboutSettingsView: View {
             
             SettingsSection {
                 SettingsRow(title: "Website", subtitle: "Visit our homepage for updates and news.", showDivider: true) {
-                    Button("Open") {}
+                    Button("Open") {
+                        if let url = URL(string: "https://clipmory.app") {
+                            NSWorkspace.shared.open(url)
+                        }
+                    }
                 }
                 
                 SettingsRow(title: "Twitter", subtitle: "Follow us on Twitter.", showDivider: true) {
@@ -398,7 +410,7 @@ struct AboutSettingsView: View {
                 }
                 
                 if isAppStoreInstall {
-                    SettingsRow(title: "Rate App", subtitle: "Love ClipFlow? Please rate us on the App Store.", showDivider: false) {
+                    SettingsRow(title: "Rate App", subtitle: "Love Clipmory? Please rate us on the App Store.", showDivider: false) {
                         Button("Rate") {
                             if let url = URL(string: "macappstore://apps.apple.com/app/id123456789?action=write-review") {
                                 NSWorkspace.shared.open(url)
@@ -406,23 +418,23 @@ struct AboutSettingsView: View {
                         }
                     }
                 } else {
-                    SettingsRow(title: "Share on Reddit", subtitle: "Tell others about ClipFlow on Reddit.", showDivider: true) {
+                    SettingsRow(title: "Share on Reddit", subtitle: "Tell others about Clipmory on Reddit.", showDivider: true) {
                         Button("Share") {
-                            let title = "I found an amazing clipboard manager for Mac called ClipFlow"
-                            let text = "I have been using ClipFlow to manage my clipboard history and it has completely transformed my workflow. It is incredibly fast, easy to use, and keeps all my copied text and images perfectly organized. Highly recommend checking it out if you want to boost your productivity!"
+                            let title = "I found an amazing clipboard manager for Mac called Clipmory"
+                            let text = "I have been using Clipmory to manage my clipboard history and it has completely transformed my workflow. It is incredibly fast, easy to use, and keeps all my copied text and images perfectly organized. Highly recommend checking it out if you want to boost your productivity!"
                             if let titleEncoded = title.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
                                let textEncoded = text.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
-                               let url = URL(string: "https://reddit.com/submit?url=https://clipflow.app&title=\(titleEncoded)&text=\(textEncoded)") {
+                               let url = URL(string: "https://reddit.com/submit?url=https://clipmory.app&title=\(titleEncoded)&text=\(textEncoded)") {
                                 NSWorkspace.shared.open(url)
                             }
                         }
                     }
                     
-                    SettingsRow(title: "Share on Facebook", subtitle: "Share ClipFlow with your friends.", showDivider: false) {
+                    SettingsRow(title: "Share on Facebook", subtitle: "Share Clipmory with your friends.", showDivider: false) {
                         Button("Share") {
-                            let text = "I have been using ClipFlow to manage my clipboard history and it has completely transformed my workflow. It is incredibly fast, easy to use, and keeps all my copied text and images perfectly organized. Highly recommend checking it out if you want to boost your productivity!"
+                            let text = "I have been using Clipmory to manage my clipboard history and it has completely transformed my workflow. It is incredibly fast, easy to use, and keeps all my copied text and images perfectly organized. Highly recommend checking it out if you want to boost your productivity!"
                             if let textEncoded = text.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
-                               let url = URL(string: "https://www.facebook.com/sharer/sharer.php?u=https://clipflow.app&quote=\(textEncoded)") {
+                               let url = URL(string: "https://www.facebook.com/sharer/sharer.php?u=https://clipmory.app&quote=\(textEncoded)") {
                                 NSWorkspace.shared.open(url)
                             }
                         }

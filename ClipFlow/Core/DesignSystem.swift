@@ -1,17 +1,31 @@
 import SwiftUI
 
 // MARK: - Design System
-// Centralised design tokens for ClipFlow's Fluent UI–inspired light panel.
+// Centralised design tokens for Clipmory's Fluent UI–inspired light panel.
 
 // MARK: CFColor
 
 enum CFColor {
     /// Main panel background — pure white
     static let panelBackground = Color.clear
-    /// Card resting state background - translucent to let blur shine through
-    static let cardBackground = Color.white.opacity(0.15)
-    /// Card hover background
-    static let cardHover = Color.white.opacity(0.3)
+    /// Card resting state background - 70% white opacity
+    static let cardBackground = Color(nsColor: NSColor(name: nil, dynamicProvider: { appearance in
+        let match = appearance.bestMatch(from: [.aqua, .darkAqua])
+        if match == .darkAqua {
+            return NSColor(white: 0.22, alpha: 0.70)
+        } else {
+            return NSColor.white.withAlphaComponent(0.70)
+        }
+    }))
+    /// Card hover background - 85% white opacity
+    static let cardHover = Color(nsColor: NSColor(name: nil, dynamicProvider: { appearance in
+        let match = appearance.bestMatch(from: [.aqua, .darkAqua])
+        if match == .darkAqua {
+            return NSColor(white: 0.28, alpha: 0.85)
+        } else {
+            return NSColor.white.withAlphaComponent(0.85)
+        }
+    }))
     /// Selected card border (macOS focus ring style)
     static let selectedBorder = Color.accentColor.opacity(0.8)
     /// Active tab underline — macOS Accent
@@ -30,12 +44,19 @@ enum CFColor {
     static let actionButton = Color.white.opacity(0.1)
     /// Pinned badge tint
     static let pinActive = Color(nsColor: .systemOrange)
-    /// URL / link accent
-    static let urlText = Color.accentColor
+    /// URL / link text color (black-blue)
+    static let urlText = Color(nsColor: NSColor(name: nil, dynamicProvider: { appearance in
+        let match = appearance.bestMatch(from: [.aqua, .darkAqua])
+        if match == .darkAqua {
+            return NSColor(srgbRed: 0.45, green: 0.65, blue: 0.92, alpha: 1.0)
+        } else {
+            return NSColor(srgbRed: 0.10, green: 0.18, blue: 0.32, alpha: 1.0)
+        }
+    }))
     /// Drag handle
     static let dragHandle = Color(nsColor: .tertiaryLabelColor)
     /// Clear-all button text
-    static let clearAll = Color(nsColor: .systemRed)
+    static let clearAll = Color.black
     /// Separator lines between cards
     static let separator = Color(nsColor: .separatorColor).opacity(0.3)
 }

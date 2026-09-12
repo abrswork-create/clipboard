@@ -7,7 +7,7 @@ import Combine
 @MainActor
 final class OnboardingViewModel: ObservableObject {
     @Published var currentPage: Int = 0
-    let totalPages: Int = 4
+    let totalPages: Int = 5
     
     var onComplete: (() -> Void)?
     

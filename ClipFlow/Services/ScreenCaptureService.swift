@@ -134,7 +134,7 @@ final class ScreenCaptureService {
     private func showPermissionAlert() {
         let alert = NSAlert()
         alert.messageText = "Screen Recording Permission Required"
-        alert.informativeText = "ClipFlow needs screen recording access to capture the selected area. Please grant permission in System Settings > Privacy & Security > Screen Recording."
+        alert.informativeText = "Clipmory needs screen recording access to capture the selected area. Please grant permission in System Settings > Privacy & Security > Screen Recording."
         alert.alertStyle = .warning
         alert.addButton(withTitle: "Open System Settings")
         alert.addButton(withTitle: "Cancel")

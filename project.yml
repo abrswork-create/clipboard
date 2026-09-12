@@ -34,10 +34,10 @@ targets:
     info:
       path: ClipFlow/Resources/Info.plist
       properties:
-        CFBundleDisplayName: ClipFlow
+        CFBundleDisplayName: Clipmory
         CFBundleShortVersionString: "1.0"
         CFBundleVersion: "1"
-        NSPasteboardUsageDescription: "ClipFlow stores your clipboard history locally on your Mac so you can access it anytime."
+        NSPasteboardUsageDescription: "Clipmory stores your clipboard history locally on your Mac so you can access it anytime."
         NSSupportsAutomaticTermination: false
         NSSupportsSuddenTermination: false
     settings:
