@@ -39,7 +39,7 @@ struct PanelTabBar: View {
     @Binding var selectedTab: PanelTab
     let onClose: () -> Void
     
-    @State private var itemsAppeared = false
+    @State private var itemsAppeared = true
 
     var body: some View {
         VStack(spacing: 0) {
@@ -68,12 +68,8 @@ struct PanelTabBar: View {
     }
     
     private func triggerAnimation() {
-        itemsAppeared = false
-        // 200-400ms: toolbar icons fade/slide upward slightly
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-            withAnimation(.easeOut(duration: 0.2)) {
-                itemsAppeared = true
-            }
+        withAnimation(.easeOut(duration: 0.15)) {
+            itemsAppeared = true
         }
     }
 

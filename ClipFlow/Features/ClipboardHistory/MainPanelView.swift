@@ -88,6 +88,7 @@ struct MainPanelView: View {
             appTheme = SettingsRepository.shared.load().theme
         }
         .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("clipFlowWindowWillOpen"))) { _ in
+            proManager.showPaywall = false
             triggerAnimation()
         }
         .onAppear {

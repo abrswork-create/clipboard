@@ -8,8 +8,8 @@ struct ClipboardHistoryView: View {
     @ObservedObject var store: ClipboardStore
     @ObservedObject var proManager = ProManager.shared
     
-    @State private var headerAppeared = false
-    @State private var cardsAppeared = false
+    @State private var headerAppeared = true
+    @State private var cardsAppeared = true
     
     @State private var interfaceStyle: InterfaceStyle = SettingsRepository.shared.load().interfaceStyle
     @State private var isClearHovered = false
@@ -73,21 +73,9 @@ struct ClipboardHistoryView: View {
     }
     
     private func triggerAnimation() {
-        headerAppeared = false
-        cardsAppeared = false
-        
-        // 250-450ms: Title and search appear
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
-            withAnimation(.easeOut(duration: 0.2)) {
-                headerAppeared = true
-            }
-        }
-        
-        // 300-500ms: Cards appear
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.30) {
-            withAnimation(.easeOut(duration: 0.2)) {
-                cardsAppeared = true
-            }
+        withAnimation(.easeOut(duration: 0.15)) {
+            headerAppeared = true
+            cardsAppeared = true
         }
     }
 
@@ -107,7 +95,7 @@ struct ClipboardHistoryView: View {
                 } label: {
                     Text("Clear all")
                         .font(.system(size: 11, weight: .medium))
-                        .foregroundStyle(Color.black)
+                        .foregroundStyle(CFColor.clearAll)
                         .padding(.horizontal, 10)
                         .padding(.vertical, 4)
                         .background(
@@ -116,7 +104,7 @@ struct ClipboardHistoryView: View {
                         )
                         .overlay(
                             RoundedRectangle(cornerRadius: 6, style: .continuous)
-                                .strokeBorder(Color.black.opacity(0.06), lineWidth: 1)
+                                .strokeBorder(Color.primary.opacity(0.06), lineWidth: 1)
                         )
                         .cfShadow(CFShadow.card)
                 }

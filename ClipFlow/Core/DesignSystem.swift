@@ -40,8 +40,15 @@ enum CFColor {
     static let panelBorder = Color(nsColor: .separatorColor)
     /// Destructive action
     static let destructive = Color(nsColor: .systemRed)
-    /// Action button background - translucent
-    static let actionButton = Color.white.opacity(0.1)
+    /// Action button background - adaptive subtle translucency
+    static let actionButton = Color(nsColor: NSColor(name: nil, dynamicProvider: { appearance in
+        let match = appearance.bestMatch(from: [.aqua, .darkAqua])
+        if match == .darkAqua {
+            return NSColor.white.withAlphaComponent(0.12)
+        } else {
+            return NSColor.black.withAlphaComponent(0.06)
+        }
+    }))
     /// Pinned badge tint
     static let pinActive = Color(nsColor: .systemOrange)
     /// URL / link text color (black-blue)
@@ -56,7 +63,7 @@ enum CFColor {
     /// Drag handle
     static let dragHandle = Color(nsColor: .tertiaryLabelColor)
     /// Clear-all button text
-    static let clearAll = Color.black
+    static let clearAll = Color(nsColor: .labelColor)
     /// Separator lines between cards
     static let separator = Color(nsColor: .separatorColor).opacity(0.3)
 }
