@@ -23,9 +23,22 @@ enum FileStorageMode: String, Codable, CaseIterable {
 }
 
 enum SensitiveContentAction: String, Codable, CaseIterable {
-    case dontSave = "Don't save it"
-    case saveTemporarily = "Save temporarily"
-    case askMe = "Ask me"
+    case show = "Show"
+    case hide = "Hide"
+    case showFirstThree = "Show first 3 characters"
+    case dontCopy = "Don't copy it"
+    
+    init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        let raw = try container.decode(String.self)
+        switch raw {
+        case "Show": self = .show
+        case "Hide": self = .hide
+        case "Show first 3 characters": self = .showFirstThree
+        case "Don't copy it", "Don't save it", "Save temporarily", "Ask me": self = .dontCopy
+        default: self = .dontCopy
+        }
+    }
 }
 
 enum AutoDeleteHistory: Int, Codable, CaseIterable {
@@ -68,7 +81,7 @@ struct AppSettings: Codable {
     // Privacy
     var excludedBundleIdentifiers: [String] = []
     var sensitiveContentDetection: Bool = true // New
-    var sensitiveContentAction: SensitiveContentAction = .dontSave // New
+    var sensitiveContentAction: SensitiveContentAction = .dontCopy // New
     
     // Auto-Delete
     var autoDeleteHistory: AutoDeleteHistory = .sevenDays // New

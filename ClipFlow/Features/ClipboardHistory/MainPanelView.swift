@@ -17,6 +17,9 @@ struct MainPanelView: View {
     // Theme State
     @State private var appTheme: AppTheme = SettingsRepository.shared.load().theme
     
+    // Pro Manager for In-Window Paywall Modal
+    @ObservedObject private var proManager = ProManager.shared
+    
     let onClose: () -> Void
 
     init(store: ClipboardStore, onClose: @escaping () -> Void) {
@@ -26,25 +29,55 @@ struct MainPanelView: View {
     }
 
     var body: some View {
-        VStack(spacing: 0) {
-            // Tab bar
-            PanelTabBar(selectedTab: $selectedTab, onClose: onClose)
+        ZStack {
+            VStack(spacing: 0) {
+                // Tab bar
+                PanelTabBar(selectedTab: $selectedTab, onClose: onClose)
 
-            // Content area
-            ZStack {
-                Group {
-                    switch selectedTab {
-                    case .clipboard:
-                        ClipboardHistoryView(viewModel: viewModel, store: store)
-                    case .favorites:
-                        FavoritesView(store: store)
-                    default:
-                        comingSoonView(for: selectedTab)
+                // Content area
+                ZStack {
+                    Group {
+                        switch selectedTab {
+                        case .clipboard:
+                            ClipboardHistoryView(viewModel: viewModel, store: store)
+                        case .favorites:
+                            FavoritesView(store: store)
+                        default:
+                            comingSoonView(for: selectedTab)
+                        }
                     }
+                    .transition(.opacity.animation(.easeInOut(duration: 0.15)))
                 }
-                .transition(.opacity.animation(.easeInOut(duration: 0.15)))
+            }
+            .blur(radius: proManager.showPaywall ? 8 : 0)
+            .animation(.easeInOut(duration: 0.22), value: proManager.showPaywall)
+            
+            // Centered Paywall Modal with Blurred Backdrop
+            if proManager.showPaywall {
+                ZStack {
+                    // Blurred translucent backdrop
+                    Rectangle()
+                        .fill(.ultraThinMaterial)
+                        .overlay(Color.black.opacity(0.32))
+                        .ignoresSafeArea()
+                        .contentShape(Rectangle())
+                        .onTapGesture {
+                            withAnimation(.spring(response: 0.28, dampingFraction: 0.8)) {
+                                proManager.showPaywall = false
+                            }
+                        }
+                    
+                    // Centered modal card
+                    UpgradePaywallView()
+                        .transition(
+                            .scale(scale: 0.94)
+                            .combined(with: .opacity)
+                        )
+                }
+                .transition(.opacity)
             }
         }
+        .animation(.spring(response: 0.3, dampingFraction: 0.8), value: proManager.showPaywall)
         .background(.regularMaterial)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .blur(radius: windowBlur)

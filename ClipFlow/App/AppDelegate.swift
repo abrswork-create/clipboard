@@ -37,12 +37,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         
         setupHotkey()
         
-        // Hide the main window when the user clicks outside (app loses focus)
+        // Hide the main window when the user clicks outside (app loses focus),
+        // but keep it visible if the system Touch ID / Password prompt is active.
         NotificationCenter.default.addObserver(
             forName: NSApplication.didResignActiveNotification,
             object: nil,
             queue: .main
         ) { [weak self] _ in
+            guard !PrivacyManager.shared.isAuthenticating else { return }
             self?.window?.orderOut(nil)
         }
         
@@ -135,6 +137,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
     }
     
     @objc private func openSettings() {
+        window?.orderOut(nil)
         if let existing = settingsWindow {
             existing.makeKeyAndOrderFront(nil)
             NSApp.activate(ignoringOtherApps: true)

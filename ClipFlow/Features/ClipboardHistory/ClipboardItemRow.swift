@@ -17,6 +17,8 @@ struct ClipboardItemRow: View {
 
     @State private var isHovered = false
     @State private var showActions = false
+    @State private var isRevealed = false
+    @State private var isAuthenticating = false
 
     var body: some View {
         HStack(spacing: showActions ? 6 : 0) {
@@ -65,10 +67,18 @@ struct ClipboardItemRow: View {
             // LEFT SIDE: Text and badges
             VStack(alignment: .leading, spacing: 0) {
                 if let appName = item.sourceAppName {
-                    Text(appName.uppercased())
-                        .font(.system(size: 9, weight: .semibold))
-                        .foregroundStyle(CFColor.secondaryText)
-                        .padding(.bottom, 4)
+                    HStack(spacing: 4) {
+                        Text(appName.uppercased())
+                            .font(.system(size: 9, weight: .semibold))
+                            .foregroundStyle(CFColor.secondaryText)
+                        
+                        if isSensitive && shouldMask && !isRevealed {
+                            Image(systemName: "lock.fill")
+                                .font(.system(size: 8))
+                                .foregroundStyle(CFColor.secondaryText)
+                        }
+                    }
+                    .padding(.bottom, 4)
                 }
 
                 if item.type == .image, let imagePath = item.imagePath, let nsImage = FileStorage.loadImage(at: imagePath) {
@@ -120,6 +130,40 @@ struct ClipboardItemRow: View {
                 
                 // Bottom right icons
                 HStack(spacing: 12) {
+                    if isSensitive && shouldMask {
+                        Button {
+                            if isRevealed {
+                                withAnimation(.spring(response: 0.25, dampingFraction: 0.7)) {
+                                    isRevealed = false
+                                }
+                            } else {
+                                guard !isAuthenticating else { return }
+                                isAuthenticating = true
+                                Task {
+                                    let authenticated = await PrivacyManager.shared.authenticateUser()
+                                    isAuthenticating = false
+                                    if authenticated {
+                                        withAnimation(.spring(response: 0.25, dampingFraction: 0.7)) {
+                                            isRevealed = true
+                                        }
+                                    }
+                                }
+                            }
+                        } label: {
+                            if isAuthenticating {
+                                ProgressView()
+                                    .scaleEffect(0.5)
+                                    .frame(width: 14, height: 14)
+                            } else {
+                                Image(systemName: isRevealed ? "eye.slash" : "eye")
+                                    .font(.system(size: 12))
+                                    .foregroundStyle(CFColor.secondaryText)
+                            }
+                        }
+                        .buttonStyle(.plain)
+                        .help(isRevealed ? "Hide sensitive content" : "Authenticate to reveal sensitive content")
+                    }
+                    
                     Button(action: onFavorite) {
                         Image(systemName: item.isFavorite ? "star.fill" : "star")
                             .font(.system(size: 12))
@@ -157,8 +201,44 @@ struct ClipboardItemRow: View {
 
     // MARK: - Helpers
 
+    private var isSensitive: Bool {
+        guard let text = item.text else { return false }
+        let settings = SettingsRepository.shared.load()
+        guard settings.sensitiveContentDetection else { return false }
+        return SensitiveDataDetector.containsSensitiveData(text)
+    }
+
+    private var shouldMask: Bool {
+        guard isSensitive else { return false }
+        let settings = SettingsRepository.shared.load()
+        return settings.sensitiveContentAction == .hide || settings.sensitiveContentAction == .showFirstThree
+    }
+
     private var displayText: String {
-        item.text ?? item.type.rawValue.capitalized
+        guard let text = item.text else {
+            return item.type.rawValue.capitalized
+        }
+        
+        let settings = SettingsRepository.shared.load()
+        if settings.sensitiveContentDetection && SensitiveDataDetector.containsSensitiveData(text) {
+            switch settings.sensitiveContentAction {
+            case .hide:
+                if !isRevealed {
+                    let dotCount = min(max(text.count, 12), 24)
+                    return String(repeating: "•", count: dotCount)
+                }
+            case .showFirstThree:
+                if !isRevealed {
+                    let prefix = String(text.prefix(3))
+                    let dotCount = min(max(text.count - 3, 10), 20)
+                    return "\(prefix)\(String(repeating: "•", count: dotCount))"
+                }
+            case .show, .dontCopy:
+                return text
+            }
+        }
+        
+        return text
     }
 }
 

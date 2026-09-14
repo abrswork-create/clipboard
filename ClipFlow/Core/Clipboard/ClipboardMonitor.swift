@@ -83,9 +83,9 @@ final class ClipboardMonitor {
         guard let item = reader.read(from: pasteboard, sourceApp: sourceApp) else { return }
         
         // 1. Sensitive Content Interception
-        if item.type == .text || item.type == .url, let text = item.text {
+        if let text = item.text {
             if PrivacyManager.shared.containsSensitiveContent(text) {
-                if settings.sensitiveContentAction == .dontSave {
+                if settings.sensitiveContentAction == .dontCopy {
                     print("Intercepted sensitive content. Dropping.")
                     return
                 }
@@ -93,7 +93,7 @@ final class ClipboardMonitor {
         }
         
         // 2. Data Type Exclusions
-        if item.type == .text && !settings.saveText { return }
+        if (item.type == .text || item.type == .richText) && !settings.saveText { return }
         if item.type == .image && !settings.saveImages { return }
         if item.type == .file && !settings.saveFiles { return }
         

@@ -50,6 +50,23 @@ final class ClipboardHistoryViewModel: ObservableObject {
     }
 
     func togglePin(_ id: UUID) {
+        guard let item = store.items.first(where: { $0.id == id }) else { return }
+        
+        // If currently pinned, allow unpinning freely
+        if item.isPinned {
+            store.togglePin(id)
+            return
+        }
+        
+        // If pinning a new item on Free tier, check limit
+        if !ProManager.shared.isPro {
+            let currentPins = store.items.filter { $0.isPinned }.count
+            if currentPins >= ProManager.shared.freePinLimit {
+                ProManager.shared.triggerPaywall(reason: "Free tier is limited to 3 pinned items. Upgrade to Pro for unlimited pinned cards.")
+                return
+            }
+        }
+        
         store.togglePin(id)
     }
 

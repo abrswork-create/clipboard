@@ -1,12 +1,16 @@
 import Foundation
+import AppKit
+import LocalAuthentication
 
 // MARK: - PrivacyManager
-// Coordinates Private Mode, App Exclusions, and sensitive content policy.
+// Coordinates Private Mode, App Exclusions, sensitive content policy, and biometric/passcode authentication.
 
 @MainActor
 final class PrivacyManager {
     static let shared = PrivacyManager()
     private init() {}
+    
+    var isAuthenticating: Bool = false
     
     func canRecord(sourceAppBundleId: String?) -> Bool {
         let settings = SettingsRepository.shared.load()
@@ -30,29 +34,40 @@ final class PrivacyManager {
     func containsSensitiveContent(_ text: String) -> Bool {
         let settings = SettingsRepository.shared.load()
         guard settings.sensitiveContentDetection else { return false }
+        return SensitiveDataDetector.containsSensitiveData(text)
+    }
+    
+    // MARK: - Biometric & Password Authentication
+    
+    /// Requests Touch ID or Mac password authentication to reveal sensitive content.
+    func authenticateUser(reason: String = "reveal sensitive clipboard content") async -> Bool {
+        let context = LAContext()
+        context.localizedCancelTitle = "Cancel"
         
-        let patterns = [
-            // Credit Cards (Visa, Mastercard, Amex, Discover)
-            "(?:4[0-9]{12}(?:[0-9]{3})?|5[1-5][0-9]{14}|3[47][0-9]{13}|6(?:011|5[0-9]{2})[0-9]{12})",
-            
-            // AWS Keys
-            "(?:A3T[A-Z0-9]|AKIA|AGPA|AIDA|AROA|AIPA|ANPA|ANVA|ASIA)[A-Z0-9]{16}",
-            
-            // Private Keys (RSA, DSA, EC, OPENSSH)
-            "-----BEGIN (?:RSA|DSA|EC|OPENSSH|PRIVATE) KEY-----",
-            
-            // Generic Bearer Tokens / API Keys (high entropy or specific prefixes)
-            "(?:Bearer\\s+[A-Za-z0-9\\-\\._~\\+/]+=*)",
-            "sk_live_[0-9a-zA-Z]{24}", // Stripe Secret
-            "ghp_[0-9a-zA-Z]{36}"      // GitHub Personal Access Token
-        ]
+        var error: NSError?
+        guard context.canEvaluatePolicy(.deviceOwnerAuthentication, error: &error) else {
+            print("Device owner authentication unavailable: \(String(describing: error))")
+            return false
+        }
         
-        for pattern in patterns {
-            if text.range(of: pattern, options: .regularExpression) != nil {
-                return true
+        isAuthenticating = true
+        
+        let success: Bool = await withCheckedContinuation { continuation in
+            context.evaluatePolicy(.deviceOwnerAuthentication, localizedReason: reason) { ok, authError in
+                DispatchQueue.main.async {
+                    if let authError = authError {
+                        print("Authentication failed: \(authError.localizedDescription)")
+                    }
+                    continuation.resume(returning: ok)
+                }
             }
         }
         
-        return false
+        // Small delay to allow macOS system auth UI to dismiss cleanly before re-enabling deactivation dismissal
+        try? await Task.sleep(nanoseconds: 300_000_000)
+        isAuthenticating = false
+        NSApp.activate(ignoringOtherApps: true)
+        
+        return success
     }
 }

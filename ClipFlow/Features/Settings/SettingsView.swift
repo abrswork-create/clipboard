@@ -61,11 +61,47 @@ struct SettingsView: View {
 
 // MARK: - GeneralSettingsView
 struct GeneralSettingsView: View {
+    @ObservedObject var proManager = ProManager.shared
     @State private var settings = SettingsRepository.shared.load()
     @State private var launchAtLogin = SettingsRepository.shared.load().launchAtLogin
+    @State private var showSettingsPaywall = false
     
     var body: some View {
         VStack(spacing: 24) {
+            // Plan & Licensing Section
+            SettingsSection {
+                SettingsRow(
+                    title: "Clipmory Plan",
+                    subtitle: proManager.isPro ? "Clipmory Pro active — unlimited history and pins." : "Free tier active — capped at 20 history items & 3 pins.",
+                    showDivider: true
+                ) {
+                    HStack(spacing: 8) {
+                        Text(proManager.isPro ? "PRO" : "FREE")
+                            .font(.system(size: 10, weight: .bold))
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 3)
+                            .background(proManager.isPro ? Color.purple.opacity(0.2) : Color.gray.opacity(0.15))
+                            .foregroundStyle(proManager.isPro ? Color.purple : Color.secondary)
+                            .clipShape(Capsule())
+                        
+                        if !proManager.isPro {
+                            Button("Upgrade...") {
+                                proManager.paywallReason = "Upgrade to Clipmory Pro for unlimited history, unlimited pins, and lifetime updates."
+                                showSettingsPaywall = true
+                            }
+                            .buttonStyle(.borderedProminent)
+                        }
+                    }
+                }
+                
+                SettingsToggleRow(
+                    title: "Simulate Pro User (Testing)",
+                    subtitle: "Toggle between Free and Pro to test limits and paywalls.",
+                    showDivider: false,
+                    isOn: $proManager.isPro
+                )
+            }
+
             SettingsSection {
                 SettingsToggleRow(
                     title: "Clipboard History",
@@ -138,6 +174,9 @@ struct GeneralSettingsView: View {
         .onChange(of: settings.showInMenuBar) { _ in
             save()
             NotificationCenter.default.post(name: NSNotification.Name("clipFlowShowInMenuBarChanged"), object: nil)
+        }
+        .sheet(isPresented: $showSettingsPaywall) {
+            UpgradePaywallView()
         }
     }
     
@@ -314,7 +353,7 @@ struct PrivacySettingsView: View {
                         }
                         .pickerStyle(.menu)
                         .labelsHidden()
-                        .frame(width: 160)
+                        .frame(width: 190)
                     }
                 }
             }

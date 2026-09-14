@@ -6,6 +6,7 @@ import SwiftUI
 struct ClipboardHistoryView: View {
     @ObservedObject var viewModel: ClipboardHistoryViewModel
     @ObservedObject var store: ClipboardStore
+    @ObservedObject var proManager = ProManager.shared
     
     @State private var headerAppeared = false
     @State private var cardsAppeared = false
@@ -176,9 +177,27 @@ struct ClipboardHistoryView: View {
                     if !pinned.isEmpty {
                         sectionLabel("RECENT")
                     }
-                    ForEach(unpinned) { item in
+                    
+                    let visibleUnpinned: [ClipboardItem] = {
+                        if proManager.isPro {
+                            return unpinned
+                        } else {
+                            return Array(unpinned.prefix(proManager.freeHistoryLimit))
+                        }
+                    }()
+                    
+                    ForEach(visibleUnpinned) { item in
                         cardRow(item)
                             .id("\(item.id)-pinned:\(item.isPinned)-fav:\(item.isFavorite)")
+                    }
+                    
+                    if !proManager.isPro && unpinned.count > proManager.freeHistoryLimit {
+                        UpgradeBannerCard(
+                            hiddenCount: unpinned.count - proManager.freeHistoryLimit,
+                            onUpgrade: {
+                                proManager.triggerPaywall(reason: "You have \(unpinned.count - proManager.freeHistoryLimit) hidden items. Upgrade to Pro to unlock unlimited clipboard history.")
+                            }
+                        )
                     }
                 }
             }
