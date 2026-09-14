@@ -104,7 +104,7 @@ struct UpgradePaywallView: View {
                                 ProgressView()
                                     .scaleEffect(0.6)
                             } else {
-                                Text("Upgrade to Pro — $9.99 (Lifetime)")
+                                Text("Upgrade to Pro — $29.99 (Lifetime)")
                                     .font(.system(size: 12.5, weight: .semibold))
                             }
                         }
