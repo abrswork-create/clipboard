@@ -30,6 +30,15 @@ enum CFColor {
     static let selectedBorder = Color.accentColor.opacity(0.8)
     /// Active tab underline — macOS Accent
     static let tabAccent = Color.accentColor
+    /// Selected tab button background - white in light mode
+    static let selectedTabBackground = Color(nsColor: NSColor(name: nil, dynamicProvider: { appearance in
+        let match = appearance.bestMatch(from: [.aqua, .darkAqua])
+        if match == .darkAqua {
+            return NSColor(white: 0.35, alpha: 0.9)
+        } else {
+            return NSColor.white
+        }
+    }))
     /// Inactive tab icon
     static let tabInactive = Color(nsColor: .secondaryLabelColor)
     /// Primary text

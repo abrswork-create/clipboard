@@ -86,7 +86,8 @@ struct PanelTabBar: View {
             ZStack {
                 if isSelected {
                     RoundedRectangle(cornerRadius: 6, style: .continuous)
-                        .fill(Color(nsColor: .separatorColor))
+                        .fill(CFColor.selectedTabBackground)
+                        .cfShadow(CFShadow.card)
                 }
                 
                 Image(systemName: tab.icon)
