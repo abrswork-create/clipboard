@@ -114,7 +114,7 @@ struct GifPickerView: View {
     
     private var gifList: some View {
         ScrollView(.vertical, showsIndicators: true) {
-            LazyVStack(spacing: 12) {
+            LazyVStack(spacing: 14) {
                 ForEach(filteredGifs) { item in
                     gifCard(item)
                 }
@@ -124,36 +124,38 @@ struct GifPickerView: View {
         }
     }
     
-    // MARK: - Premium Card
+    // MARK: - Card
     
     private func gifCard(_ item: ClipboardItem) -> some View {
         let isHovered = hoveredItemID == item.id
         let isSelected = selectedItemID == item.id
         
         return VStack(alignment: .leading, spacing: 0) {
-            // Top Bar: App Source, Badge, Time, and Actions
-            HStack(alignment: .center) {
-                // Source App Pill
-                if let source = item.sourceAppName {
+            // Header Bar
+            HStack(alignment: .center, spacing: 6) {
+                // Source App Badge
+                if let source = item.sourceAppName, !source.isEmpty {
                     HStack(spacing: 4) {
+                        Image(systemName: "app.fill")
+                            .font(.system(size: 8))
                         Text(source.uppercased())
                             .font(.system(size: 9, weight: .bold))
-                            .foregroundStyle(CFColor.secondaryText)
                     }
-                    .padding(.horizontal, 6)
-                    .padding(.vertical, 2)
+                    .foregroundStyle(CFColor.secondaryText)
+                    .padding(.horizontal, 7)
+                    .padding(.vertical, 3)
                     .background(
                         Capsule()
-                            .fill(Color.primary.opacity(0.05))
+                            .fill(Color.primary.opacity(0.06))
                     )
                 }
                 
                 // GIF Tag
                 Text("GIF")
-                    .font(.system(size: 8.5, weight: .bold))
+                    .font(.system(size: 9, weight: .bold))
                     .foregroundStyle(Color.accentColor)
-                    .padding(.horizontal, 5)
-                    .padding(.vertical, 2)
+                    .padding(.horizontal, 6)
+                    .padding(.vertical, 3)
                     .background(Color.accentColor.opacity(0.12))
                     .cornerRadius(4)
                 
@@ -161,7 +163,7 @@ struct GifPickerView: View {
                 
                 // Timestamp
                 Text(item.createdAt, style: .time)
-                    .font(.system(size: 10))
+                    .font(.system(size: 10, weight: .medium))
                     .foregroundStyle(CFColor.secondaryText)
                 
                 // Star Button
@@ -172,6 +174,8 @@ struct GifPickerView: View {
                         .font(.system(size: 11))
                         .foregroundStyle(item.isFavorite ? Color.yellow : CFColor.secondaryText)
                         .frame(width: 22, height: 22)
+                        .background(item.isFavorite ? Color.yellow.opacity(0.12) : Color.clear)
+                        .clipShape(Circle())
                 }
                 .buttonStyle(.plain)
                 .help(item.isFavorite ? "Unfavorite" : "Favorite")
@@ -190,36 +194,36 @@ struct GifPickerView: View {
                 .buttonStyle(.plain)
                 .help("Delete from clipboard")
             }
-            .padding(.horizontal, 10)
-            .padding(.top, 8)
-            .padding(.bottom, 6)
+            .padding(.horizontal, 12)
+            .padding(.top, 10)
+            .padding(.bottom, 8)
             
-            // Media Container (Click to Copy & Paste)
+            // Media Container
             Button {
                 pasteItem(item)
             } label: {
                 ZStack {
-                    RoundedRectangle(cornerRadius: 6, style: .continuous)
-                        .fill(Color.black.opacity(0.03))
+                    RoundedRectangle(cornerRadius: 8, style: .continuous)
+                        .fill(Color.black.opacity(0.04))
                     
                     if let gifUrl = item.gifURLString {
                         GifThumbnailView(urlString: gifUrl)
                             .frame(maxWidth: .infinity)
-                            .frame(height: 150)
-                            .clipShape(RoundedRectangle(cornerRadius: 6))
+                            .frame(minHeight: 140, maxHeight: 260)
+                            .clipShape(RoundedRectangle(cornerRadius: 8))
                     } else if let path = item.imagePath, path.lowercased().hasSuffix(".gif"),
                               let data = try? Data(contentsOf: URL(fileURLWithPath: path)) {
                         GifNSImageView(data: data)
                             .frame(maxWidth: .infinity)
-                            .frame(height: 150)
-                            .clipShape(RoundedRectangle(cornerRadius: 6))
+                            .frame(minHeight: 140, maxHeight: 260)
+                            .clipShape(RoundedRectangle(cornerRadius: 8))
                     } else if let path = item.imagePath, let nsImage = FileStorage.loadImage(at: path) {
                         Image(nsImage: nsImage)
                             .resizable()
                             .aspectRatio(contentMode: .fit)
                             .frame(maxWidth: .infinity)
-                            .frame(height: 150)
-                            .clipShape(RoundedRectangle(cornerRadius: 6))
+                            .frame(minHeight: 140, maxHeight: 260)
+                            .clipShape(RoundedRectangle(cornerRadius: 8))
                     } else {
                         Image(systemName: "film")
                             .font(.system(size: 32))
@@ -227,31 +231,32 @@ struct GifPickerView: View {
                             .frame(height: 120)
                     }
                     
-                    // Hover Action Overlay
+                    // Floating bottom-right quick action pill on hover (does not obstruct the GIF)
                     if isHovered {
-                        ZStack {
-                            RoundedRectangle(cornerRadius: 6, style: .continuous)
-                                .fill(Color.black.opacity(0.18))
-                            
-                            HStack(spacing: 6) {
-                                Image(systemName: "doc.on.clipboard.fill")
-                                    .font(.system(size: 11, weight: .semibold))
-                                Text("Click to Paste")
-                                    .font(.system(size: 11, weight: .semibold))
+                        VStack {
+                            Spacer()
+                            HStack {
+                                Spacer()
+                                HStack(spacing: 5) {
+                                    Image(systemName: "doc.on.clipboard.fill")
+                                        .font(.system(size: 10, weight: .bold))
+                                    Text("Paste")
+                                        .font(.system(size: 10.5, weight: .bold))
+                                }
+                                .foregroundStyle(.white)
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 5)
+                                .background(Color.accentColor.opacity(0.92))
+                                .cornerRadius(6)
+                                .shadow(color: .black.opacity(0.25), radius: 4, x: 0, y: 2)
+                                .padding(8)
                             }
-                            .foregroundStyle(.white)
-                            .padding(.horizontal, 10)
-                            .padding(.vertical, 5)
-                            .background(.ultraThinMaterial)
-                            .cornerRadius(12)
-                            .shadow(color: .black.opacity(0.2), radius: 4, x: 0, y: 2)
                         }
                         .transition(.opacity)
                     }
                 }
-                .frame(maxWidth: .infinity)
-                .padding(.horizontal, 8)
-                .padding(.bottom, 8)
+                .padding(.horizontal, 10)
+                .padding(.bottom, 10)
             }
             .buttonStyle(.plain)
         }
@@ -342,7 +347,7 @@ struct GifNSImageView: NSViewRepresentable {
         iv.canDrawSubviewsIntoLayer = true
         iv.wantsLayer = true
         iv.layer?.masksToBounds = true
-        iv.layer?.cornerRadius = 6
+        iv.layer?.cornerRadius = 8
         iv.image = NSImage(data: data)
         return iv
     }
@@ -362,7 +367,7 @@ struct GifThumbnailView: View {
     
     var body: some View {
         ZStack {
-            RoundedRectangle(cornerRadius: 6, style: .continuous)
+            RoundedRectangle(cornerRadius: 8, style: .continuous)
                 .fill(Color.primary.opacity(0.04))
             
             if let data = gifData {
