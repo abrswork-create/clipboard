@@ -26,10 +26,10 @@
 	<false/>
 	<key>NSSupportsSuddenTermination</key>
 	<false/>
-	<key>SUFeedURL</key>
-	<string>https://clipmory.app/appcast.xml</string>
 	<key>SUEnableAutomaticChecks</key>
 	<true/>
+	<key>SUFeedURL</key>
+	<string>https://clipmory.app/appcast.xml</string>
 	<key>SUScheduledCheckInterval</key>
 	<integer>86400</integer>
 </dict>

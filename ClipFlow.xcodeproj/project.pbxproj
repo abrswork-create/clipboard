@@ -16,6 +16,7 @@
 		101BE1E563F8C2D39A4A0F8D /* OCRService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6FDFF43DAA19AF1B2B4F5EDF /* OCRService.swift */; };
 		196C321ECC8F510E8646465D /* ClipboardSourceApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10DE74F38AC8301A7A00C8E8 /* ClipboardSourceApp.swift */; };
 		19A3547BD90A0D6563EF4F4B /* EmojiData.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3015622F91E37BB4DDF59EC /* EmojiData.swift */; };
+		19E1F9A06B52F03400EF0040 /* LemonSqueezyService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F77D0A4C323827222628D6F7 /* LemonSqueezyService.swift */; };
 		1BE6A29D4236B432BCD053D5 /* PasteService.swift in Sources */ = {isa = PBXBuildFile; fileRef = D823FECF87E0B2E9813A5D36 /* PasteService.swift */; };
 		2019333E1290B34C65223F55 /* MainPanelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84CD89785CB09DEB5E31BEB9 /* MainPanelView.swift */; };
 		24D1456222D6D79F8FEDDDE1 /* PanelTabBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27300AD45A7270D0D7AEB915 /* PanelTabBar.swift */; };
@@ -176,6 +177,7 @@
 		F153EB5B98CDEBCDC3B02CCA /* AppEnvironment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppEnvironment.swift; sourceTree = "<group>"; };
 		F3015622F91E37BB4DDF59EC /* EmojiData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmojiData.swift; sourceTree = "<group>"; };
 		F6FF264295131A9CDFE8FF61 /* ThumbnailStorage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThumbnailStorage.swift; sourceTree = "<group>"; };
+		F77D0A4C323827222628D6F7 /* LemonSqueezyService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LemonSqueezyService.swift; sourceTree = "<group>"; };
 		F9777CAF25ABFFDFF26E6005 /* GifPlayerComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GifPlayerComponents.swift; sourceTree = "<group>"; };
 		FBEA07B871C22C7AA2806F93 /* ClipboardStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipboardStore.swift; sourceTree = "<group>"; };
 		FC02F59716B528D395ADF95F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
@@ -258,6 +260,7 @@
 		43EFD2D356DCD8E262097F11 /* Pro */ = {
 			isa = PBXGroup;
 			children = (
+				F77D0A4C323827222628D6F7 /* LemonSqueezyService.swift */,
 				63E8393F00DB482CD5B2F7DE /* ProManager.swift */,
 			);
 			path = Pro;
@@ -677,6 +680,7 @@
 				EB3DB5640304FC20B98CE04A /* ImagesView.swift in Sources */,
 				A16468CFDF7A31A88506B486 /* KaomojiData.swift in Sources */,
 				023163E632795866E06C851A /* KaomojiPickerView.swift in Sources */,
+				19E1F9A06B52F03400EF0040 /* LemonSqueezyService.swift in Sources */,
 				2019333E1290B34C65223F55 /* MainPanelView.swift in Sources */,
 				A8A0A6FD5AB4263EEB2495E6 /* MenuBarView.swift in Sources */,
 				101BE1E563F8C2D39A4A0F8D /* OCRService.swift in Sources */,

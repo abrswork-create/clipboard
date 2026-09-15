@@ -1,7 +1,7 @@
 import SwiftUI
 
 // MARK: - UpgradePaywallView
-// Modal paywall sheet presenting Pro benefits and unlocking access.
+// Modal paywall sheet presenting Pro benefits and unlocking access via Lemon Squeezy.
 
 struct UpgradePaywallView: View {
     @ObservedObject var proManager = ProManager.shared
@@ -11,6 +11,7 @@ struct UpgradePaywallView: View {
     @State private var showLicenseField: Bool = false
     @State private var licenseError: String? = nil
     @State private var isUpgrading: Bool = false
+    @State private var isActivating: Bool = false
     @State private var showSuccessAnimation: Bool = false
 
     var body: some View {
@@ -47,54 +48,57 @@ struct UpgradePaywallView: View {
                     .foregroundStyle(CFColor.primaryText)
                 
                 Text(proManager.paywallReason)
-                    .font(.system(size: 11))
+                    .font(.system(size: 11.5))
                     .foregroundStyle(CFColor.secondaryText)
                     .multilineTextAlignment(.center)
-                    .lineLimit(2)
+                    .lineLimit(3)
                     .padding(.horizontal, 12)
             }
-            .padding(.bottom, 14)
+            .padding(.bottom, 16)
             
-            // Feature comparison list
+            // Feature List
             VStack(spacing: 10) {
                 featureRow(
-                    icon: "infinity",
+                    icon: "clock.arrow.circlepath",
                     title: "Unlimited History",
-                    description: "Free tier capped at 20 items. Store 1,000+ items."
+                    description: "Never lose a copied snippet, image, or link again."
                 )
                 
                 featureRow(
                     icon: "pin.fill",
-                    title: "Unlimited Pinned Items",
-                    description: "Keep all your important snippets & links at hand."
+                    title: "Unlimited Pins",
+                    description: "Pin all your critical commands, templates, and text."
                 )
                 
                 featureRow(
-                    icon: "touchid",
-                    title: "Touch ID Security",
-                    description: "Biometric & passcode lock for sensitive keys."
+                    icon: "magnifyingglass",
+                    title: "Smart Search & OCR",
+                    description: "Search text within copied images, code, and links."
                 )
                 
                 featureRow(
-                    icon: "arrow.triangle.2.circlepath",
-                    title: "Lifetime Updates",
-                    description: "One-time purchase, no subscription or recurring fees."
+                    icon: "lock.shield.fill",
+                    title: "Sensitive Data Masking",
+                    description: "Automatic detection and masking of passwords and API keys."
                 )
             }
             .padding(.horizontal, 18)
-            .padding(.bottom, 16)
+            .padding(.bottom, 20)
             
-            // Action buttons
+            // Action Buttons
             VStack(spacing: 8) {
                 if showSuccessAnimation {
-                    HStack(spacing: 6) {
-                        Image(systemName: "checkmark.circle.fill")
-                            .foregroundStyle(.green)
-                        Text("Welcome to Clipmory Pro!")
-                            .font(.system(size: 13, weight: .semibold))
-                            .foregroundStyle(.green)
+                    HStack(spacing: 8) {
+                        Image(systemName: "checkmark.seal.fill")
+                            .font(.system(size: 18))
+                            .foregroundStyle(Color.green)
+                        
+                        Text("Clipmory Pro Activated!")
+                            .font(.system(size: 13, weight: .bold))
+                            .foregroundStyle(Color.green)
                     }
                     .padding(.vertical, 8)
+                    .transition(.scale.combined(with: .opacity))
                 } else {
                     Button {
                         upgradeNow()
@@ -123,24 +127,26 @@ struct UpgradePaywallView: View {
                     if showLicenseField {
                         VStack(spacing: 4) {
                             HStack {
-                                TextField("Code (e.g. PRO-2026)", text: $licenseKey)
+                                TextField("Code (e.g. 7F3A-8B1C-...)", text: $licenseKey)
                                     .textFieldStyle(.roundedBorder)
                                     .font(.system(size: 11))
+                                    .disabled(isActivating)
                                 
-                                Button("Activate") {
-                                    if proManager.activateLicense(key: licenseKey) {
-                                        licenseError = nil
-                                        withAnimation { showSuccessAnimation = true }
-                                        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-                                            closeModal()
-                                        }
+                                Button {
+                                    activateKey()
+                                } label: {
+                                    if isActivating {
+                                        ProgressView()
+                                            .scaleEffect(0.5)
+                                            .frame(width: 48)
                                     } else {
-                                        licenseError = "Invalid key. Use code PRO-2026."
+                                        Text("Activate")
+                                            .font(.system(size: 11))
                                     }
                                 }
                                 .buttonStyle(.borderedProminent)
                                 .controlSize(.small)
-                                .font(.system(size: 11))
+                                .disabled(isActivating || licenseKey.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                             }
                             
                             if let err = licenseError {
@@ -219,13 +225,31 @@ struct UpgradePaywallView: View {
     }
     
     private func upgradeNow() {
-        isUpgrading = true
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
-            isUpgrading = false
-            proManager.unlockPro()
-            withAnimation { showSuccessAnimation = true }
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-                closeModal()
+        // Open website purchase checkout in default browser
+        if let url = URL(string: "https://clipmory.app/#pricing") {
+            NSWorkspace.shared.open(url)
+        }
+        withAnimation { showLicenseField = true }
+    }
+    
+    private func activateKey() {
+        let key = licenseKey.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !key.isEmpty else { return }
+        
+        licenseError = nil
+        isActivating = true
+        
+        Task { @MainActor in
+            let success = await proManager.activateLicenseAsync(key: key)
+            isActivating = false
+            
+            if success {
+                withAnimation { showSuccessAnimation = true }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) {
+                    closeModal()
+                }
+            } else {
+                licenseError = proManager.activationError ?? "Invalid license key."
             }
         }
     }

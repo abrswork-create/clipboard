@@ -60,6 +60,28 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         return true
     }
 
+    func application(_ application: NSApplication, open urls: [URL]) {
+        for url in urls {
+            handleIncomingURL(url)
+        }
+    }
+
+    private func handleIncomingURL(_ url: URL) {
+        guard url.scheme?.lowercased() == "clipmory" else { return }
+        
+        // Handle clipmory://activate?key=XXXX-XXXX-XXXX-XXXX
+        if url.host == "activate" || url.path.contains("activate") {
+            let components = URLComponents(url: url, resolvingAgainstBaseURL: false)
+            if let keyItem = components?.queryItems?.first(where: { $0.name.lowercased() == "key" }),
+               let key = keyItem.value, !key.isEmpty {
+                openMainWindow()
+                Task { @MainActor in
+                    _ = await ProManager.shared.activateLicenseAsync(key: key)
+                }
+            }
+        }
+    }
+
     func applicationWillTerminate(_ notification: Notification) {
         clipboardMonitor?.stop()
         GlobalHotkeyManager.shared.unregister()
