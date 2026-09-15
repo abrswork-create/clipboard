@@ -48,6 +48,19 @@ enum FileStorage {
         }
     }
 
+    /// Saves raw animated GIF data to disk as .gif and returns the file path, or nil on failure.
+    @discardableResult
+    static func saveGifData(_ data: Data) -> String? {
+        let filename = UUID().uuidString + ".gif"
+        let url = imagesDirectory.appendingPathComponent(filename)
+        do {
+            try data.write(to: url)
+            return url.path
+        } catch {
+            return nil
+        }
+    }
+
     /// Loads an NSImage from a stored path, or nil if the file does not exist.
     static func loadImage(at path: String) -> NSImage? {
         NSImage(contentsOfFile: path)

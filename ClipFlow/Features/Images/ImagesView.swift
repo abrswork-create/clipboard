@@ -12,7 +12,7 @@ struct ImagesView: View {
     @State private var copiedToastID: UUID? = nil
     
     private var imageItems: [ClipboardItem] {
-        store.items.filter { $0.type == .image && $0.imagePath != nil }
+        store.items.filter { ($0.type == .image && $0.imagePath != nil) || ($0.gifURLString != nil) }
     }
     
     private var filteredItems: [ClipboardItem] {
@@ -135,12 +135,22 @@ struct ImagesView: View {
                             .fill(Color.primary.opacity(0.04))
                             .frame(height: 110)
                         
-                        if let path = item.imagePath, let nsImage = FileStorage.loadImage(at: path) {
-                            Image(nsImage: nsImage)
-                                .resizable()
-                                .aspectRatio(contentMode: .fit)
+                        if let gifUrl = item.gifURLString {
+                            GifThumbnailView(urlString: gifUrl)
                                 .frame(height: 100)
                                 .cornerRadius(4)
+                        } else if let path = item.imagePath {
+                            if path.lowercased().hasSuffix(".gif"), let data = try? Data(contentsOf: URL(fileURLWithPath: path)) {
+                                GifNSImageView(data: data)
+                                    .frame(height: 100)
+                                    .cornerRadius(4)
+                            } else if let nsImage = FileStorage.loadImage(at: path) {
+                                Image(nsImage: nsImage)
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fit)
+                                    .frame(height: 100)
+                                    .cornerRadius(4)
+                            }
                         } else {
                             Image(systemName: "photo")
                                 .font(.system(size: 24))

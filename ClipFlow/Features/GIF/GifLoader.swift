@@ -29,6 +29,21 @@ final class GifLoader {
         return cacheDirectory.appendingPathComponent(safeName)
     }
     
+    // MARK: - Synchronous Cache Check
+    
+    func cachedData(for urlString: String) -> Data? {
+        let key = NSString(string: urlString)
+        if let memData = memoryCache.object(forKey: key) {
+            return memData as Data
+        }
+        let fileUrl = diskURL(for: urlString)
+        if fileManager.fileExists(atPath: fileUrl.path), let diskData = try? Data(contentsOf: fileUrl) {
+            memoryCache.setObject(diskData as NSData, forKey: key, cost: diskData.count)
+            return diskData
+        }
+        return nil
+    }
+    
     // MARK: - Load GIF
     
     func loadGif(from urlString: String, completion: @escaping (Data?) -> Void) {

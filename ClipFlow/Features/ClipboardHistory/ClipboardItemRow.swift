@@ -81,13 +81,25 @@ struct ClipboardItemRow: View {
                     .padding(.bottom, 4)
                 }
 
-                if item.type == .image, let imagePath = item.imagePath, let nsImage = FileStorage.loadImage(at: imagePath) {
-                    Image(nsImage: nsImage)
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .frame(maxWidth: .infinity, maxHeight: style == .compact ? 50 : (style == .spacious ? 110 : 80), alignment: .leading)
+                if let gifUrl = item.gifURLString {
+                    GifThumbnailView(urlString: gifUrl)
+                        .frame(maxWidth: .infinity, maxHeight: style == .compact ? 65 : (style == .spacious ? 130 : 95), alignment: .leading)
                         .clipShape(RoundedRectangle(cornerRadius: 6))
                         .padding(.vertical, 4)
+                } else if item.type == .image, let imagePath = item.imagePath {
+                    if imagePath.lowercased().hasSuffix(".gif"), let data = try? Data(contentsOf: URL(fileURLWithPath: imagePath)) {
+                        GifNSImageView(data: data)
+                            .frame(maxWidth: .infinity, maxHeight: style == .compact ? 65 : (style == .spacious ? 130 : 95), alignment: .leading)
+                            .clipShape(RoundedRectangle(cornerRadius: 6))
+                            .padding(.vertical, 4)
+                    } else if let nsImage = FileStorage.loadImage(at: imagePath) {
+                        Image(nsImage: nsImage)
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                            .frame(maxWidth: .infinity, maxHeight: style == .compact ? 50 : (style == .spacious ? 110 : 80), alignment: .leading)
+                            .clipShape(RoundedRectangle(cornerRadius: 6))
+                            .padding(.vertical, 4)
+                    }
                 } else {
                     Text(displayText)
                         .font(.system(size: style == .compact ? 11 : (style == .spacious ? 14 : 13), weight: .regular))

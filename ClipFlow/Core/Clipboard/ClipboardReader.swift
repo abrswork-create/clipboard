@@ -105,11 +105,31 @@ final class ClipboardReader {
     private func readImage(from pasteboard: NSPasteboard,
                            sourceApp: NSRunningApplication?) -> ClipboardItem? {
 
+        let now = Date()
+
+        // 1. Check for animated GIF data first
+        if let gifData = pasteboard.data(forType: NSPasteboard.PasteboardType("com.compuserve.gif")),
+           let savedPath = FileStorage.saveGifData(gifData) {
+            let hash = ContentHasher.hash(data: gifData)
+            return ClipboardItem(
+                id: UUID(),
+                type: .image,
+                createdAt: now,
+                updatedAt: now,
+                imagePath: savedPath,
+                sourceAppName: sourceApp?.localizedName,
+                sourceBundleIdentifier: sourceApp?.bundleIdentifier,
+                isPinned: false,
+                isFavorite: false,
+                contentHash: hash
+            )
+        }
+
+        // 2. Standard image
         guard let image = NSImage(pasteboard: pasteboard) else { return nil }
 
         let savedPath = FileStorage.saveImage(image)
         let hash: String? = image.tiffRepresentation.map { ContentHasher.hash(data: $0) }
-        let now = Date()
 
         return ClipboardItem(
             id: UUID(),

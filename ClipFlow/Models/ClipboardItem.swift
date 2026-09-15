@@ -49,6 +49,32 @@ struct ClipboardItem: Identifiable, Codable, Hashable {
     }
 }
 
+// MARK: - GIF Helpers
+
+extension ClipboardItem {
+    var isGif: Bool {
+        if let path = imagePath, path.lowercased().hasSuffix(".gif") {
+            return true
+        }
+        return gifURLString != nil
+    }
+
+    var gifURLString: String? {
+        guard let text = text?.trimmingCharacters(in: .whitespacesAndNewlines) else { return nil }
+        let lower = text.lowercased()
+        guard lower.hasPrefix("http://") || lower.hasPrefix("https://") else { return nil }
+        if lower.hasSuffix(".gif") ||
+           lower.contains(".gif?") ||
+           lower.contains("media.giphy.com/media/") ||
+           lower.contains("i.giphy.com/") ||
+           lower.contains("c.tenor.com/") ||
+           lower.contains("tenor.com/view/") {
+            return text
+        }
+        return nil
+    }
+}
+
 // MARK: - Mock Data
 
 extension ClipboardItem {
