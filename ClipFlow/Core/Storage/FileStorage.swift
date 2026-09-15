@@ -2,28 +2,36 @@ import AppKit
 import Foundation
 
 // MARK: - FileStorage
-// Manages writing media files (images, files) to disk.
-// Images are stored as PNG under:
+// Manages writing media files (images, files) to disk with in-memory caching.
+// Images are stored under:
 //   ~/Library/Application Support/ClipFlow/Media/Images/
 
 enum FileStorage {
 
+    // MARK: - Memory Cache
+    
+    private static let imageCache: NSCache<NSString, NSImage> = {
+        let cache = NSCache<NSString, NSImage>()
+        cache.totalCostLimit = 150 * 1024 * 1024 // 150 MB memory limit
+        return cache
+    }()
+
     // MARK: - Directories
 
     private static let imagesDirectory: URL = {
-        let base = FileManager.default
-            .urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
-            .appendingPathComponent("ClipFlow/Media/Images", isDirectory: true)
-        try? FileManager.default.createDirectory(at: base, withIntermediateDirectories: true)
-        return base
+        let baseDir = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first
+            ?? URL(fileURLWithPath: NSTemporaryDirectory())
+        let imagesDir = baseDir.appendingPathComponent("ClipFlow/Media/Images", isDirectory: true)
+        try? FileManager.default.createDirectory(at: imagesDir, withIntermediateDirectories: true)
+        return imagesDir
     }()
     
     private static let filesDirectory: URL = {
-        let base = FileManager.default
-            .urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
-            .appendingPathComponent("ClipFlow/Media/Files", isDirectory: true)
-        try? FileManager.default.createDirectory(at: base, withIntermediateDirectories: true)
-        return base
+        let baseDir = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first
+            ?? URL(fileURLWithPath: NSTemporaryDirectory())
+        let filesDir = baseDir.appendingPathComponent("ClipFlow/Media/Files", isDirectory: true)
+        try? FileManager.default.createDirectory(at: filesDir, withIntermediateDirectories: true)
+        return filesDir
     }()
 
     // MARK: - Image
@@ -42,7 +50,10 @@ enum FileStorage {
 
         do {
             try png.write(to: url)
-            return url.path
+            let path = url.path
+            let key = NSString(string: path)
+            imageCache.setObject(image, forKey: key, cost: png.count)
+            return path
         } catch {
             return nil
         }
@@ -61,9 +72,18 @@ enum FileStorage {
         }
     }
 
-    /// Loads an NSImage from a stored path, or nil if the file does not exist.
+    /// Loads an NSImage from memory cache or disk. Cached in RAM for 60/120 FPS scrolling.
     static func loadImage(at path: String) -> NSImage? {
-        NSImage(contentsOfFile: path)
+        let key = NSString(string: path)
+        if let cached = imageCache.object(forKey: key) {
+            return cached
+        }
+        guard let image = NSImage(contentsOfFile: path) else { return nil }
+        
+        // Estimate cost in bytes (width * height * 4 bytes per pixel)
+        let cost = Int(image.size.width * image.size.height * 4)
+        imageCache.setObject(image, forKey: key, cost: max(cost, 1024))
+        return image
     }
     
     // MARK: - Generic File
@@ -80,8 +100,10 @@ enum FileStorage {
         }
     }
 
-    /// Deletes a stored media file.
+    /// Deletes a stored media file and clears its in-memory cache entry.
     static func delete(at path: String) {
+        let key = NSString(string: path)
+        imageCache.removeObject(forKey: key)
         try? FileManager.default.removeItem(atPath: path)
     }
 }

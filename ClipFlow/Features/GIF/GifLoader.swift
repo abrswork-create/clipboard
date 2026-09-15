@@ -16,8 +16,9 @@ final class GifLoader {
     private init() {
         memoryCache.totalCostLimit = 100 * 1024 * 1024 // 100 MB memory limit
         
-        let caches = fileManager.urls(for: .cachesDirectory, in: .userDomainMask).first!
-        cacheDirectory = caches.appendingPathComponent("com.clipflow.ClipFlow/GifCache", isDirectory: true)
+        let baseDir = fileManager.urls(for: .cachesDirectory, in: .userDomainMask).first
+            ?? URL(fileURLWithPath: NSTemporaryDirectory())
+        cacheDirectory = baseDir.appendingPathComponent("com.clipflow.ClipFlow/GifCache", isDirectory: true)
         
         try? fileManager.createDirectory(at: cacheDirectory, withIntermediateDirectories: true)
     }
@@ -25,7 +26,7 @@ final class GifLoader {
     // MARK: - Disk Path Helper
     
     private func diskURL(for urlString: String) -> URL {
-        let safeName = String(urlString.hashValue) + ".gif"
+        let safeName = ContentHasher.hash(string: urlString) + ".gif"
         return cacheDirectory.appendingPathComponent(safeName)
     }
     

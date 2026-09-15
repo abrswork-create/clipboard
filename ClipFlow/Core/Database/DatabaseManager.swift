@@ -18,12 +18,15 @@ final class DatabaseManager: @unchecked Sendable {
         }
     }
 
-    /// Opens the database connection.
+    /// Opens the database connection with WAL mode and concurrency protections.
     func open() throws {
         guard db == nil else { return }
 
-        let supportDir = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
-            .appendingPathComponent("ClipFlow", isDirectory: true)
+        guard let supportBase = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first else {
+            throw DatabaseError.connectionFailed("Application Support directory not accessible")
+        }
+        
+        let supportDir = supportBase.appendingPathComponent("ClipFlow", isDirectory: true)
 
         if !FileManager.default.fileExists(atPath: supportDir.path) {
             try FileManager.default.createDirectory(at: supportDir, withIntermediateDirectories: true)
@@ -35,5 +38,10 @@ final class DatabaseManager: @unchecked Sendable {
             let error = String(cString: sqlite3_errmsg(db))
             throw DatabaseError.connectionFailed(error)
         }
+        
+        // Optimize for multi-threaded performance & prevent database lock errors
+        sqlite3_exec(db, "PRAGMA journal_mode = WAL;", nil, nil, nil)
+        sqlite3_exec(db, "PRAGMA busy_timeout = 5000;", nil, nil, nil)
+        sqlite3_exec(db, "PRAGMA synchronous = NORMAL;", nil, nil, nil)
     }
 }
