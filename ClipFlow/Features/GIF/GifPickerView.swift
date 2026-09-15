@@ -138,14 +138,10 @@ struct GifPickerView: View {
                             .frame(height: 110)
                         
                         if let gifUrl = item.gifURLString {
-                            GifThumbnailView(urlString: gifUrl)
-                                .frame(height: 100)
-                                .cornerRadius(4)
+                            GifURLThumbnailView(urlString: gifUrl, maxHeight: 100)
                         } else if let path = item.imagePath {
                             if path.lowercased().hasSuffix(".gif"), let data = try? Data(contentsOf: URL(fileURLWithPath: path)) {
-                                GifNSImageView(data: data)
-                                    .frame(height: 100)
-                                    .cornerRadius(4)
+                                GifCardThumbnailView(data: data, maxHeight: 100)
                             } else if let nsImage = FileStorage.loadImage(at: path) {
                                 Image(nsImage: nsImage)
                                     .resizable()
@@ -276,75 +272,5 @@ struct GifPickerView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding()
-    }
-}
-
-// MARK: - Shared Components
-
-struct GifNSImageView: NSViewRepresentable {
-    let data: Data
-    
-    func makeNSView(context: Context) -> NSImageView {
-        let iv = NSImageView()
-        iv.imageScaling = .scaleProportionallyUpOrDown
-        iv.animates = true
-        iv.canDrawSubviewsIntoLayer = true
-        iv.wantsLayer = true
-        iv.layer?.masksToBounds = true
-        iv.layer?.cornerRadius = 4
-        iv.image = NSImage(data: data)
-        return iv
-    }
-    
-    func updateNSView(_ nsView: NSImageView, context: Context) {
-        if nsView.image == nil {
-            nsView.image = NSImage(data: data)
-            nsView.animates = true
-        }
-    }
-}
-
-struct GifThumbnailView: View {
-    let urlString: String
-    @State private var gifData: Data? = nil
-    @State private var isLoading: Bool = true
-    
-    var body: some View {
-        ZStack {
-            RoundedRectangle(cornerRadius: 4, style: .continuous)
-                .fill(Color.primary.opacity(0.04))
-            
-            if let data = gifData {
-                GifNSImageView(data: data)
-                    .transition(.opacity)
-            } else if isLoading {
-                ProgressView()
-                    .scaleEffect(0.65)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-            } else {
-                Image(systemName: "film")
-                    .font(.system(size: 20))
-                    .foregroundStyle(CFColor.secondaryText)
-            }
-        }
-        .clipped()
-        .onAppear {
-            loadGif()
-        }
-    }
-    
-    private func loadGif() {
-        if let cached = GifLoader.shared.cachedData(for: urlString) {
-            self.gifData = cached
-            self.isLoading = false
-            return
-        }
-        
-        GifLoader.shared.loadGif(from: urlString) { data in
-            DispatchQueue.main.async {
-                self.gifData = data
-                self.isLoading = false
-            }
-        }
     }
 }

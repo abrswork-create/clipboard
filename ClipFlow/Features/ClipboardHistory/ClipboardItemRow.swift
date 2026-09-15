@@ -81,22 +81,20 @@ struct ClipboardItemRow: View {
                     .padding(.bottom, 4)
                 }
 
+                let mediaHeight: CGFloat = (style == .compact ? 50 : (style == .spacious ? 110 : 80))
+
                 if let gifUrl = item.gifURLString {
-                    GifThumbnailView(urlString: gifUrl)
-                        .frame(maxWidth: .infinity, maxHeight: style == .compact ? 50 : (style == .spacious ? 110 : 80), alignment: .leading)
-                        .clipShape(RoundedRectangle(cornerRadius: 6))
+                    GifURLThumbnailView(urlString: gifUrl, maxHeight: mediaHeight)
                         .padding(.vertical, 4)
                 } else if item.type == .image, let imagePath = item.imagePath {
                     if imagePath.lowercased().hasSuffix(".gif"), let data = try? Data(contentsOf: URL(fileURLWithPath: imagePath)) {
-                        GifNSImageView(data: data)
-                            .frame(maxWidth: .infinity, maxHeight: style == .compact ? 50 : (style == .spacious ? 110 : 80), alignment: .leading)
-                            .clipShape(RoundedRectangle(cornerRadius: 6))
+                        GifCardThumbnailView(data: data, maxHeight: mediaHeight)
                             .padding(.vertical, 4)
                     } else if let nsImage = FileStorage.loadImage(at: imagePath) {
                         Image(nsImage: nsImage)
                             .resizable()
                             .aspectRatio(contentMode: .fit)
-                            .frame(maxWidth: .infinity, maxHeight: style == .compact ? 50 : (style == .spacious ? 110 : 80), alignment: .leading)
+                            .frame(maxWidth: .infinity, maxHeight: mediaHeight, alignment: .leading)
                             .clipShape(RoundedRectangle(cornerRadius: 6))
                             .padding(.vertical, 4)
                     }

@@ -136,14 +136,10 @@ struct ImagesView: View {
                             .frame(height: 110)
                         
                         if let gifUrl = item.gifURLString {
-                            GifThumbnailView(urlString: gifUrl)
-                                .frame(height: 100)
-                                .cornerRadius(4)
+                            GifURLThumbnailView(urlString: gifUrl, maxHeight: 100)
                         } else if let path = item.imagePath {
                             if path.lowercased().hasSuffix(".gif"), let data = try? Data(contentsOf: URL(fileURLWithPath: path)) {
-                                GifNSImageView(data: data)
-                                    .frame(height: 100)
-                                    .cornerRadius(4)
+                                GifCardThumbnailView(data: data, maxHeight: 100)
                             } else if let nsImage = FileStorage.loadImage(at: path) {
                                 Image(nsImage: nsImage)
                                     .resizable()
