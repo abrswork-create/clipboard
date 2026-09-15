@@ -74,9 +74,18 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
             let components = URLComponents(url: url, resolvingAgainstBaseURL: false)
             if let keyItem = components?.queryItems?.first(where: { $0.name.lowercased() == "key" }),
                let key = keyItem.value, !key.isEmpty {
+                
+                // 1. Bring app to front
+                NSApp.activate(ignoringOtherApps: true)
                 openMainWindow()
+                
+                // 2. Activate asynchronously with Lemon Squeezy
                 Task { @MainActor in
-                    _ = await ProManager.shared.activateLicenseAsync(key: key)
+                    let success = await ProManager.shared.activateLicenseAsync(key: key)
+                    if success {
+                        // Immediately close any paywall modals and trigger a brief banner/haptic
+                        ProManager.shared.showPaywall = false
+                    }
                 }
             }
         }
