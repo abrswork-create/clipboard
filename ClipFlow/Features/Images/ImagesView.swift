@@ -12,7 +12,7 @@ struct ImagesView: View {
     @State private var copiedToastID: UUID? = nil
     
     private var imageItems: [ClipboardItem] {
-        store.items.filter { ($0.type == .image && $0.imagePath != nil) || ($0.gifURLString != nil) }
+        store.items.filter { $0.type == .image && $0.imagePath != nil && !$0.isGif }
     }
     
     private var filteredItems: [ClipboardItem] {

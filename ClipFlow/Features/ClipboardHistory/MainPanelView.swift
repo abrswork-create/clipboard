@@ -45,7 +45,7 @@ struct MainPanelView: View {
                         case .emoji:
                             EmojiPickerView()
                         case .gif:
-                            GifPickerView()
+                            GifPickerView(store: store)
                         case .image:
                             ImagesView(store: store)
                         case .kaomoji:
