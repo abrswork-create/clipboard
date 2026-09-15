@@ -19,11 +19,19 @@ settings:
     CODE_SIGN_STYLE: Automatic
     SWIFT_STRICT_CONCURRENCY: complete
 
+packages:
+  Sparkle:
+    url: https://github.com/sparkle-project/Sparkle
+    from: 2.6.0
+
 targets:
   ClipFlow:
     type: application
     platform: macOS
     deploymentTarget: "13.0"
+    dependencies:
+      - package: Sparkle
+        product: Sparkle
     sources:
       - path: ClipFlow
         excludes:
@@ -40,6 +48,9 @@ targets:
         NSPasteboardUsageDescription: "Clipmory stores your clipboard history locally on your Mac so you can access it anytime."
         NSSupportsAutomaticTermination: false
         NSSupportsSuddenTermination: false
+        SUFeedURL: "https://clipmory.app/appcast.xml"
+        SUEnableAutomaticChecks: true
+        SUScheduledCheckInterval: 86400
     settings:
       base:
         INFOPLIST_FILE: ClipFlow/Resources/Info.plist

@@ -436,6 +436,24 @@ struct AboutSettingsView: View {
             }
             
             SettingsSection {
+                SettingsRow(title: "Software Updates", subtitle: "Check for new versions of Clipmory.", showDivider: true) {
+                    Button("Check for Updates...") {
+                        UpdateManager.shared.checkForUpdates()
+                    }
+                }
+                
+                SettingsToggleRow(
+                    title: "Automatic Updates",
+                    subtitle: "Automatically check for updates in the background.",
+                    showDivider: false,
+                    isOn: Binding(
+                        get: { UpdateManager.shared.automaticallyChecksForUpdates },
+                        set: { UpdateManager.shared.setAutomaticallyChecksForUpdates($0) }
+                    )
+                )
+            }
+            
+            SettingsSection {
                 SettingsRow(title: "Website", subtitle: "Visit our homepage for updates and news.", showDivider: true) {
                     Button("Open") {
                         if let url = URL(string: "https://clipmory.app") {

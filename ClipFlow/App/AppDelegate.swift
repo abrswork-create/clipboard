@@ -127,6 +127,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
             // Right-click: Show native menu to allow quitting
             let menu = NSMenu()
             menu.addItem(NSMenuItem(title: "Settings...", action: #selector(openSettings), keyEquivalent: ","))
+            menu.addItem(NSMenuItem(title: "Check for Updates...", action: #selector(checkForUpdates), keyEquivalent: "u"))
             menu.addItem(NSMenuItem.separator())
             menu.addItem(NSMenuItem(title: "Quit Clipmory", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q"))
             statusItem?.popUpMenu(menu)
@@ -134,6 +135,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
             // Left-click: Toggle the main clipboard window
             toggleWindow()
         }
+    }
+    
+    @objc private func checkForUpdates() {
+        UpdateManager.shared.checkForUpdates()
     }
     
     @objc private func openSettings() {
