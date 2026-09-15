@@ -31,6 +31,7 @@
 		495C24E48B43370D2114E8B2 /* DatabaseError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 249E3F150C076327B6A39E9E /* DatabaseError.swift */; };
 		4C330A98B73C4553F30B10AA /* PermissionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = DF1D9C16D193638DD635A065 /* PermissionManager.swift */; };
 		4C48A54C8FAC7588F50419B8 /* ClipboardHistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 589FFBDEFDA3619093AF096B /* ClipboardHistoryView.swift */; };
+		4D1E0ED3719B3FB605438CE0 /* GifLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4232DC8E458E7E3FFA549108 /* GifLoader.swift */; };
 		58BCEBF7CA6EEEE80FFCB5FD /* EncryptionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 532CCD999B86D56F025B6735 /* EncryptionService.swift */; };
 		683CD5B0035633E55F41969C /* ShortcutRecorderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11805BB7E9741B1AE6AEB854 /* ShortcutRecorderView.swift */; };
 		70231790BC142FFE9B8F6DBD /* ImageService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B50646D2EEF75D2389C88394 /* ImageService.swift */; };
@@ -112,6 +113,7 @@
 		30728651C3FE312190D7F2DC /* SymbolsData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SymbolsData.swift; sourceTree = "<group>"; };
 		361FDE70CCAD23F7F2A759A1 /* EmojiPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmojiPickerView.swift; sourceTree = "<group>"; };
 		41614BFF87B3A007B5C8CD1E /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		4232DC8E458E7E3FFA549108 /* GifLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GifLoader.swift; sourceTree = "<group>"; };
 		42D6EFD583F5D86403EB960E /* UpdateManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateManager.swift; sourceTree = "<group>"; };
 		4C436CA668FC9FD8A6418401 /* ClipFlowTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ClipFlowTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		4C8505B853F7ADFBA340424F /* ClipFlowTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipFlowTests.swift; sourceTree = "<group>"; };
@@ -335,6 +337,7 @@
 		7A6CEEE32AE9020D06503752 /* GIF */ = {
 			isa = PBXGroup;
 			children = (
+				4232DC8E458E7E3FFA549108 /* GifLoader.swift */,
 				615D8F101F7655BA490AAE70 /* GifPickerView.swift */,
 			);
 			path = GIF;
@@ -661,6 +664,7 @@
 				81762B009898B3A555E8F83F /* FavoritesView.swift in Sources */,
 				839EC2A0C57A2BC14751B4AE /* FileStorage.swift in Sources */,
 				ECF36287EFD47F1947384BCE /* GeneralSettingsView.swift in Sources */,
+				4D1E0ED3719B3FB605438CE0 /* GifLoader.swift in Sources */,
 				ECDCE9080E9EE2C840F257DD /* GifPickerView.swift in Sources */,
 				2CA454E31C581A25294D8FE5 /* GlobalHotkeyManager.swift in Sources */,
 				735B2549737A02CC8AAFFA7A /* HotkeyConfiguration.swift in Sources */,

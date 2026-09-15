@@ -43,8 +43,20 @@ enum PasteService {
         
         if let text = item.text {
             pasteboard.setString(text, forType: .string)
-        } else if item.type == .image, let imagePath = item.imagePath, let image = NSImage(contentsOfFile: imagePath) {
-            pasteboard.writeObjects([image])
+        } else if item.type == .image, let imagePath = item.imagePath {
+            let fileURL = URL(fileURLWithPath: imagePath)
+            if fileURL.pathExtension.lowercased() == "gif", let gifData = try? Data(contentsOf: fileURL) {
+                pasteboard.setData(gifData, forType: NSPasteboard.PasteboardType("com.compuserve.gif"))
+                if let image = NSImage(data: gifData), let tiff = image.tiffRepresentation {
+                    pasteboard.setData(tiff, forType: .tiff)
+                }
+                pasteboard.writeObjects([fileURL as NSURL])
+            } else if let image = NSImage(contentsOfFile: imagePath) {
+                pasteboard.writeObjects([image])
+            } else {
+                NotificationCenter.default.post(name: didWriteToPasteboard, object: nil)
+                return
+            }
         } else {
             // Nothing to paste, re-enable monitor and exit
             NotificationCenter.default.post(name: didWriteToPasteboard, object: nil)

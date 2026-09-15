@@ -1,19 +1,89 @@
 import SwiftUI
 import AppKit
 
-// MARK: - GifItem Model
+// MARK: - GifSnippet Model
 
 struct GifSnippet: Identifiable, Hashable {
     let id = UUID()
     let title: String
     let category: String
-    let emoji: String
-    let previewText: String
+    let tags: String
     let urlString: String
 }
 
+// MARK: - GifNSImageView
+// Native AppKit image view that plays animated GIFs continuously.
+
+struct GifNSImageView: NSViewRepresentable {
+    let data: Data
+    
+    func makeNSView(context: Context) -> NSImageView {
+        let iv = NSImageView()
+        iv.imageScaling = .scaleProportionallyUpOrDown
+        iv.animates = true
+        iv.canDrawSubviewsIntoLayer = true
+        iv.wantsLayer = true
+        iv.layer?.masksToBounds = true
+        iv.layer?.cornerRadius = 6
+        iv.image = NSImage(data: data)
+        return iv
+    }
+    
+    func updateNSView(_ nsView: NSImageView, context: Context) {
+        if nsView.image == nil {
+            nsView.image = NSImage(data: data)
+            nsView.animates = true
+        }
+    }
+}
+
+// MARK: - GifThumbnailView
+// Asynchronously loads and caches the GIF, displaying an animated preview.
+
+struct GifThumbnailView: View {
+    let urlString: String
+    @State private var gifData: Data? = nil
+    @State private var isLoading: Bool = true
+    
+    var body: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 6, style: .continuous)
+                .fill(Color.primary.opacity(0.04))
+            
+            if let data = gifData {
+                GifNSImageView(data: data)
+                    .transition(.opacity)
+            } else if isLoading {
+                ProgressView()
+                    .scaleEffect(0.65)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+            } else {
+                VStack(spacing: 4) {
+                    Image(systemName: "photo")
+                        .font(.system(size: 20))
+                        .foregroundStyle(CFColor.secondaryText)
+                }
+            }
+        }
+        .frame(height: 105)
+        .clipped()
+        .onAppear {
+            loadGif()
+        }
+    }
+    
+    private func loadGif() {
+        GifLoader.shared.loadGif(from: urlString) { data in
+            DispatchQueue.main.async {
+                self.gifData = data
+                self.isLoading = false
+            }
+        }
+    }
+}
+
 // MARK: - GifPickerView
-// Reaction GIF and meme picker with quick search and copy-to-clipboard functionality.
+// Reaction GIF and meme picker with animated previews and copy/paste support.
 
 struct GifPickerView: View {
     @State private var searchQuery: String = ""
@@ -21,107 +91,181 @@ struct GifPickerView: View {
     @State private var hoveredID: UUID? = nil
     @State private var copiedTitle: String? = nil
     
-    private let categories = ["All", "Reactions", "Celebration", "Funny", "Work"]
+    private let categories = ["All", "Reactions", "Celebration", "Memes", "Work"]
     
-    private let sampleGifs: [GifSnippet] = [
+    private let curatedGifs: [GifSnippet] = [
+        // Reactions
         GifSnippet(
             title: "Mind Blown",
             category: "Reactions",
-            emoji: "🤯",
-            previewText: "Mind Blown Explosion",
+            tags: "explosion boom whoa shock wow",
             urlString: "https://media.giphy.com/media/26ufdipQqU2lhNA4g/giphy.gif"
-        ),
-        GifSnippet(
-            title: "Applause / Bravo",
-            category: "Celebration",
-            emoji: "👏",
-            previewText: "Standing Ovation Clapping",
-            urlString: "https://media.giphy.com/media/nbvFVPiEiJH6JOGIok/giphy.gif"
         ),
         GifSnippet(
             title: "Popcorn Watching",
             category: "Reactions",
-            emoji: "🍿",
-            previewText: "Eating Popcorn Drama",
+            tags: "eating drama movie drama eating watching",
             urlString: "https://media.giphy.com/media/gl0mkIZOW6Nwc/giphy.gif"
         ),
         GifSnippet(
-            title: "Thumbs Up / Approved",
+            title: "Thumbs Up",
             category: "Reactions",
-            emoji: "👍",
-            previewText: "Great Job Nodding",
+            tags: "yes ok approve good job nodding",
             urlString: "https://media.giphy.com/media/111ebonMs90YLu/giphy.gif"
         ),
         GifSnippet(
-            title: "Party / Confetti",
-            category: "Celebration",
-            emoji: "🎉",
-            previewText: "Party Dance Celebration",
-            urlString: "https://media.giphy.com/media/artj92V8o75VPL7AeQ/giphy.gif"
-        ),
-        GifSnippet(
-            title: "Facepalm / Sigh",
-            category: "Funny",
-            emoji: "🤦",
-            previewText: "Classic Facepalm Sigh",
+            title: "Facepalm",
+            category: "Reactions",
+            tags: "sigh disbelief forehead stupid mistake",
             urlString: "https://media.giphy.com/media/3og0INyCmHlNylks9O/giphy.gif"
         ),
         GifSnippet(
-            title: "Typing Fast / Hacker",
-            category: "Work",
-            emoji: "💻",
-            previewText: "Intense Fast Keyboard Typing",
-            urlString: "https://media.giphy.com/media/ule4akeEDWAYE/giphy.gif"
-        ),
-        GifSnippet(
-            title: "Coffee Needed",
-            category: "Work",
-            emoji: "☕️",
-            previewText: "Need Coffee Energy",
-            urlString: "https://media.giphy.com/media/3oKIPnAiaMCws8nOsE/giphy.gif"
-        ),
-        GifSnippet(
-            title: "Dance / Happy",
-            category: "Celebration",
-            emoji: "🕺",
-            previewText: "Happy Groovy Dancing",
-            urlString: "https://media.giphy.com/media/blSTtZehjAZ8I/giphy.gif"
-        ),
-        GifSnippet(
-            title: "Shocked / Wide Eyes",
+            title: "OMG Shocked",
             category: "Reactions",
-            emoji: "😱",
-            previewText: "Shocked Dropped Jaw",
-            urlString: "https://media.giphy.com/media/tfUW8mhiFk8NlRezUS/giphy.gif"
+            tags: "excited gasp chris pratt wide eyes surprise",
+            urlString: "https://media.giphy.com/media/5VKbvrjxpVJCM/giphy.gif"
         ),
         GifSnippet(
-            title: "This Is Fine",
-            category: "Funny",
-            emoji: "🔥",
-            previewText: "Dog in Fire Room",
-            urlString: "https://media.giphy.com/media/9M5jK4GXmD5o1irGrF/giphy.gif"
+            title: "Blinking Guy",
+            category: "Reactions",
+            tags: "drew scanlon disbelief what white guy blinking",
+            urlString: "https://media.giphy.com/media/l3q2K5jinAlChoCLS/giphy.gif"
+        ),
+        GifSnippet(
+            title: "Laughing Hard",
+            category: "Reactions",
+            tags: "lol haha hilarious dying laughing",
+            urlString: "https://media.giphy.com/media/10JhviFuU2gWD6/giphy.gif"
+        ),
+        GifSnippet(
+            title: "Yes Nodding",
+            category: "Reactions",
+            tags: "agree smiling jack nicholson exactly correct",
+            urlString: "https://media.giphy.com/media/XMBJ0l20sNWEM/giphy.gif"
+        ),
+        GifSnippet(
+            title: "Excited Dog",
+            category: "Reactions",
+            tags: "cute happy dog doggo wow jump",
+            urlString: "https://media.giphy.com/media/3oEjI6SIIHBdRxXI40/giphy.gif"
+        ),
+        GifSnippet(
+            title: "Heart Love",
+            category: "Reactions",
+            tags: "heart love affection adore cute kiss",
+            urlString: "https://media.giphy.com/media/M90mJvfWfd5mbUuULX/giphy.gif"
+        ),
+        GifSnippet(
+            title: "Crying Tears",
+            category: "Reactions",
+            tags: "sad cry tears emotional weep",
+            urlString: "https://media.giphy.com/media/OPU6wzx8JrHna/giphy.gif"
+        ),
+        GifSnippet(
+            title: "Rolling Eyes",
+            category: "Reactions",
+            tags: "annoyed ironical eye roll whatever please",
+            urlString: "https://media.giphy.com/media/3o7btUg31RTyA3L6CO/giphy.gif"
+        ),
+        
+        // Celebration
+        GifSnippet(
+            title: "Applause Bravo",
+            category: "Celebration",
+            tags: "clapping standing ovation congrats cheer",
+            urlString: "https://media.giphy.com/media/nbvFVPiEiJH6JOGIok/giphy.gif"
+        ),
+        GifSnippet(
+            title: "Party Confetti",
+            category: "Celebration",
+            tags: "celebrate dance celebration party woohoo",
+            urlString: "https://media.giphy.com/media/artj92V8o75VPL7AeQ/giphy.gif"
+        ),
+        GifSnippet(
+            title: "Happy Dance",
+            category: "Celebration",
+            tags: "dance dancing Carlton groovy victory win",
+            urlString: "https://media.giphy.com/media/blSTtZehjAZ8I/giphy.gif"
         ),
         GifSnippet(
             title: "Success Kid",
             category: "Celebration",
-            emoji: "✊",
-            previewText: "Fist Pump Triumph",
+            tags: "fist pump triumph baby win yes",
             urlString: "https://media.giphy.com/media/nXxOjZrbnbRxS/giphy.gif"
+        ),
+        GifSnippet(
+            title: "Cheers Leonardo",
+            category: "Celebration",
+            tags: "toast great gatsby drink glass wine celebrate",
+            urlString: "https://media.giphy.com/media/GCLlQnV7wNXcA/giphy.gif"
+        ),
+        GifSnippet(
+            title: "Mic Drop",
+            category: "Celebration",
+            tags: "boom done finished victory obama",
+            urlString: "https://media.giphy.com/media/3o7qDSOv7N9IOghNre/giphy.gif"
+        ),
+        GifSnippet(
+            title: "Slow Clap",
+            category: "Celebration",
+            tags: "clapping citizen kane well done clap",
+            urlString: "https://media.giphy.com/media/gLWT587QJ12VO/giphy.gif"
+        ),
+        
+        // Memes
+        GifSnippet(
+            title: "This Is Fine",
+            category: "Memes",
+            tags: "fire dog cup coffee chaos ok problem",
+            urlString: "https://media.giphy.com/media/9M5jK4GXmD5o1irGrF/giphy.gif"
+        ),
+        GifSnippet(
+            title: "Confused Travolta",
+            category: "Memes",
+            tags: "pulp fiction looking where lost what",
+            urlString: "https://media.giphy.com/media/g01ZnwAUvutuK8GIQn/giphy.gif"
+        ),
+        GifSnippet(
+            title: "Deal With It",
+            category: "Memes",
+            tags: "sunglasses cool dog swagger savage",
+            urlString: "https://media.giphy.com/media/L3ERvA6jWCd0qO4NdX/giphy.gif"
+        ),
+        
+        // Work
+        GifSnippet(
+            title: "Cat Typing Fast",
+            category: "Work",
+            tags: "typing keyboard fast work hustle code coder",
+            urlString: "https://media.giphy.com/media/JIX9t2j0ZTN98BsM97/giphy.gif"
+        ),
+        GifSnippet(
+            title: "Need Coffee",
+            category: "Work",
+            tags: "coffee morning tired awake energy caffeine",
+            urlString: "https://media.giphy.com/media/3oKIPnAiaMCws8nOsE/giphy.gif"
+        ),
+        GifSnippet(
+            title: "Waiting Skeleton",
+            category: "Work",
+            tags: "waiting patience loading forever still waiting",
+            urlString: "https://media.giphy.com/media/Emg9qPKR5hquI/giphy.gif"
         )
     ]
     
     private var filteredGifs: [GifSnippet] {
-        sampleGifs.filter { gif in
+        curatedGifs.filter { gif in
             let matchesCategory = (selectedCategory == "All") || (gif.category == selectedCategory)
             let matchesSearch = searchQuery.isEmpty ||
                 gif.title.localizedCaseInsensitiveContains(searchQuery) ||
-                gif.previewText.localizedCaseInsensitiveContains(searchQuery)
+                gif.tags.localizedCaseInsensitiveContains(searchQuery) ||
+                gif.category.localizedCaseInsensitiveContains(searchQuery)
             return matchesCategory && matchesSearch
         }
     }
     
     private let columns = [
-        GridItem(.adaptive(minimum: 155, maximum: 190), spacing: 10)
+        GridItem(.adaptive(minimum: 155, maximum: 195), spacing: 10)
     ]
     
     var body: some View {
@@ -139,7 +283,7 @@ struct GifPickerView: View {
                         HStack(spacing: 4) {
                             Image(systemName: "checkmark.circle.fill")
                                 .foregroundStyle(.green)
-                            Text("Copied GIF!")
+                            Text("Copied \(copied)!")
                                 .font(.system(size: 11, weight: .medium))
                                 .foregroundStyle(.green)
                         }
@@ -152,7 +296,7 @@ struct GifPickerView: View {
                     Image(systemName: "magnifyingglass")
                         .foregroundStyle(CFColor.secondaryText)
                     
-                    TextField("Search reaction GIFs (e.g. coffee, dance, popcorn)...", text: $searchQuery)
+                    TextField("Search animated reaction GIFs (e.g. mind blown, cat typing, party)...", text: $searchQuery)
                         .textFieldStyle(.plain)
                         .font(.system(size: 13))
                     
@@ -245,23 +389,12 @@ struct GifPickerView: View {
             copyGif(gif)
         } label: {
             VStack(alignment: .leading, spacing: 6) {
-                // Media preview box
-                ZStack {
-                    RoundedRectangle(cornerRadius: 6, style: .continuous)
-                        .fill(Color.primary.opacity(0.05))
-                        .frame(height: 85)
-                    
-                    VStack(spacing: 4) {
-                        Text(gif.emoji)
-                            .font(.system(size: 32))
-                        
-                        Text(gif.previewText)
-                            .font(.system(size: 10, weight: .medium))
-                            .foregroundStyle(CFColor.secondaryText)
-                            .lineLimit(1)
-                    }
-                }
-                .frame(maxWidth: .infinity)
+                // Real Animated GIF Preview
+                GifThumbnailView(urlString: gif.urlString)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 6, style: .continuous)
+                            .strokeBorder(isHovered ? Color.accentColor.opacity(0.3) : Color.clear, lineWidth: 1)
+                    )
                 
                 // Title and tag
                 HStack {
@@ -302,18 +435,41 @@ struct GifPickerView: View {
         }
     }
     
+    // MARK: - Copy & Paste Action
+    
     private func copyGif(_ gif: GifSnippet) {
-        let pb = NSPasteboard.general
-        pb.clearContents()
-        // Copy the GIF link and markdown/HTML embed
-        pb.setString(gif.urlString, forType: .string)
-        
         withAnimation {
             copiedTitle = gif.title
         }
         
-        let dummyItem = ClipboardItem(type: .url, text: gif.urlString)
-        PasteService.paste(dummyItem)
+        GifLoader.shared.loadGif(from: gif.urlString) { data in
+            guard let data = data else {
+                // Fallback: copy link
+                let pb = NSPasteboard.general
+                pb.clearContents()
+                pb.setString(gif.urlString, forType: .string)
+                let item = ClipboardItem(type: .url, text: gif.urlString)
+                PasteService.paste(item)
+                return
+            }
+            
+            // 1. Save locally to cache so fileURL is available
+            let localUrl = GifLoader.shared.getOrSaveLocalGif(urlString: gif.urlString, data: data)
+            
+            // 2. Put animated GIF data, TIFF fallback, file URL, and web URL on pasteboard
+            let pb = NSPasteboard.general
+            pb.clearContents()
+            pb.setData(data, forType: NSPasteboard.PasteboardType("com.compuserve.gif"))
+            if let image = NSImage(data: data), let tiff = image.tiffRepresentation {
+                pb.setData(tiff, forType: .tiff)
+            }
+            pb.writeObjects([localUrl as NSURL])
+            pb.setString(gif.urlString, forType: .string)
+            
+            // 3. Trigger auto-paste into active app
+            let item = ClipboardItem(type: .image, imagePath: localUrl.path)
+            PasteService.paste(item)
+        }
         
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
             withAnimation {
