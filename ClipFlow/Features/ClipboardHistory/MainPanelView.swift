@@ -42,8 +42,16 @@ struct MainPanelView: View {
                             ClipboardHistoryView(viewModel: viewModel, store: store)
                         case .favorites:
                             FavoritesView(store: store)
-                        default:
-                            comingSoonView(for: selectedTab)
+                        case .emoji:
+                            EmojiPickerView()
+                        case .gif:
+                            GifPickerView()
+                        case .image:
+                            ImagesView(store: store)
+                        case .kaomoji:
+                            KaomojiPickerView()
+                        case .symbols:
+                            SymbolsPickerView()
                         }
                     }
                     .transition(.opacity.animation(.easeInOut(duration: 0.15)))
@@ -122,24 +130,5 @@ struct MainPanelView: View {
         case .dark: return .dark
         case .system: return nil
         }
-    }
-
-    // MARK: - Coming Soon Stub
-
-    private func comingSoonView(for tab: PanelTab) -> some View {
-        VStack(spacing: 12) {
-            Image(systemName: tab.icon)
-                .font(.system(size: 32))
-                .foregroundStyle(CFColor.tabAccent)
-
-            Text(tab.label)
-                .font(.system(size: 16, weight: .semibold))
-                .foregroundStyle(CFColor.primaryText)
-
-            Text("Coming soon")
-                .font(.system(size: 13))
-                .foregroundStyle(CFColor.secondaryText)
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }

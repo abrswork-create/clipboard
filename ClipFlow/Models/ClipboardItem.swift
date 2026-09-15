@@ -18,8 +18,35 @@ struct ClipboardItem: Identifiable, Codable, Hashable {
 
     var isPinned: Bool
     var isFavorite: Bool
-
     var contentHash: String?
+
+    init(
+        id: UUID = UUID(),
+        type: ClipboardType,
+        createdAt: Date = Date(),
+        updatedAt: Date = Date(),
+        text: String? = nil,
+        imagePath: String? = nil,
+        filePath: String? = nil,
+        sourceAppName: String? = nil,
+        sourceBundleIdentifier: String? = nil,
+        isPinned: Bool = false,
+        isFavorite: Bool = false,
+        contentHash: String? = nil
+    ) {
+        self.id = id
+        self.type = type
+        self.createdAt = createdAt
+        self.updatedAt = updatedAt
+        self.text = text
+        self.imagePath = imagePath
+        self.filePath = filePath
+        self.sourceAppName = sourceAppName
+        self.sourceBundleIdentifier = sourceBundleIdentifier
+        self.isPinned = isPinned
+        self.isFavorite = isFavorite
+        self.contentHash = contentHash
+    }
 }
 
 // MARK: - Mock Data
