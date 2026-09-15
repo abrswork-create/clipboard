@@ -225,8 +225,8 @@ struct UpgradePaywallView: View {
     }
     
     private func upgradeNow() {
-        // Open website purchase checkout in default browser
-        if let url = URL(string: "https://clipmory.app/#pricing") {
+        // Open Lemon Squeezy checkout directly in default browser
+        if let url = URL(string: "https://clipmory.lemonsqueezy.com/checkout/buy/e20a9d58-b852-4fae-8a37-d860e88dae66") {
             NSWorkspace.shared.open(url)
         }
         withAnimation { showLicenseField = true }
