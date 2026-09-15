@@ -2,7 +2,7 @@ import SwiftUI
 import AppKit
 
 // MARK: - GifPickerView
-// Dedicated gallery view for copied animated GIFs from clipboard history.
+// Premium dedicated gallery for copied animated GIFs from clipboard history.
 
 struct GifPickerView: View {
     @ObservedObject var store: ClipboardStore
@@ -26,25 +26,20 @@ struct GifPickerView: View {
         }
     }
     
-    private let columns = [
-        GridItem(.flexible(), spacing: 10),
-        GridItem(.flexible(), spacing: 10)
-    ]
-    
     var body: some View {
         VStack(spacing: 0) {
             header
             
             Divider()
-                .padding(.horizontal, 12)
-                .opacity(0.5)
+                .padding(.horizontal, 14)
+                .opacity(0.4)
             
             if gifItems.isEmpty {
                 emptyState
             } else if filteredGifs.isEmpty {
                 noResultsState
             } else {
-                gifGrid
+                gifList
             }
         }
     }
@@ -115,163 +110,199 @@ struct GifPickerView: View {
         .padding(.bottom, 10)
     }
     
-    // MARK: - Grid
+    // MARK: - List
     
-    private var gifGrid: some View {
+    private var gifList: some View {
         ScrollView(.vertical, showsIndicators: true) {
-            LazyVGrid(columns: columns, spacing: 10) {
+            LazyVStack(spacing: 12) {
                 ForEach(filteredGifs) { item in
                     gifCard(item)
                 }
             }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 10)
+            .padding(.horizontal, 14)
+            .padding(.vertical, 12)
         }
     }
     
-    // MARK: - Card
+    // MARK: - Premium Card
     
     private func gifCard(_ item: ClipboardItem) -> some View {
         let isHovered = hoveredItemID == item.id
         let isSelected = selectedItemID == item.id
         
-        return Button {
-            withAnimation(.easeInOut(duration: 0.15)) {
-                selectedItemID = item.id
-                copiedToastID = item.id
-            }
-            PasteService.paste(item)
-            
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-                withAnimation {
-                    if copiedToastID == item.id {
-                        copiedToastID = nil
+        return VStack(alignment: .leading, spacing: 0) {
+            // Top Bar: App Source, Badge, Time, and Actions
+            HStack(alignment: .center) {
+                // Source App Pill
+                if let source = item.sourceAppName {
+                    HStack(spacing: 4) {
+                        Text(source.uppercased())
+                            .font(.system(size: 9, weight: .bold))
+                            .foregroundStyle(CFColor.secondaryText)
                     }
+                    .padding(.horizontal, 6)
+                    .padding(.vertical, 2)
+                    .background(
+                        Capsule()
+                            .fill(Color.primary.opacity(0.05))
+                    )
                 }
-            }
-        } label: {
-            VStack(alignment: .leading, spacing: 6) {
-                ZStack(alignment: .topTrailing) {
-                    // Animated GIF View container
-                    ZStack {
-                        RoundedRectangle(cornerRadius: 6, style: .continuous)
-                            .fill(Color.primary.opacity(0.04))
-                            .frame(height: 110)
-                        
-                        if let gifUrl = item.gifURLString {
-                            GifThumbnailView(urlString: gifUrl)
-                                .frame(height: 100)
-                                .cornerRadius(4)
-                        } else if let path = item.imagePath, path.lowercased().hasSuffix(".gif"),
-                                  let data = try? Data(contentsOf: URL(fileURLWithPath: path)) {
-                            GifNSImageView(data: data)
-                                .frame(height: 100)
-                                .cornerRadius(4)
-                        } else if let path = item.imagePath, let nsImage = FileStorage.loadImage(at: path) {
-                            Image(nsImage: nsImage)
-                                .resizable()
-                                .aspectRatio(contentMode: .fit)
-                                .frame(height: 100)
-                                .cornerRadius(4)
-                        } else {
-                            Image(systemName: "film")
-                                .font(.system(size: 24))
-                                .foregroundStyle(CFColor.tabInactive)
-                        }
+                
+                // GIF Tag
+                Text("GIF")
+                    .font(.system(size: 8.5, weight: .bold))
+                    .foregroundStyle(Color.accentColor)
+                    .padding(.horizontal, 5)
+                    .padding(.vertical, 2)
+                    .background(Color.accentColor.opacity(0.12))
+                    .cornerRadius(4)
+                
+                Spacer()
+                
+                // Timestamp
+                Text(item.createdAt, style: .time)
+                    .font(.system(size: 10))
+                    .foregroundStyle(CFColor.secondaryText)
+                
+                // Star Button
+                Button {
+                    store.toggleFavorite(item.id)
+                } label: {
+                    Image(systemName: item.isFavorite ? "star.fill" : "star")
+                        .font(.system(size: 11))
+                        .foregroundStyle(item.isFavorite ? Color.yellow : CFColor.secondaryText)
+                        .frame(width: 22, height: 22)
+                }
+                .buttonStyle(.plain)
+                .help(item.isFavorite ? "Unfavorite" : "Favorite")
+                
+                // Trash Button
+                Button {
+                    withAnimation {
+                        store.delete(item.id)
                     }
-                    .frame(maxWidth: .infinity)
+                } label: {
+                    Image(systemName: "trash")
+                        .font(.system(size: 11))
+                        .foregroundStyle(CFColor.secondaryText)
+                        .frame(width: 22, height: 22)
+                }
+                .buttonStyle(.plain)
+                .help("Delete from clipboard")
+            }
+            .padding(.horizontal, 10)
+            .padding(.top, 8)
+            .padding(.bottom, 6)
+            
+            // Media Container (Click to Copy & Paste)
+            Button {
+                pasteItem(item)
+            } label: {
+                ZStack {
+                    RoundedRectangle(cornerRadius: 6, style: .continuous)
+                        .fill(Color.black.opacity(0.03))
                     
-                    // Hover Action buttons (Favorite & Delete)
+                    if let gifUrl = item.gifURLString {
+                        GifThumbnailView(urlString: gifUrl)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 150)
+                            .clipShape(RoundedRectangle(cornerRadius: 6))
+                    } else if let path = item.imagePath, path.lowercased().hasSuffix(".gif"),
+                              let data = try? Data(contentsOf: URL(fileURLWithPath: path)) {
+                        GifNSImageView(data: data)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 150)
+                            .clipShape(RoundedRectangle(cornerRadius: 6))
+                    } else if let path = item.imagePath, let nsImage = FileStorage.loadImage(at: path) {
+                        Image(nsImage: nsImage)
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 150)
+                            .clipShape(RoundedRectangle(cornerRadius: 6))
+                    } else {
+                        Image(systemName: "film")
+                            .font(.system(size: 32))
+                            .foregroundStyle(CFColor.tabInactive)
+                            .frame(height: 120)
+                    }
+                    
+                    // Hover Action Overlay
                     if isHovered {
-                        HStack(spacing: 4) {
-                            Button {
-                                store.toggleFavorite(item.id)
-                            } label: {
-                                Image(systemName: item.isFavorite ? "star.fill" : "star")
-                                    .font(.system(size: 10))
-                                    .foregroundStyle(item.isFavorite ? Color.yellow : .white)
-                                    .frame(width: 22, height: 22)
-                                    .background(Color.black.opacity(0.6))
-                                    .clipShape(Circle())
-                            }
-                            .buttonStyle(.plain)
+                        ZStack {
+                            RoundedRectangle(cornerRadius: 6, style: .continuous)
+                                .fill(Color.black.opacity(0.18))
                             
-                            Button {
-                                withAnimation {
-                                    store.delete(item.id)
-                                }
-                            } label: {
-                                Image(systemName: "trash")
-                                    .font(.system(size: 10))
-                                    .foregroundStyle(.white)
-                                    .frame(width: 22, height: 22)
-                                    .background(Color.black.opacity(0.6))
-                                    .clipShape(Circle())
+                            HStack(spacing: 6) {
+                                Image(systemName: "doc.on.clipboard.fill")
+                                    .font(.system(size: 11, weight: .semibold))
+                                Text("Click to Paste")
+                                    .font(.system(size: 11, weight: .semibold))
                             }
-                            .buttonStyle(.plain)
+                            .foregroundStyle(.white)
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 5)
+                            .background(.ultraThinMaterial)
+                            .cornerRadius(12)
+                            .shadow(color: .black.opacity(0.2), radius: 4, x: 0, y: 2)
                         }
-                        .padding(6)
                         .transition(.opacity)
                     }
                 }
-                
-                // Footer
-                HStack {
-                    if let source = item.sourceAppName {
-                        Text(source.uppercased())
-                            .font(.system(size: 8.5, weight: .semibold))
-                            .foregroundStyle(CFColor.secondaryText)
-                            .lineLimit(1)
-                    } else {
-                        Text("GIF")
-                            .font(.system(size: 8.5, weight: .bold))
-                            .foregroundStyle(Color.accentColor)
-                    }
-                    
-                    Spacer()
-                    
-                    Text(item.createdAt, style: .time)
-                        .font(.system(size: 9))
-                        .foregroundStyle(CFColor.secondaryText)
-                }
-                .padding(.horizontal, 4)
-                .padding(.bottom, 2)
+                .frame(maxWidth: .infinity)
+                .padding(.horizontal, 8)
+                .padding(.bottom, 8)
             }
-            .padding(6)
-            .background(
-                RoundedRectangle(cornerRadius: CFRadius.card, style: .continuous)
-                    .fill(isHovered ? CFColor.cardHover : CFColor.cardBackground)
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: CFRadius.card, style: .continuous)
-                    .strokeBorder(
-                        isSelected ? CFColor.selectedBorder : (isHovered ? Color.accentColor.opacity(0.35) : Color.primary.opacity(0.06)),
-                        lineWidth: isSelected ? 2 : 1
-                    )
-            )
-            .cfShadow(isHovered ? CFShadow.cardSelected : CFShadow.card)
-            .scaleEffect(isHovered ? 1.02 : 1.0)
-            .animation(.spring(response: 0.2, dampingFraction: 0.7), value: isHovered)
+            .buttonStyle(.plain)
         }
-        .buttonStyle(.plain)
+        .background(
+            RoundedRectangle(cornerRadius: CFRadius.card, style: .continuous)
+                .fill(isHovered ? CFColor.cardHover : CFColor.cardBackground)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: CFRadius.card, style: .continuous)
+                .strokeBorder(
+                    isSelected ? CFColor.selectedBorder : (isHovered ? Color.accentColor.opacity(0.35) : Color.primary.opacity(0.06)),
+                    lineWidth: isSelected ? 2 : 1
+                )
+        )
+        .cfShadow(isHovered ? CFShadow.cardSelected : CFShadow.card)
+        .scaleEffect(isHovered ? 1.01 : 1.0)
+        .animation(.spring(response: 0.22, dampingFraction: 0.75), value: isHovered)
         .onHover { hovered in
             hoveredItemID = hovered ? item.id : nil
         }
     }
     
-    // MARK: - States
+    private func pasteItem(_ item: ClipboardItem) {
+        withAnimation(.easeInOut(duration: 0.15)) {
+            selectedItemID = item.id
+            copiedToastID = item.id
+        }
+        PasteService.paste(item)
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+            withAnimation {
+                if copiedToastID == item.id {
+                    copiedToastID = nil
+                }
+            }
+        }
+    }
+    
+    // MARK: - Empty States
     
     private var emptyState: some View {
         VStack(spacing: 12) {
             Image(systemName: "play.rectangle.on.rectangle")
-                .font(.system(size: 38))
+                .font(.system(size: 40))
                 .foregroundStyle(CFColor.tabInactive)
             
             Text("No copied GIFs yet")
-                .font(.system(size: 14, weight: .medium))
+                .font(.system(size: 14, weight: .semibold))
                 .foregroundStyle(CFColor.primaryText)
             
-            Text("Animated GIFs copied from browsers, Slack,\nDiscord, or messages will appear here.")
+            Text("Animated GIFs copied from browsers, Slack,\nDiscord, or Messages will appear here.")
                 .font(.system(size: 12))
                 .foregroundStyle(CFColor.secondaryText)
                 .multilineTextAlignment(.center)
