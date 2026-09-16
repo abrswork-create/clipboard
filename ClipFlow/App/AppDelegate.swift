@@ -91,7 +91,22 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         if url.host == "activate" || url.path.contains("activate") {
             let components = URLComponents(url: url, resolvingAgainstBaseURL: false)
             if let keyItem = components?.queryItems?.first(where: { $0.name.lowercased() == "key" }),
-               let key = keyItem.value, !key.isEmpty {
+               let rawKey = keyItem.value {
+                
+                let key = rawKey.trimmingCharacters(in: .whitespacesAndNewlines)
+                
+                // Security Sanitization:
+                // Enforce length limit (10 - 64 characters) and strict alphanumeric/dash/underscore charset
+                guard key.count >= 10 && key.count <= 64 else {
+                    NSLog("Security Warning: Rejected invalid activation key length from URL: \(key.count) characters")
+                    return
+                }
+                
+                let safeCharset = CharacterSet(charactersIn: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_")
+                guard key.unicodeScalars.allSatisfy({ safeCharset.contains($0) }) else {
+                    NSLog("Security Warning: Rejected activation key containing unsafe characters from URL")
+                    return
+                }
                 
                 // 1. Bring app to front
                 NSApp.activate(ignoringOtherApps: true)

@@ -41,7 +41,9 @@ final class ClipboardRepository {
         sqlite3_bind_text(stmt, 1, (item.id.uuidString as NSString).utf8String, -1, nil)
         sqlite3_bind_text(stmt, 2, (typeStr as NSString).utf8String, -1, nil)
         
-        bindText(stmt, 3, item.text)
+        // Encrypt text_content with AES-256-GCM before saving to disk
+        let storedText = item.text.flatMap { EncryptionService.shared.encrypt(text: $0) } ?? item.text
+        bindText(stmt, 3, storedText)
         bindText(stmt, 4, item.imagePath)
         bindText(stmt, 5, item.filePath)
         
@@ -89,12 +91,16 @@ final class ClipboardRepository {
                 default: type = .unknown
                 }
 
+                // Transparently decrypt AES-256-GCM ciphertext, falling back to raw text for backward compatibility
+                let rawStoredText = text(stmt, 2)
+                let resolvedText = rawStoredText.flatMap { EncryptionService.shared.decrypt(base64: $0) } ?? rawStoredText
+
                 let item = ClipboardItem(
                     id: id,
                     type: type,
                     createdAt: Date(timeIntervalSince1970: sqlite3_column_double(stmt, 5)),
                     updatedAt: Date(timeIntervalSince1970: sqlite3_column_double(stmt, 6)),
-                    text: text(stmt, 2),
+                    text: resolvedText,
                     imagePath: text(stmt, 3),
                     filePath: text(stmt, 4),
                     sourceAppName: text(stmt, 7),

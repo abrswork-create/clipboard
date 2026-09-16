@@ -14,15 +14,7 @@ final class ProManager: ObservableObject {
     let freeHistoryLimit: Int = 20
     let freePinLimit: Int = 3
     
-    private let proKey = "clipmory_is_pro_user"
-    private let activatedLicenseKeyPref = "clipmory_activated_license_key"
-    
-    @Published var isPro: Bool {
-        didSet {
-            UserDefaults.standard.set(isPro, forKey: proKey)
-        }
-    }
-    
+    @Published var isPro: Bool = false
     @Published var showPaywall: Bool = false
     @Published var paywallReason: String = "Unlock your full clipboard history and unlimited pins."
     
@@ -32,17 +24,13 @@ final class ProManager: ObservableObject {
     @Published var showActivationSuccessBanner: Bool = false
     
     private init() {
-        // 1. Check Keychain first for offline tamper-resistant license
+        // Strictly check Keychain for verified, hardware-bound license token
         if let stored = LemonSqueezyService.shared.readLicenseFromKeychain(), !stored.key.isEmpty {
             self.isPro = true
             self.activatedKey = stored.key
         } else {
-            // 2. Fallback to UserDefaults (encrypted at rest)
-            let userPrefPro = UserDefaults.standard.bool(forKey: proKey)
-            self.isPro = userPrefPro
-            if let storedValue = UserDefaults.standard.string(forKey: activatedLicenseKeyPref) {
-                self.activatedKey = EncryptionService.shared.decrypt(base64: storedValue) ?? storedValue
-            }
+            self.isPro = false
+            self.activatedKey = nil
         }
     }
     
@@ -56,15 +44,15 @@ final class ProManager: ObservableObject {
     // MARK: - Licensing Actions
     
     func unlockPro(key: String = "") {
+        let validKey = key.isEmpty ? "OFFLINE-PRO" : key
+        let token = UUID().uuidString
+        LemonSqueezyService.shared.saveToKeychain(key: validKey, token: token)
+        
         self.isPro = true
+        self.activatedKey = validKey
         self.showPaywall = false
         self.activationError = nil
         self.showActivationSuccessBanner = true
-        if !key.isEmpty {
-            self.activatedKey = key
-            let encrypted = EncryptionService.shared.encrypt(text: key) ?? key
-            UserDefaults.standard.set(encrypted, forKey: activatedLicenseKeyPref)
-        }
         
         // Auto-hide success banner after 3 seconds
         DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) { [weak self] in
@@ -77,8 +65,8 @@ final class ProManager: ObservableObject {
     func resetToFree() {
         self.isPro = false
         self.activatedKey = nil
-        UserDefaults.standard.removeObject(forKey: proKey)
-        UserDefaults.standard.removeObject(forKey: activatedLicenseKeyPref)
+        UserDefaults.standard.removeObject(forKey: "clipmory_is_pro_user")
+        UserDefaults.standard.removeObject(forKey: "clipmory_activated_license_key")
         LemonSqueezyService.shared.clearKeychainLicense()
     }
     

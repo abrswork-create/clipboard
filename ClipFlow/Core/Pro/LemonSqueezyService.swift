@@ -136,14 +136,6 @@ public final class LemonSqueezyService: Sendable {
             return .failure(.invalidKey)
         }
 
-        // Support special developer / offline bypass keys if needed
-        if trimmedKey.uppercased() == "CLIPMORY-PRO" || trimmedKey.uppercased() == "LIFETIME" {
-            let mockDetail = LemonLicenseKeyDetail(id: 1, status: "active", key: trimmedKey, activationLimit: 99, activationUsage: 1, expiresAt: nil)
-            let mockResp = LemonActivationResponse(activated: true, error: nil, licenseKey: mockDetail, instance: LemonInstanceDetail(id: "dev", name: "Dev"), meta: nil)
-            saveToKeychain(key: trimmedKey, token: "dev-bypass-token")
-            return .success(mockResp)
-        }
-
         var request = URLRequest(url: endpoint)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Accept")
@@ -155,8 +147,10 @@ public final class LemonSqueezyService: Sendable {
             "instance_name": instanceName
         ]
 
+        // Strict form url encoding protecting against HTTP Parameter Pollution (HPP)
+        let formAllowed = CharacterSet(charactersIn: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_.~")
         let bodyString = bodyParameters
-            .map { "\($0.key)=\($0.value.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? "")" }
+            .map { "\($0.key.addingPercentEncoding(withAllowedCharacters: formAllowed) ?? "")=\($0.value.addingPercentEncoding(withAllowedCharacters: formAllowed) ?? "")" }
             .joined(separator: "&")
 
         request.httpBody = bodyString.data(using: .utf8)
@@ -197,7 +191,7 @@ public final class LemonSqueezyService: Sendable {
 
     // MARK: - Keychain Security Storage
 
-    private func saveToKeychain(key: String, token: String) {
+    public func saveToKeychain(key: String, token: String) {
         let payload = "\(key):\(token)"
         guard let data = payload.data(using: .utf8) else { return }
 
@@ -237,10 +231,10 @@ public final class LemonSqueezyService: Sendable {
         }
 
         let parts = str.components(separatedBy: ":")
-        if parts.count >= 2 {
+        if parts.count >= 2, !parts[0].isEmpty, !parts[1].isEmpty {
             return (key: parts[0], token: parts[1])
         }
-        return (key: str, token: "")
+        return nil
     }
 
     /// Clears Keychain license (for testing or deactivation)
