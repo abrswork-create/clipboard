@@ -131,30 +131,35 @@ final class ClipboardRepository {
 
     // MARK: - Update Flags
 
+    enum ItemFlagColumn: String {
+        case isPinned = "is_pinned"
+        case isFavorite = "is_favorite"
+    }
+
     func updatePinned(id: UUID, isPinned: Bool) throws {
-        try updateFlag(id: id, column: "is_pinned", value: isPinned)
+        try updateFlag(id: id, column: .isPinned, value: isPinned)
     }
 
     func updateFavorite(id: UUID, isFavorite: Bool) throws {
-        try updateFlag(id: id, column: "is_favorite", value: isFavorite)
+        try updateFlag(id: id, column: .isFavorite, value: isFavorite)
     }
 
-    private func updateFlag(id: UUID, column: String, value: Bool) throws {
+    private func updateFlag(id: UUID, column: ItemFlagColumn, value: Bool) throws {
         guard let db = db else { throw DatabaseError.connectionFailed("No DB") }
 
-        let query = "UPDATE clipboard_items SET \(column) = ? WHERE id = ?;"
+        let query = "UPDATE clipboard_items SET \(column.rawValue) = ? WHERE id = ?;"
         var stmt: OpaquePointer?
         defer { sqlite3_finalize(stmt) }
 
         if sqlite3_prepare_v2(db, query, -1, &stmt, nil) != SQLITE_OK {
-            throw DatabaseError.queryFailed("Prepare update \(column) failed")
+            throw DatabaseError.queryFailed("Prepare update \(column.rawValue) failed")
         }
 
         sqlite3_bind_int(stmt, 1, value ? 1 : 0)
         sqlite3_bind_text(stmt, 2, (id.uuidString as NSString).utf8String, -1, nil)
 
         if sqlite3_step(stmt) != SQLITE_DONE {
-            throw DatabaseError.queryFailed("Execute update \(column) failed")
+            throw DatabaseError.queryFailed("Execute update \(column.rawValue) failed")
         }
     }
 

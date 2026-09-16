@@ -51,11 +51,15 @@ enum SensitiveDataDetector {
         patterns.compactMap { try? NSRegularExpression(pattern: $0) }
     }()
     
+    /// Maximum character length to inspect to prevent ReDoS or excessive CPU on multi-megabyte clipboard copies
+    private static let maxInspectionLength = 16_384
+
     /// Evaluates text against pre-compiled sensitive regex patterns with zero recompilation cost.
     static func containsSensitiveData(_ text: String) -> Bool {
         guard !text.isEmpty else { return false }
         let nsString = text as NSString
-        let range = NSRange(location: 0, length: nsString.length)
+        let scanLength = min(nsString.length, maxInspectionLength)
+        let range = NSRange(location: 0, length: scanLength)
         
         for regex in compiledPatterns {
             if regex.firstMatch(in: text, options: [], range: range) != nil {

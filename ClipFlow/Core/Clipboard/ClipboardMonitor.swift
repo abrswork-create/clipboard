@@ -80,6 +80,14 @@ final class ClipboardMonitor {
         // Enforce Privacy (Private Mode and Excluded Apps)
         guard PrivacyManager.shared.canRecord(sourceAppBundleId: sourceApp?.bundleIdentifier) else { return }
 
+        // Enforce Password Manager Privacy (Ignore concealed, auto-generated, or transient passwords)
+        if ClipboardClassifier.isConcealed(pasteboard: pasteboard) {
+            #if DEBUG
+            print("Ignoring concealed/transient password manager pasteboard item.")
+            #endif
+            return
+        }
+
         guard let item = reader.read(from: pasteboard, sourceApp: sourceApp) else { return }
         
         // 1. Sensitive Content Interception

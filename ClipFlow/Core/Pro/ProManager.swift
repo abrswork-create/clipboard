@@ -37,10 +37,12 @@ final class ProManager: ObservableObject {
             self.isPro = true
             self.activatedKey = stored.key
         } else {
-            // 2. Fallback to UserDefaults
+            // 2. Fallback to UserDefaults (encrypted at rest)
             let userPrefPro = UserDefaults.standard.bool(forKey: proKey)
             self.isPro = userPrefPro
-            self.activatedKey = UserDefaults.standard.string(forKey: activatedLicenseKeyPref)
+            if let storedValue = UserDefaults.standard.string(forKey: activatedLicenseKeyPref) {
+                self.activatedKey = EncryptionService.shared.decrypt(base64: storedValue) ?? storedValue
+            }
         }
     }
     
@@ -60,7 +62,8 @@ final class ProManager: ObservableObject {
         self.showActivationSuccessBanner = true
         if !key.isEmpty {
             self.activatedKey = key
-            UserDefaults.standard.set(key, forKey: activatedLicenseKeyPref)
+            let encrypted = EncryptionService.shared.encrypt(text: key) ?? key
+            UserDefaults.standard.set(encrypted, forKey: activatedLicenseKeyPref)
         }
         
         // Auto-hide success banner after 3 seconds
