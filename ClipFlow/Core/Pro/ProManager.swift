@@ -1,11 +1,10 @@
 import Foundation
 import Combine
 import SwiftUI
-import Security
 
 // MARK: - ProManager
 // Manages Pro subscription/license status, hardware-bound 7-Day Free Trial,
-// and hardware-backed Lemon Squeezy license activation with offline Keychain fallback.
+// and hardware-backed Lemon Squeezy license activation.
 
 @MainActor
 final class ProManager: ObservableObject {
@@ -14,9 +13,6 @@ final class ProManager: ObservableObject {
     // Trial duration: 7 Days
     let trialDurationDays: Int = 7
     private let trialDurationSeconds: TimeInterval = 7 * 86400
-    
-    private let trialKeychainService = "com.clipflow.ClipFlow.trial"
-    private let trialKeychainAccount = "mac_trial_record"
     
     // MARK: Published Licensing & Trial States
     
@@ -49,8 +45,17 @@ final class ProManager: ObservableObject {
     }
     
     // MARK: - Hardware-Bound Trial Verification
+
+    private var trialFileURL: URL {
+        let appSupport = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
+        let dir = appSupport.appendingPathComponent("ClipFlow", isDirectory: true)
+        if !FileManager.default.fileExists(atPath: dir.path) {
+            try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+        }
+        return dir.appendingPathComponent(".trial_record")
+    }
     
-    /// Evaluates or initializes the 7-Day Free Trial tied permanently to the Mac's hardware UUID in Keychain.
+    /// Evaluates or initializes the 7-Day Free Trial tied permanently to the Mac's hardware UUID.
     func refreshTrialStatus() {
         let macUUID = LemonSqueezyService.shared.getMacUUID()
         let trialStartDate = getOrCreateTrialRecord(uuid: macUUID)
@@ -78,20 +83,12 @@ final class ProManager: ObservableObject {
     }
     
     private func getOrCreateTrialRecord(uuid: String) -> Date {
-        // 1. Query Keychain for existing trial record
-        let query: [String: Any] = [
-            kSecClass as String: kSecClassGenericPassword,
-            kSecAttrService as String: trialKeychainService,
-            kSecAttrAccount as String: trialKeychainAccount,
-            kSecReturnData as String: true,
-            kSecMatchLimit as String: kSecMatchLimitOne
-        ]
-        
-        var item: CFTypeRef?
-        let status = SecItemCopyMatching(query as CFDictionary, &item)
-        
-        if status == errSecSuccess, let data = item as? Data, let str = String(data: data, encoding: .utf8) {
-            let parts = str.components(separatedBy: ":")
+        // 1. Read hardware-encrypted trial file
+        let file = trialFileURL
+        if FileManager.default.fileExists(atPath: file.path),
+           let encryptedBase64 = try? String(contentsOf: file, encoding: .utf8),
+           let decryptedStr = EncryptionService.shared.decrypt(base64: encryptedBase64) {
+            let parts = decryptedStr.components(separatedBy: ":")
             if parts.count >= 2, let timestamp = Double(parts[1]) {
                 return Date(timeIntervalSince1970: timestamp)
             }
@@ -100,23 +97,10 @@ final class ProManager: ObservableObject {
         // 2. If no valid record exists, initialize first-run trial timestamp now
         let now = Date()
         let payload = "\(uuid):\(now.timeIntervalSince1970)"
-        guard let data = payload.data(using: .utf8) else { return now }
-        
-        let deleteQuery: [String: Any] = [
-            kSecClass as String: kSecClassGenericPassword,
-            kSecAttrService as String: trialKeychainService,
-            kSecAttrAccount as String: trialKeychainAccount
-        ]
-        SecItemDelete(deleteQuery as CFDictionary)
-        
-        let addQuery: [String: Any] = [
-            kSecClass as String: kSecClassGenericPassword,
-            kSecAttrService as String: trialKeychainService,
-            kSecAttrAccount as String: trialKeychainAccount,
-            kSecValueData as String: data,
-            kSecAttrAccessible as String: kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly
-        ]
-        SecItemAdd(addQuery as CFDictionary, nil)
+        if let encrypted = EncryptionService.shared.encrypt(text: payload) {
+            try? encrypted.write(to: file, atomically: true, encoding: .utf8)
+            try? FileManager.default.setAttributes([.posixPermissions: 0o600], ofItemAtPath: file.path)
+        }
         
         return now
     }

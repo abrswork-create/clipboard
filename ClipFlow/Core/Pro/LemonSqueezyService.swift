@@ -96,8 +96,6 @@ public final class LemonSqueezyService: Sendable {
     public static let shared = LemonSqueezyService()
 
     private let endpoint = URL(string: "https://api.lemonsqueezy.com/v1/licenses/activate")!
-    private let keychainService = "com.clipflow.ClipFlow.license"
-    private let keychainAccount = "lemon_squeezy_license_token"
 
     private init() {}
 
@@ -189,61 +187,45 @@ public final class LemonSqueezyService: Sendable {
         }
     }
 
-    // MARK: - Keychain Security Storage
+    // MARK: - License Storage (Hardware-Encrypted at Rest)
+
+    private var licenseFileURL: URL {
+        let dir = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
+            .appendingPathComponent("ClipFlow", isDirectory: true)
+        return dir.appendingPathComponent(".license_token")
+    }
 
     public func saveToKeychain(key: String, token: String) {
         let payload = "\(key):\(token)"
-        guard let data = payload.data(using: .utf8) else { return }
-
-        // Remove old entry if exists
-        let queryDelete: [String: Any] = [
-            kSecClass as String: kSecClassGenericPassword,
-            kSecAttrService as String: keychainService,
-            kSecAttrAccount as String: keychainAccount
-        ]
-        SecItemDelete(queryDelete as CFDictionary)
-
-        // Add new entry
-        let queryAdd: [String: Any] = [
-            kSecClass as String: kSecClassGenericPassword,
-            kSecAttrService as String: keychainService,
-            kSecAttrAccount as String: keychainAccount,
-            kSecValueData as String: data,
-            kSecAttrAccessible as String: kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly
-        ]
-        SecItemAdd(queryAdd as CFDictionary, nil)
+        guard let encrypted = EncryptionService.shared.encrypt(text: payload) else { return }
+        
+        do {
+            let url = licenseFileURL
+            try encrypted.write(to: url, atomically: true, encoding: .utf8)
+            try? FileManager.default.setAttributes([.posixPermissions: 0o600], ofItemAtPath: url.path)
+        } catch {
+            NSLog("Failed to save license token: \(error)")
+        }
     }
 
-    /// Verifies if a valid license token exists in Keychain (allows 100% offline verification).
+    /// Verifies if a valid license token exists (allows 100% offline verification).
     public func readLicenseFromKeychain() -> (key: String, token: String)? {
-        let query: [String: Any] = [
-            kSecClass as String: kSecClassGenericPassword,
-            kSecAttrService as String: keychainService,
-            kSecAttrAccount as String: keychainAccount,
-            kSecReturnData as String: true,
-            kSecMatchLimit as String: kSecMatchLimitOne
-        ]
-
-        var item: CFTypeRef?
-        let status = SecItemCopyMatching(query as CFDictionary, &item)
-        guard status == errSecSuccess, let data = item as? Data, let str = String(data: data, encoding: .utf8) else {
+        let url = licenseFileURL
+        guard let encrypted = try? String(contentsOf: url, encoding: .utf8),
+              let decrypted = EncryptionService.shared.decrypt(base64: encrypted) else {
             return nil
         }
 
-        let parts = str.components(separatedBy: ":")
+        let parts = decrypted.components(separatedBy: ":")
         if parts.count >= 2, !parts[0].isEmpty, !parts[1].isEmpty {
             return (key: parts[0], token: parts[1])
         }
         return nil
     }
 
-    /// Clears Keychain license (for testing or deactivation)
+    /// Clears license (for testing or deactivation)
     public func clearKeychainLicense() {
-        let queryDelete: [String: Any] = [
-            kSecClass as String: kSecClassGenericPassword,
-            kSecAttrService as String: keychainService,
-            kSecAttrAccount as String: keychainAccount
-        ]
-        SecItemDelete(queryDelete as CFDictionary)
+        let url = licenseFileURL
+        try? FileManager.default.removeItem(at: url)
     }
 }

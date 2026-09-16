@@ -1,25 +1,23 @@
 import Foundation
 import CryptoKit
-import Security
 
 // MARK: - EncryptionService
-// Provides AES-256-GCM authenticated encryption and decryption using Apple CryptoKit.
-// Keys are generated and securely stored in the macOS Keychain with device-only bound security.
+// Provides hardware-bound AES-256-GCM authenticated encryption and decryption.
+// Master key is dynamically derived from the Mac's permanent hardware UUID (IOPlatformUUID) via HKDF-SHA256.
+// This guarantees zero macOS Keychain password dialogs while ensuring all data is bound to this physical machine.
 
 final class EncryptionService {
     static let shared = EncryptionService()
     
-    private let serviceName = "com.clipflow.ClipFlow.encryption"
-    private let accountName = "master_key"
     private var cachedKey: SymmetricKey?
     private let lock = NSLock()
 
     private init() {}
 
-    // MARK: - Key Management
+    // MARK: - Hardware-Derived Key
 
-    /// Retrieves or generates a 256-bit AES-GCM symmetric key stored securely in the macOS Keychain.
-    private func getOrCreateKey() throws -> SymmetricKey {
+    /// Derives a 256-bit AES-GCM symmetric key bound permanently to this physical Mac.
+    private func getOrCreateKey() -> SymmetricKey {
         lock.lock()
         defer { lock.unlock() }
 
@@ -27,51 +25,27 @@ final class EncryptionService {
             return key
         }
 
-        // 1. Try to load from Keychain
-        let query: [String: Any] = [
-            kSecClass as String: kSecClassGenericPassword,
-            kSecAttrService as String: serviceName,
-            kSecAttrAccount as String: accountName,
-            kSecReturnData as String: true,
-            kSecMatchLimit as String: kSecMatchLimitOne
-        ]
+        let macUUID = LemonSqueezyService.shared.getMacUUID()
+        let salt = "ClipFlowMasterSalt_2026_x89a".data(using: .utf8)!
+        let inputKeyMaterial = SymmetricKey(data: macUUID.data(using: .utf8)!)
 
-        var item: CFTypeRef?
-        let status = SecItemCopyMatching(query as CFDictionary, &item)
+        let derivedKey = HKDF<SHA256>.deriveKey(
+            inputKeyMaterial: inputKeyMaterial,
+            salt: salt,
+            info: "com.clipflow.master_encryption_key".data(using: .utf8)!,
+            outputByteCount: 32
+        )
 
-        if status == errSecSuccess, let keyData = item as? Data {
-            let key = SymmetricKey(data: keyData)
-            cachedKey = key
-            return key
-        }
-
-        // 2. If not found, generate a new 256-bit key
-        let newKey = SymmetricKey(size: .bits256)
-        let keyData = newKey.withUnsafeBytes { Data($0) }
-
-        let addQuery: [String: Any] = [
-            kSecClass as String: kSecClassGenericPassword,
-            kSecAttrService as String: serviceName,
-            kSecAttrAccount as String: accountName,
-            kSecValueData as String: keyData,
-            kSecAttrAccessible as String: kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly
-        ]
-
-        let addStatus = SecItemAdd(addQuery as CFDictionary, nil)
-        if addStatus != errSecSuccess && addStatus != errSecDuplicateItem {
-            NSLog("Warning: Failed to save encryption key to Keychain (status: \(addStatus)). In-memory fallback will be used.")
-        }
-
-        cachedKey = newKey
-        return newKey
+        cachedKey = derivedKey
+        return derivedKey
     }
 
     // MARK: - Encryption / Decryption API
 
-    /// Encrypts raw data using AES-256-GCM.
+    /// Encrypts raw data using hardware-bound AES-256-GCM.
     /// Returns combined nonce + ciphertext + tag.
     func encrypt(data: Data) throws -> Data {
-        let key = try getOrCreateKey()
+        let key = getOrCreateKey()
         let sealedBox = try AES.GCM.seal(data, using: key)
         guard let combined = sealedBox.combined else {
             throw CryptoError.encryptionFailed
@@ -79,9 +53,9 @@ final class EncryptionService {
         return combined
     }
 
-    /// Decrypts combined nonce + ciphertext + tag using AES-256-GCM.
+    /// Decrypts combined nonce + ciphertext + tag using hardware-bound AES-256-GCM.
     func decrypt(data: Data) throws -> Data {
-        let key = try getOrCreateKey()
+        let key = getOrCreateKey()
         let sealedBox = try AES.GCM.SealedBox(combined: data)
         return try AES.GCM.open(sealedBox, using: key)
     }
