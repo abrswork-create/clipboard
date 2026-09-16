@@ -73,7 +73,7 @@ struct GeneralSettingsView: View {
                 SettingsRow(
                     title: "Clipmory Plan",
                     subtitle: proManager.isPro ? "Clipmory Pro active — unlimited history and pins." : "Free tier active — capped at 20 history items & 3 pins.",
-                    showDivider: true
+                    showDivider: false
                 ) {
                     HStack(spacing: 8) {
                         Text(proManager.isPro ? "PRO" : "FREE")
@@ -92,13 +92,6 @@ struct GeneralSettingsView: View {
                         }
                     }
                 }
-                
-                SettingsToggleRow(
-                    title: "Simulate Pro User (Testing)",
-                    subtitle: "Toggle between Free and Pro to test limits and paywalls.",
-                    showDivider: false,
-                    isOn: $proManager.isPro
-                )
             }
 
             SettingsSection {
@@ -392,17 +385,11 @@ struct AdvancedSettingsView: View {
     var body: some View {
         VStack(spacing: 24) {
             SettingsSection {
-                SettingsRow(title: "Database Location", subtitle: "The local path where SQLite data is stored.", showDivider: true) {
+                SettingsRow(title: "Database Location", subtitle: "The local path where SQLite data is stored.", showDivider: false) {
                     Button("Reveal in Finder") {
                         let supportDir = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
                             .appendingPathComponent("ClipFlow", isDirectory: true)
                         NSWorkspace.shared.selectFile(supportDir.path, inFileViewerRootedAtPath: "")
-                    }
-                }
-                
-                SettingsRow(title: "Show Onboarding", subtitle: "Preview the onboarding experience again.", showDivider: false) {
-                    Button("Show Onboarding") {
-                        NotificationCenter.default.post(name: NSNotification.Name("clipFlowShowOnboarding"), object: nil)
                     }
                 }
             }
