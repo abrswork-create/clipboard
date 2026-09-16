@@ -1,11 +1,12 @@
 import SwiftUI
 
 // MARK: - UpgradeBannerCard
-// A locked preview card displayed at the bottom of free tier history,
+// A card displayed at the bottom of history indicating 7-day free trial status or expiration,
 // seamlessly styled with the app's clean card design system.
 
 struct UpgradeBannerCard: View {
-    let hiddenCount: Int
+    let isExpired: Bool
+    let daysRemaining: Int
     let onUpgrade: () -> Void
     
     @State private var isHovered = false
@@ -14,21 +15,21 @@ struct UpgradeBannerCard: View {
     var body: some View {
         Button(action: onUpgrade) {
             VStack(alignment: .leading, spacing: 8) {
-                // Top header: Label, hidden count badge, and Upgrade button
+                // Top header: Label, status badge, and Upgrade button
                 HStack(alignment: .center, spacing: 6) {
-                    Text("CLIPMORY PRO")
-                        .font(.system(size: 9, weight: .semibold))
-                        .foregroundStyle(CFColor.secondaryText)
+                    Text(isExpired ? "TRIAL EXPIRED" : "FREE TRIAL")
+                        .font(.system(size: 9, weight: .bold))
+                        .foregroundStyle(isExpired ? Color.red.opacity(0.85) : CFColor.secondaryText)
                     
-                    if hiddenCount > 0 {
-                        Text("+\(hiddenCount) LOCKED")
+                    if !isExpired {
+                        Text("\(daysRemaining) DAYS LEFT")
                             .font(.system(size: 8.5, weight: .semibold))
-                            .foregroundStyle(CFColor.secondaryText)
+                            .foregroundStyle(Color.accentColor)
                             .padding(.horizontal, 6)
                             .padding(.vertical, 2)
                             .background(
                                 Capsule()
-                                    .fill(Color.primary.opacity(0.06))
+                                    .fill(Color.accentColor.opacity(0.12))
                             )
                     }
                     
@@ -52,24 +53,26 @@ struct UpgradeBannerCard: View {
                     .onHover { isButtonHovered = $0 }
                 }
                 
-                // Content row: lock icon + title and description
+                // Content row: lock/clock icon + title and description
                 HStack(alignment: .top, spacing: 10) {
                     ZStack {
                         Circle()
-                            .fill(Color.primary.opacity(0.06))
+                            .fill(isExpired ? Color.red.opacity(0.1) : Color.primary.opacity(0.06))
                             .frame(width: 28, height: 28)
                         
-                        Image(systemName: "lock.fill")
+                        Image(systemName: isExpired ? "lock.fill" : "clock.fill")
                             .font(.system(size: 12, weight: .semibold))
-                            .foregroundStyle(CFColor.primaryText)
+                            .foregroundStyle(isExpired ? Color.red : CFColor.primaryText)
                     }
                     
                     VStack(alignment: .leading, spacing: 2) {
-                        Text("Unlock Full History")
+                        Text(isExpired ? "Your 7-Day Free Trial Has Expired" : "Enjoying Full Access?")
                             .font(.system(size: 13, weight: .semibold))
                             .foregroundStyle(CFColor.primaryText)
                         
-                        Text("Free tier is limited to 20 items. Upgrade to Pro for unlimited history, unlimited pins, and lifetime updates.")
+                        Text(isExpired 
+                             ? "Upgrade to Clipmory Pro to restore clipboard history access, pinning, and lifetime updates."
+                             : "You have full access during your trial. Upgrade to Pro anytime for lifetime access and updates.")
                             .font(.system(size: 11, weight: .regular))
                             .foregroundStyle(CFColor.secondaryText)
                             .lineLimit(2)
@@ -86,7 +89,7 @@ struct UpgradeBannerCard: View {
             .overlay(
                 RoundedRectangle(cornerRadius: CFRadius.card, style: .continuous)
                     .strokeBorder(
-                        isHovered ? Color.accentColor.opacity(0.4) : Color.primary.opacity(0.06),
+                        isHovered ? (isExpired ? Color.red.opacity(0.4) : Color.accentColor.opacity(0.4)) : Color.primary.opacity(0.06),
                         lineWidth: 1
                     )
             )

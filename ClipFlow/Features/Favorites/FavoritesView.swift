@@ -52,18 +52,21 @@ struct FavoritesView: View {
                             }
                         },
                         onDelete:      { store.delete(item.id) },
-                        onPin:         {
-                            if !item.isPinned && !ProManager.shared.isPro {
-                                let currentPins = store.items.filter { $0.isPinned }.count
-                                if currentPins >= ProManager.shared.freePinLimit {
-                                    ProManager.shared.triggerPaywall(reason: "Free tier is limited to 3 pinned items. Upgrade to Pro for unlimited pinned cards.")
-                                    return
-                                }
+                        onPin: {
+                            if !item.isPinned && !ProManager.shared.hasFullAccess {
+                                ProManager.shared.triggerPaywall(reason: "Your 7-day free trial has expired. Upgrade to Clipmory Pro to pin cards.")
+                                return
                             }
                             store.togglePin(item.id)
                         },
-                        onFavorite:    { store.toggleFavorite(item.id) },
-                        onPaste:       { PasteService.paste(item) },
+                        onFavorite: { store.toggleFavorite(item.id) },
+                        onPaste: {
+                            guard ProManager.shared.hasFullAccess else {
+                                ProManager.shared.triggerPaywall(reason: "Your 7-day free trial has expired. Upgrade to Clipmory Pro to paste items.")
+                                return
+                            }
+                            PasteService.paste(item)
+                        },
                         style:         interfaceStyle
                     )
                 }

@@ -30,6 +30,12 @@ final class ClipboardHistoryViewModel: ObservableObject {
     // MARK: - Selection
 
     func selectItem(_ id: UUID) {
+        // Enforce 7-day free trial or Pro access before pasting
+        guard ProManager.shared.hasFullAccess else {
+            ProManager.shared.triggerPaywall(reason: "Your 7-day free trial has expired. Upgrade to Clipmory Pro to paste items and continue using Clipmory.")
+            return
+        }
+
         withAnimation(.easeInOut(duration: 0.15)) {
             selectedItemID = selectedItemID == id ? nil : id
         }
@@ -58,13 +64,10 @@ final class ClipboardHistoryViewModel: ObservableObject {
             return
         }
         
-        // If pinning a new item on Free tier, check limit
-        if !ProManager.shared.isPro {
-            let currentPins = store.items.filter { $0.isPinned }.count
-            if currentPins >= ProManager.shared.freePinLimit {
-                ProManager.shared.triggerPaywall(reason: "Free tier is limited to 3 pinned items. Upgrade to Pro for unlimited pinned cards.")
-                return
-            }
+        // Pinning requires full access (Pro or active 7-day trial)
+        guard ProManager.shared.hasFullAccess else {
+            ProManager.shared.triggerPaywall(reason: "Your 7-day free trial has expired. Upgrade to Clipmory Pro to pin items.")
+            return
         }
         
         store.togglePin(id)

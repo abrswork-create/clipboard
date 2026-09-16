@@ -35,15 +35,15 @@ struct UpgradePaywallView: View {
             VStack(spacing: 6) {
                 ZStack {
                     Circle()
-                        .fill(Color.accentColor.opacity(0.12))
+                        .fill(proManager.isTrialExpired ? Color.red.opacity(0.12) : Color.accentColor.opacity(0.12))
                         .frame(width: 44, height: 44)
                     
-                    Image(systemName: "sparkles")
+                    Image(systemName: proManager.isTrialExpired ? "lock.fill" : "sparkles")
                         .font(.system(size: 20, weight: .semibold))
-                        .foregroundStyle(Color.accentColor)
+                        .foregroundStyle(proManager.isTrialExpired ? Color.red : Color.accentColor)
                 }
                 
-                Text("Upgrade to Clipmory Pro")
+                Text(proManager.isTrialExpired ? "Free Trial Expired" : "Upgrade to Clipmory Pro")
                     .font(.system(size: 16, weight: .bold))
                     .foregroundStyle(CFColor.primaryText)
                 
@@ -167,7 +167,7 @@ struct UpgradePaywallView: View {
                     }
                 }
                 
-                Button("Continue with Free Tier") {
+                Button(proManager.isTrialActive ? "Continue with Free Trial" : "Close") {
                     closeModal()
                 }
                 .font(.system(size: 10.5))

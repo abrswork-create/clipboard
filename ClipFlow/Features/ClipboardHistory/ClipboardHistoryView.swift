@@ -89,7 +89,7 @@ struct ClipboardHistoryView: View {
                     .font(.system(size: 18, weight: .semibold))
                     .foregroundStyle(CFColor.primaryText)
                 
-                // PRO or FREE Tier Badge
+                // Licensing / Trial Badge
                 if proManager.isPro {
                     HStack(spacing: 4) {
                         Image(systemName: "sparkles")
@@ -111,18 +111,18 @@ struct ClipboardHistoryView: View {
                             .strokeBorder(Color.accentColor.opacity(0.35), lineWidth: 1)
                     )
                     .cfShadow(CFShadow.card)
-                } else {
+                } else if proManager.isTrialActive {
                     Button {
-                        proManager.triggerPaywall(reason: "Free tier is limited to 20 history items & 3 pinned cards. Upgrade to Pro for unlimited history, unlimited pins, and lifetime updates.")
+                        proManager.triggerPaywall(reason: "You are on day \(8 - proManager.trialDaysRemaining) of your 7-day free trial. Upgrade anytime for lifetime updates.")
                     } label: {
                         HStack(spacing: 4) {
-                            Text("FREE")
+                            Text("7-DAY TRIAL (\(proManager.trialDaysRemaining)d left)")
                                 .font(.system(size: 9.5, weight: .bold))
-                                .foregroundStyle(CFColor.secondaryText)
+                                .foregroundStyle(Color.accentColor)
                             
                             Image(systemName: "arrow.up.right")
                                 .font(.system(size: 7.5, weight: .semibold))
-                                .foregroundStyle(CFColor.secondaryText)
+                                .foregroundStyle(Color.accentColor)
                         }
                         .padding(.horizontal, 7)
                         .padding(.vertical, 3.5)
@@ -132,13 +132,41 @@ struct ClipboardHistoryView: View {
                         )
                         .overlay(
                             RoundedRectangle(cornerRadius: 6, style: .continuous)
-                                .strokeBorder(Color.primary.opacity(0.08), lineWidth: 1)
+                                .strokeBorder(Color.accentColor.opacity(0.3), lineWidth: 1)
                         )
                         .cfShadow(CFShadow.card)
                     }
                     .buttonStyle(.plain)
                     .onHover { isFreeBadgeHovered = $0 }
-                    .help("Free Tier Active — Click to Upgrade to Pro")
+                    .help("7-Day Free Trial Active — Click to Upgrade to Pro")
+                } else {
+                    Button {
+                        proManager.triggerPaywall(reason: "Your 7-day free trial has expired. Upgrade to Clipmory Pro to continue using Clipmory.")
+                    } label: {
+                        HStack(spacing: 4) {
+                            Image(systemName: "lock.fill")
+                                .font(.system(size: 8, weight: .bold))
+                                .foregroundStyle(Color.red)
+                            
+                            Text("TRIAL EXPIRED")
+                                .font(.system(size: 9.5, weight: .bold))
+                                .foregroundStyle(Color.red)
+                        }
+                        .padding(.horizontal, 7)
+                        .padding(.vertical, 3.5)
+                        .background(
+                            RoundedRectangle(cornerRadius: 6, style: .continuous)
+                                .fill(Color.red.opacity(0.08))
+                        )
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 6, style: .continuous)
+                                .strokeBorder(Color.red.opacity(0.3), lineWidth: 1)
+                        )
+                        .cfShadow(CFShadow.card)
+                    }
+                    .buttonStyle(.plain)
+                    .onHover { isFreeBadgeHovered = $0 }
+                    .help("Free Trial Expired — Upgrade to Continue")
                 }
                 
                 Spacer()
@@ -219,24 +247,23 @@ struct ClipboardHistoryView: View {
                         sectionLabel("RECENT")
                     }
                     
-                    let visibleUnpinned: [ClipboardItem] = {
-                        if proManager.isPro {
-                            return unpinned
-                        } else {
-                            return Array(unpinned.prefix(proManager.freeHistoryLimit))
-                        }
-                    }()
+                    let visibleUnpinned: [ClipboardItem] = unpinned
                     
                     ForEach(visibleUnpinned) { item in
                         cardRow(item)
                             .id("\(item.id)-pinned:\(item.isPinned)-fav:\(item.isFavorite)")
                     }
                     
-                    if !proManager.isPro && unpinned.count > proManager.freeHistoryLimit {
+                    if !proManager.isPro {
                         UpgradeBannerCard(
-                            hiddenCount: unpinned.count - proManager.freeHistoryLimit,
+                            isExpired: proManager.isTrialExpired,
+                            daysRemaining: proManager.trialDaysRemaining,
                             onUpgrade: {
-                                proManager.triggerPaywall(reason: "You have \(unpinned.count - proManager.freeHistoryLimit) hidden items. Upgrade to Pro to unlock unlimited clipboard history.")
+                                proManager.triggerPaywall(
+                                    reason: proManager.isTrialExpired
+                                        ? "Your 7-day free trial has expired. Upgrade to Clipmory Pro to continue using Clipmory."
+                                        : "You have \(proManager.trialDaysRemaining) days remaining in your free trial. Upgrade to Pro for lifetime updates."
+                                )
                             }
                         )
                     }

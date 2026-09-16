@@ -72,21 +72,37 @@ struct GeneralSettingsView: View {
             SettingsSection {
                 SettingsRow(
                     title: "Clipmory Plan",
-                    subtitle: proManager.isPro ? "Clipmory Pro active — unlimited history and pins." : "Free tier active — capped at 20 history items & 3 pins.",
+                    subtitle: proManager.isPro
+                        ? "Clipmory Pro active — unlimited history, unlimited pins, and lifetime updates."
+                        : (proManager.isTrialActive
+                            ? "7-Day Free Trial active (\(proManager.trialDaysRemaining) days remaining) — full access unlocked."
+                            : "Free trial expired. Upgrade to Clipmory Pro to continue using Clipmory."),
                     showDivider: false
                 ) {
                     HStack(spacing: 8) {
-                        Text(proManager.isPro ? "PRO" : "FREE")
+                        Text(proManager.isPro ? "PRO" : (proManager.isTrialActive ? "FREE TRIAL" : "EXPIRED"))
                             .font(.system(size: 10, weight: .bold))
                             .padding(.horizontal, 8)
                             .padding(.vertical, 3)
-                            .background(proManager.isPro ? Color.purple.opacity(0.2) : Color.gray.opacity(0.15))
-                            .foregroundStyle(proManager.isPro ? Color.purple : Color.secondary)
+                            .background(
+                                proManager.isPro
+                                    ? Color.purple.opacity(0.2)
+                                    : (proManager.isTrialActive ? Color.accentColor.opacity(0.15) : Color.red.opacity(0.15))
+                            )
+                            .foregroundStyle(
+                                proManager.isPro
+                                    ? Color.purple
+                                    : (proManager.isTrialActive ? Color.accentColor : Color.red)
+                            )
                             .clipShape(Capsule())
                         
                         if !proManager.isPro {
                             Button("Upgrade...") {
-                                proManager.triggerPaywall(reason: "Upgrade to Clipmory Pro for unlimited history, unlimited pins, and lifetime updates.")
+                                proManager.triggerPaywall(
+                                    reason: proManager.isTrialExpired
+                                        ? "Your 7-day free trial has expired. Upgrade to Clipmory Pro to continue using Clipmory."
+                                        : "You have \(proManager.trialDaysRemaining) days remaining in your free trial. Upgrade to Pro for lifetime updates."
+                                )
                             }
                             .buttonStyle(.borderedProminent)
                         } else {

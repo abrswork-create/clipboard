@@ -127,10 +127,19 @@ struct MainPanelView: View {
             appTheme = SettingsRepository.shared.load().theme
         }
         .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("clipFlowWindowWillOpen"))) { _ in
-            proManager.showPaywall = false
+            proManager.refreshTrialStatus()
+            if proManager.isTrialExpired && !proManager.isPro {
+                proManager.triggerPaywall(reason: "Your 7-day free trial has expired. Upgrade to Clipmory Pro to continue using Clipmory.")
+            } else {
+                proManager.showPaywall = false
+            }
             triggerAnimation()
         }
         .onAppear {
+            proManager.refreshTrialStatus()
+            if proManager.isTrialExpired && !proManager.isPro {
+                proManager.triggerPaywall(reason: "Your 7-day free trial has expired. Upgrade to Clipmory Pro to continue using Clipmory.")
+            }
             triggerAnimation()
         }
     }
