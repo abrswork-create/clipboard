@@ -122,6 +122,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         window?.orderOut(nil)
     }
 
+    func windowDidResignKey(_ notification: Notification) {
+        // Hide the floating clipboard window when it loses focus (e.g. user clicks Settings window or outside)
+        if let win = notification.object as? NSWindow, win == self.window {
+            guard !PrivacyManager.shared.isAuthenticating else { return }
+            win.orderOut(nil)
+        }
+    }
+
     // MARK: - Setup
 
     private func setupApplication() {
@@ -170,20 +178,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
     }
     
     @objc @MainActor private func statusBarButtonClicked(_ sender: Any) {
-        guard let event = NSApp.currentEvent else { return }
+        // Hide the floating clipboard window if open
+        window?.orderOut(nil)
         
-        if event.type == .rightMouseUp || (event.modifierFlags.contains(.control)) {
-            // Right-click: Show native menu to allow quitting
-            let menu = NSMenu()
-            menu.addItem(NSMenuItem(title: "Settings...", action: #selector(openSettings), keyEquivalent: ","))
-            menu.addItem(NSMenuItem(title: "Check for Updates...", action: #selector(checkForUpdates), keyEquivalent: "u"))
-            menu.addItem(NSMenuItem.separator())
-            menu.addItem(NSMenuItem(title: "Quit Clipmory", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q"))
-            statusItem?.popUpMenu(menu)
-        } else {
-            // Left-click: Toggle the main clipboard window
-            toggleWindow()
-        }
+        // Always pop up the menu with Settings, Check for Updates, and Quit Clipmory
+        let menu = NSMenu()
+        menu.addItem(NSMenuItem(title: "Settings...", action: #selector(openSettings), keyEquivalent: ","))
+        menu.addItem(NSMenuItem(title: "Check for Updates...", action: #selector(checkForUpdates), keyEquivalent: "u"))
+        menu.addItem(NSMenuItem.separator())
+        menu.addItem(NSMenuItem(title: "Quit Clipmory", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q"))
+        statusItem?.popUpMenu(menu)
     }
     
     @objc private func checkForUpdates() {
