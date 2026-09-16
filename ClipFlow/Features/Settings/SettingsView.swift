@@ -469,8 +469,12 @@ struct AboutSettingsView: View {
                     }
                 }
                 
-                SettingsRow(title: "Twitter", subtitle: "Follow us on Twitter.", showDivider: true) {
-                    Button("Follow") {}
+                SettingsRow(title: "X (Twitter)", subtitle: "Follow @clipmory on X for news and updates.", showDivider: true) {
+                    Button("Follow") {
+                        if let url = URL(string: "https://x.com/clipmory") {
+                            NSWorkspace.shared.open(url)
+                        }
+                    }
                 }
                 
                 if isAppStoreInstall {
