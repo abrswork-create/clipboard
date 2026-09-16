@@ -1,10 +1,14 @@
 import SwiftUI
 
 // MARK: - UpgradePaywallView
-// Modal paywall sheet presenting Pro benefits and unlocking access via Lemon Squeezy.
+// Modal paywall sheet presenting Pro benefits and unlocking access.
+// Supports both Apple StoreKit 2 (for Mac App Store) and Lemon Squeezy (for Direct Web).
 
 struct UpgradePaywallView: View {
     @ObservedObject var proManager = ProManager.shared
+#if APP_STORE
+    @ObservedObject var storeKit = StoreKitManager.shared
+#endif
     @Environment(\.dismiss) private var dismiss
     
     @State private var licenseKey: String = ""
@@ -100,6 +104,76 @@ struct UpgradePaywallView: View {
                     .padding(.vertical, 8)
                     .transition(.scale.combined(with: .opacity))
                 } else {
+#if APP_STORE
+                    // MARK: - Mac App Store Flow (StoreKit 2)
+                    Button {
+                        Task {
+                            await storeKit.purchasePro()
+                        }
+                    } label: {
+                        HStack {
+                            if storeKit.isPurchasing {
+                                ProgressView()
+                                    .scaleEffect(0.6)
+                            } else {
+                                Text("Unlock Pro — \(storeKit.localizedPrice) (Lifetime)")
+                                    .font(.system(size: 12.5, weight: .semibold))
+                            }
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 8)
+                        .background(
+                            RoundedRectangle(cornerRadius: CFRadius.button, style: .continuous)
+                                .fill(Color.accentColor)
+                        )
+                        .foregroundStyle(.white)
+                        .cfShadow(CFShadow.card)
+                    }
+                    .buttonStyle(.plain)
+                    .disabled(storeKit.isPurchasing || storeKit.isRestoring)
+                    
+                    // Mandatory StoreKit Restore Button
+                    Button {
+                        Task {
+                            await storeKit.restorePurchases()
+                        }
+                    } label: {
+                        if storeKit.isRestoring {
+                            ProgressView()
+                                .scaleEffect(0.5)
+                        } else {
+                            Text("Restore Purchases")
+                                .font(.system(size: 10.5))
+                                .foregroundStyle(CFColor.secondaryText)
+                        }
+                    }
+                    .buttonStyle(.plain)
+                    .disabled(storeKit.isPurchasing || storeKit.isRestoring)
+                    
+                    if let err = storeKit.purchaseError {
+                        Text(err)
+                            .font(.system(size: 10))
+                            .foregroundStyle(.red)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal, 8)
+                    }
+                    
+                    // Required Legal Links for App Store
+                    HStack(spacing: 8) {
+                        if let termsURL = URL(string: "https://clipmory.app#terms") {
+                            Link("Terms of Service", destination: termsURL)
+                        }
+                        Text("·")
+                            .foregroundStyle(CFColor.secondaryText.opacity(0.6))
+                        if let privacyURL = URL(string: "https://clipmory.app#privacy") {
+                            Link("Privacy Policy", destination: privacyURL)
+                        }
+                    }
+                    .font(.system(size: 9.5))
+                    .foregroundStyle(CFColor.secondaryText.opacity(0.8))
+                    .padding(.top, 2)
+#else
+                    // MARK: - Direct Web Flow (Lemon Squeezy)
                     Button {
                         upgradeNow()
                     } label: {
@@ -131,6 +205,9 @@ struct UpgradePaywallView: View {
                                     .textFieldStyle(.roundedBorder)
                                     .font(.system(size: 11))
                                     .disabled(isActivating)
+                                    .onSubmit {
+                                        activateKey()
+                                    }
                                 
                                 Button {
                                     activateKey()
@@ -165,6 +242,7 @@ struct UpgradePaywallView: View {
                         .foregroundStyle(CFColor.secondaryText)
                         .buttonStyle(.plain)
                     }
+#endif
                 }
                 
                 Button(proManager.isTrialActive ? "Continue with Free Trial" : "Close") {
@@ -232,6 +310,7 @@ struct UpgradePaywallView: View {
         dismiss()
     }
     
+#if !APP_STORE
     private func upgradeNow() {
         // Open Lemon Squeezy checkout directly in default browser
         if let url = URL(string: "https://clipmory.lemonsqueezy.com/checkout/buy/e20a9d58-b852-4fae-8a37-d860e88dae66") {
@@ -261,4 +340,5 @@ struct UpgradePaywallView: View {
             }
         }
     }
+#endif
 }

@@ -74,6 +74,7 @@
 		D02B3F67AB115455AE2F6B8C /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = 68831CD9967B1E3EE37739AF /* Sparkle */; };
 		D173B62134B0C244E591043A /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CDFB76DD7564B5DCD9A3A092 /* Assets.xcassets */; };
 		D35A13D39E0DAEED8A9CC0AD /* ProManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 63E8393F00DB482CD5B2F7DE /* ProManager.swift */; };
+		A8BE8BD650665129A8ED011A /* StoreKitManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E470B59095E95CBE66FF762A /* StoreKitManager.swift */; };
 		D63FA6062E322D38A0BB9577 /* DesignSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D14C2FA414D09216CABE2CB /* DesignSystem.swift */; };
 		E9922D2929058F2C916C430B /* SettingsRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60C4A06DE0996C9DFE464BF1 /* SettingsRepository.swift */; };
 		EA1596A19EF4A5F347CEB3B0 /* ClipboardItemRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B6AF4FAC2CF55398E389937 /* ClipboardItemRow.swift */; };
@@ -129,6 +130,7 @@
 		60C4A06DE0996C9DFE464BF1 /* SettingsRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsRepository.swift; sourceTree = "<group>"; };
 		615D8F101F7655BA490AAE70 /* GifPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GifPickerView.swift; sourceTree = "<group>"; };
 		63E8393F00DB482CD5B2F7DE /* ProManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProManager.swift; sourceTree = "<group>"; };
+		E470B59095E95CBE66FF762A /* StoreKitManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKitManager.swift; sourceTree = "<group>"; };
 		66BD5D5D9FD3E33873ABAF6B /* QuickClipboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickClipboardView.swift; sourceTree = "<group>"; };
 		6A9B7203728DA614368F4D12 /* StorageManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StorageManager.swift; sourceTree = "<group>"; };
 		6B6AF4FAC2CF55398E389937 /* ClipboardItemRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipboardItemRow.swift; sourceTree = "<group>"; };
@@ -262,6 +264,7 @@
 			children = (
 				F77D0A4C323827222628D6F7 /* LemonSqueezyService.swift */,
 				63E8393F00DB482CD5B2F7DE /* ProManager.swift */,
+				E470B59095E95CBE66FF762A /* StoreKitManager.swift */,
 			);
 			path = Pro;
 			sourceTree = "<group>";
@@ -693,6 +696,7 @@
 				3FBF653D2F2AF9C8B426CABE /* PreviewService.swift in Sources */,
 				99BBA76176A1F536A541F38B /* PrivacyManager.swift in Sources */,
 				D35A13D39E0DAEED8A9CC0AD /* ProManager.swift in Sources */,
+				A8BE8BD650665129A8ED011A /* StoreKitManager.swift in Sources */,
 				42C5B1FB78E9DC69F246BF79 /* QuickClipboardView.swift in Sources */,
 				B1080DC8F149A021D9DD4BA1 /* QuickClipboardViewModel.swift in Sources */,
 				C0EADA155B368B41C389DC79 /* QuickClipboardWindowController.swift in Sources */,

@@ -31,7 +31,12 @@ final class ProManager: ObservableObject {
     @Published var showActivationSuccessBanner: Bool = false
     
     private init() {
-        // 1. Strictly check Keychain for verified, hardware-bound Pro license token
+#if APP_STORE
+        // In Mac App Store build, entitlements are managed by StoreKit 2
+        self.isPro = false
+        self.activatedKey = nil
+#else
+        // 1. Check local hardware-bound Pro license token (Web/Lemon Squeezy)
         if let stored = LemonSqueezyService.shared.readLicenseFromKeychain(), !stored.key.isEmpty {
             self.isPro = true
             self.activatedKey = stored.key
@@ -39,6 +44,7 @@ final class ProManager: ObservableObject {
             self.isPro = false
             self.activatedKey = nil
         }
+#endif
         
         // 2. Refresh 7-Day Free Trial status linked to permanent Mac hardware UUID
         refreshTrialStatus()
@@ -127,6 +133,22 @@ final class ProManager: ObservableObject {
         self.showActivationSuccessBanner = true
         
         // Auto-hide success banner after 3 seconds
+        DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) { [weak self] in
+            withAnimation(.easeInOut(duration: 0.25)) {
+                self?.showActivationSuccessBanner = false
+            }
+        }
+    }
+    
+    /// Unlocks Pro directly from Apple StoreKit 2 transaction verification
+    func unlockProStoreKit() {
+        self.isPro = true
+        self.activatedKey = "APP_STORE_PURCHASE"
+        self.hasFullAccess = true
+        self.showPaywall = false
+        self.activationError = nil
+        self.showActivationSuccessBanner = true
+        
         DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) { [weak self] in
             withAnimation(.easeInOut(duration: 0.25)) {
                 self?.showActivationSuccessBanner = false

@@ -105,6 +105,16 @@ struct GeneralSettingsView: View {
                                 )
                             }
                             .buttonStyle(.borderedProminent)
+                            
+#if APP_STORE
+                            Button("Restore") {
+                                Task {
+                                    await StoreKitManager.shared.restorePurchases()
+                                }
+                            }
+                            .buttonStyle(.bordered)
+                            .controlSize(.small)
+#endif
                         }
                     }
                 }
@@ -442,6 +452,7 @@ struct AboutSettingsView: View {
                     .padding(.top, 4)
             }
             
+#if !APP_STORE
             SettingsSection {
                 SettingsRow(title: "Software Updates", subtitle: "Check for new versions of Clipmory.", showDivider: true) {
                     Button("Check for Updates...") {
@@ -459,6 +470,7 @@ struct AboutSettingsView: View {
                     )
                 )
             }
+#endif
             
             SettingsSection {
                 SettingsRow(title: "Website", subtitle: "Visit our homepage for updates and news.", showDivider: true) {

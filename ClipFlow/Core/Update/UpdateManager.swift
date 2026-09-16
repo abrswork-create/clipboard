@@ -1,20 +1,24 @@
 import Foundation
+
+#if !APP_STORE
 import Sparkle
+#endif
 
 // MARK: - UpdateManager
-// Handles app updates using Sparkle Framework (SPUStandardUpdaterController).
+// Handles app updates using Sparkle Framework (Direct Web releases only).
+// In Mac App Store releases, updates are managed exclusively by macOS App Store.
 
 @MainActor
 final class UpdateManager: NSObject, ObservableObject {
     static let shared = UpdateManager()
     
-    let updaterController: SPUStandardUpdaterController
-    
     @Published var canCheckForUpdates: Bool = false
     @Published var automaticallyChecksForUpdates: Bool = true
     
+#if !APP_STORE
+    let updaterController: SPUStandardUpdaterController
+    
     private override init() {
-        // SPUStandardUpdaterController automatically manages update UI, checks, and downloads
         self.updaterController = SPUStandardUpdaterController(
             startingUpdater: true,
             updaterDelegate: nil,
@@ -36,4 +40,14 @@ final class UpdateManager: NSObject, ObservableObject {
         automaticallyChecksForUpdates = enabled
         updaterController.updater.automaticallyChecksForUpdates = enabled
     }
+#else
+    private override init() {
+        super.init()
+        self.canCheckForUpdates = false
+        self.automaticallyChecksForUpdates = false
+    }
+    
+    func checkForUpdates() {}
+    func setAutomaticallyChecksForUpdates(_ enabled: Bool) {}
+#endif
 }

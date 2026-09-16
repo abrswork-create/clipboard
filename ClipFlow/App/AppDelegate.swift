@@ -199,7 +199,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         // Always pop up the menu with Settings, Check for Updates, and Quit Clipmory
         let menu = NSMenu()
         menu.addItem(NSMenuItem(title: "Settings...", action: #selector(openSettings), keyEquivalent: ","))
+#if !APP_STORE
         menu.addItem(NSMenuItem(title: "Check for Updates...", action: #selector(checkForUpdates), keyEquivalent: "u"))
+#endif
         menu.addItem(NSMenuItem.separator())
         menu.addItem(NSMenuItem(title: "Quit Clipmory", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q"))
         statusItem?.popUpMenu(menu)

@@ -1,0 +1,26 @@
+#!/bin/bash
+set -e
+
+echo "🍎 [1/3] Building Clipmory for Mac App Store (Sandbox + StoreKit 2)..."
+xcodebuild -project ClipFlow.xcodeproj -scheme ClipFlow -configuration Release -destination 'platform=macOS' \
+    SWIFT_ACTIVE_COMPILATION_CONDITIONS="APP_STORE" \
+    CODE_SIGN_ENTITLEMENTS="ClipFlow/Resources/ClipFlow-AppStore.entitlements" \
+    build > /dev/null
+
+BUILD_APP="/Users/owel/Library/Developer/Xcode/DerivedData/ClipFlow-elmwtrcpaaulkrhjsflimlcgqtrb/Build/Products/Release/ClipFlow.app"
+DIST_DIR="./dist/appstore"
+rm -rf "$DIST_DIR"
+mkdir -p "$DIST_DIR"
+
+echo "🔒 [2/3] Verifying App Sandbox entitlements..."
+cp -R "$BUILD_APP" "$DIST_DIR/Clipmory.app"
+
+codesign -d --entitlements :- "$DIST_DIR/Clipmory.app"
+
+echo "✅ [3/3] App Store build ready at:"
+echo "   $DIST_DIR/Clipmory.app"
+echo ""
+echo "👉 To upload to App Store Connect / TestFlight:"
+echo "   1. Open ClipFlow.xcodeproj in Xcode."
+echo "   2. Select Product > Archive (with your Apple Developer Team ID selected)."
+echo "   3. Click 'Distribute App' > 'App Store Connect'."
