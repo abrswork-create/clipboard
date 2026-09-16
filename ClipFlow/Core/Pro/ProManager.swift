@@ -106,14 +106,4 @@ final class ProManager: ObservableObject {
             return false
         }
     }
-    
-    /// Synchronous convenience / fallback check for test keys
-    func activateLicense(key: String) -> Bool {
-        let trimmed = key.trimmingCharacters(in: .whitespacesAndNewlines).uppercased()
-        if trimmed.starts(with: "PRO") || trimmed == "CLIPMORY-PRO" || trimmed == "LIFETIME" {
-            unlockPro(key: trimmed)
-            return true
-        }
-        return false
-    }
 }
