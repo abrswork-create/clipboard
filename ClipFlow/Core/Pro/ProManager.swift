@@ -24,6 +24,16 @@ final class ProManager: ObservableObject {
     @Published var showActivationSuccessBanner: Bool = false
     
     private init() {
+        // One-time check: ensure app starts on the Free tier by default, clearing any old test licenses
+        let initializedFreeKey = "hasDefaultedToFreePlan_v1"
+        if !UserDefaults.standard.bool(forKey: initializedFreeKey) {
+            UserDefaults.standard.set(true, forKey: initializedFreeKey)
+            LemonSqueezyService.shared.clearKeychainLicense()
+            self.isPro = false
+            self.activatedKey = nil
+            return
+        }
+
         // Strictly check Keychain for verified, hardware-bound license token
         if let stored = LemonSqueezyService.shared.readLicenseFromKeychain(), !stored.key.isEmpty {
             self.isPro = true

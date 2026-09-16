@@ -89,6 +89,12 @@ struct GeneralSettingsView: View {
                                 proManager.triggerPaywall(reason: "Upgrade to Clipmory Pro for unlimited history, unlimited pins, and lifetime updates.")
                             }
                             .buttonStyle(.borderedProminent)
+                        } else {
+                            Button("Reset to Free") {
+                                proManager.resetToFree()
+                            }
+                            .buttonStyle(.bordered)
+                            .controlSize(.small)
                         }
                     }
                 }
