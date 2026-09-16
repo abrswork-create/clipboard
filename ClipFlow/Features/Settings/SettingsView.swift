@@ -105,12 +105,6 @@ struct GeneralSettingsView: View {
                                 )
                             }
                             .buttonStyle(.borderedProminent)
-                        } else {
-                            Button("Reset to Free") {
-                                proManager.resetToFree()
-                            }
-                            .buttonStyle(.bordered)
-                            .controlSize(.small)
                         }
                     }
                 }
