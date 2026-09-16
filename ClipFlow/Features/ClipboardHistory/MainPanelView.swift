@@ -84,6 +84,37 @@ struct MainPanelView: View {
                 }
                 .transition(.opacity)
             }
+            
+            // Top Floating Activation Success Toast
+            if proManager.showActivationSuccessBanner {
+                VStack {
+                    HStack(spacing: 8) {
+                        Image(systemName: "checkmark.seal.fill")
+                            .font(.system(size: 14, weight: .bold))
+                            .foregroundStyle(Color.white)
+                        
+                        Text("🎉 Upgraded to Clipmory Pro Successfully!")
+                            .font(.system(size: 12, weight: .semibold))
+                            .foregroundStyle(Color.white)
+                    }
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 8)
+                    .background(
+                        Capsule()
+                            .fill(LinearGradient(
+                                colors: [Color.green.opacity(0.95), Color.accentColor],
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            ))
+                    )
+                    .cfShadow(CFShadow.panel)
+                    .padding(.top, 10)
+                    .transition(.move(edge: .top).combined(with: .opacity))
+                    
+                    Spacer()
+                }
+                .zIndex(100)
+            }
         }
         .animation(.spring(response: 0.3, dampingFraction: 0.8), value: proManager.showPaywall)
         .background(.regularMaterial)

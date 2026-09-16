@@ -83,10 +83,56 @@ struct ClipboardHistoryView: View {
 
     private var listHeader: some View {
         VStack(spacing: 8) {
-            HStack(alignment: .center) {
+            HStack(alignment: .center, spacing: 8) {
                 Text("Clipboard")
                     .font(.system(size: 18, weight: .semibold))
                     .foregroundStyle(CFColor.primaryText)
+                
+                // PRO or FREE Tier Badge
+                if proManager.isPro {
+                    HStack(spacing: 3) {
+                        Image(systemName: "sparkles")
+                            .font(.system(size: 8.5, weight: .bold))
+                        Text("PRO")
+                            .font(.system(size: 9.5, weight: .bold))
+                    }
+                    .padding(.horizontal, 6)
+                    .padding(.vertical, 2)
+                    .background(
+                        Capsule()
+                            .fill(LinearGradient(
+                                colors: [Color.purple.opacity(0.85), Color.accentColor],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            ))
+                    )
+                    .foregroundStyle(.white)
+                    .cfShadow(CFShadow.card)
+                } else {
+                    Button {
+                        proManager.triggerPaywall(reason: "You are on the Free Tier (limited to 20 history items & 3 pins). Upgrade to Pro for unlimited access.")
+                    } label: {
+                        HStack(spacing: 3) {
+                            Text("FREE")
+                                .font(.system(size: 9.5, weight: .bold))
+                            Image(systemName: "arrow.up.right")
+                                .font(.system(size: 7.5, weight: .semibold))
+                        }
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 2)
+                        .background(
+                            Capsule()
+                                .fill(Color.orange.opacity(0.16))
+                        )
+                        .overlay(
+                            Capsule()
+                                .strokeBorder(Color.orange.opacity(0.35), lineWidth: 1)
+                        )
+                        .foregroundStyle(Color.orange)
+                    }
+                    .buttonStyle(.plain)
+                    .help("Free Tier Active — Click to Upgrade to Pro")
+                }
                 
                 Spacer()
                 

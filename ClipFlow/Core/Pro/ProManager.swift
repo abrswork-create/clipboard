@@ -1,5 +1,6 @@
 import Foundation
 import Combine
+import SwiftUI
 
 // MARK: - ProManager
 // Manages Pro subscription/license status, free tier constraints, paywall triggers,
@@ -28,6 +29,7 @@ final class ProManager: ObservableObject {
     @Published var isActivating: Bool = false
     @Published var activationError: String?
     @Published var activatedKey: String?
+    @Published var showActivationSuccessBanner: Bool = false
     
     private init() {
         // 1. Check Keychain first for offline tamper-resistant license
@@ -55,9 +57,17 @@ final class ProManager: ObservableObject {
         self.isPro = true
         self.showPaywall = false
         self.activationError = nil
+        self.showActivationSuccessBanner = true
         if !key.isEmpty {
             self.activatedKey = key
             UserDefaults.standard.set(key, forKey: activatedLicenseKeyPref)
+        }
+        
+        // Auto-hide success banner after 3 seconds
+        DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) { [weak self] in
+            withAnimation(.easeInOut(duration: 0.25)) {
+                self?.showActivationSuccessBanner = false
+            }
         }
     }
     
