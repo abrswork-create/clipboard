@@ -90,24 +90,24 @@ struct MainPanelView: View {
                 VStack {
                     HStack(spacing: 8) {
                         Image(systemName: "checkmark.seal.fill")
-                            .font(.system(size: 14, weight: .bold))
-                            .foregroundStyle(Color.white)
+                            .font(.system(size: 13, weight: .semibold))
+                            .foregroundStyle(Color.accentColor)
                         
-                        Text("🎉 Upgraded to Clipmory Pro Successfully!")
-                            .font(.system(size: 12, weight: .semibold))
-                            .foregroundStyle(Color.white)
+                        Text("Upgraded to Clipmory Pro Successfully")
+                            .font(.system(size: 11.5, weight: .semibold))
+                            .foregroundStyle(CFColor.primaryText)
                     }
-                    .padding(.horizontal, 14)
-                    .padding(.vertical, 8)
+                    .padding(.horizontal, 13)
+                    .padding(.vertical, 7)
                     .background(
-                        Capsule()
-                            .fill(LinearGradient(
-                                colors: [Color.green.opacity(0.95), Color.accentColor],
-                                startPoint: .leading,
-                                endPoint: .trailing
-                            ))
+                        RoundedRectangle(cornerRadius: 8, style: .continuous)
+                            .fill(.regularMaterial)
                     )
-                    .cfShadow(CFShadow.panel)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 8, style: .continuous)
+                            .strokeBorder(Color.accentColor.opacity(0.35), lineWidth: 1)
+                    )
+                    .cfShadow(CFShadow.cardSelected)
                     .padding(.top, 10)
                     .transition(.move(edge: .top).combined(with: .opacity))
                     

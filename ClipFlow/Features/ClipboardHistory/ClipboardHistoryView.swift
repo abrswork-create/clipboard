@@ -13,6 +13,7 @@ struct ClipboardHistoryView: View {
     
     @State private var interfaceStyle: InterfaceStyle = SettingsRepository.shared.load().interfaceStyle
     @State private var isClearHovered = false
+    @State private var isFreeBadgeHovered = false
 
     private var displayItems: [ClipboardItem] {
         SearchService.search(items: store.items, query: viewModel.searchQuery)
@@ -90,47 +91,53 @@ struct ClipboardHistoryView: View {
                 
                 // PRO or FREE Tier Badge
                 if proManager.isPro {
-                    HStack(spacing: 3) {
+                    HStack(spacing: 4) {
                         Image(systemName: "sparkles")
-                            .font(.system(size: 8.5, weight: .bold))
+                            .font(.system(size: 8.5, weight: .semibold))
+                            .foregroundStyle(Color.accentColor)
+                        
                         Text("PRO")
-                            .font(.system(size: 9.5, weight: .bold))
+                            .font(.system(size: 10, weight: .bold))
+                            .foregroundStyle(CFColor.primaryText)
                     }
-                    .padding(.horizontal, 6)
-                    .padding(.vertical, 2)
+                    .padding(.horizontal, 7)
+                    .padding(.vertical, 3.5)
                     .background(
-                        Capsule()
-                            .fill(LinearGradient(
-                                colors: [Color.purple.opacity(0.85), Color.accentColor],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            ))
+                        RoundedRectangle(cornerRadius: 6, style: .continuous)
+                            .fill(CFColor.cardBackground)
                     )
-                    .foregroundStyle(.white)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 6, style: .continuous)
+                            .strokeBorder(Color.accentColor.opacity(0.35), lineWidth: 1)
+                    )
                     .cfShadow(CFShadow.card)
                 } else {
                     Button {
-                        proManager.triggerPaywall(reason: "You are on the Free Tier (limited to 20 history items & 3 pins). Upgrade to Pro for unlimited access.")
+                        proManager.triggerPaywall(reason: "Free tier is limited to 20 history items & 3 pinned cards. Upgrade to Pro for unlimited history, unlimited pins, and lifetime updates.")
                     } label: {
-                        HStack(spacing: 3) {
+                        HStack(spacing: 4) {
                             Text("FREE")
                                 .font(.system(size: 9.5, weight: .bold))
+                                .foregroundStyle(CFColor.secondaryText)
+                            
                             Image(systemName: "arrow.up.right")
                                 .font(.system(size: 7.5, weight: .semibold))
+                                .foregroundStyle(CFColor.secondaryText)
                         }
-                        .padding(.horizontal, 6)
-                        .padding(.vertical, 2)
+                        .padding(.horizontal, 7)
+                        .padding(.vertical, 3.5)
                         .background(
-                            Capsule()
-                                .fill(Color.orange.opacity(0.16))
+                            RoundedRectangle(cornerRadius: 6, style: .continuous)
+                                .fill(isFreeBadgeHovered ? CFColor.cardHover : CFColor.cardBackground)
                         )
                         .overlay(
-                            Capsule()
-                                .strokeBorder(Color.orange.opacity(0.35), lineWidth: 1)
+                            RoundedRectangle(cornerRadius: 6, style: .continuous)
+                                .strokeBorder(Color.primary.opacity(0.08), lineWidth: 1)
                         )
-                        .foregroundStyle(Color.orange)
+                        .cfShadow(CFShadow.card)
                     }
                     .buttonStyle(.plain)
+                    .onHover { isFreeBadgeHovered = $0 }
                     .help("Free Tier Active — Click to Upgrade to Pro")
                 }
                 
