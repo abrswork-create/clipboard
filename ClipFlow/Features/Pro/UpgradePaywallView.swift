@@ -188,6 +188,14 @@ struct UpgradePaywallView: View {
                 .strokeBorder(Color.primary.opacity(0.12), lineWidth: 1)
         )
         .shadow(color: .black.opacity(0.28), radius: 24, x: 0, y: 10)
+        .onChange(of: proManager.isPro) { isNowPro in
+            if isNowPro {
+                withAnimation { showSuccessAnimation = true }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
+                    closeModal()
+                }
+            }
+        }
     }
     
     private func featureRow(icon: String, title: String, description: String) -> some View {

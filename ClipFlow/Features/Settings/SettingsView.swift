@@ -86,8 +86,7 @@ struct GeneralSettingsView: View {
                         
                         if !proManager.isPro {
                             Button("Upgrade...") {
-                                proManager.paywallReason = "Upgrade to Clipmory Pro for unlimited history, unlimited pins, and lifetime updates."
-                                showSettingsPaywall = true
+                                proManager.triggerPaywall(reason: "Upgrade to Clipmory Pro for unlimited history, unlimited pins, and lifetime updates.")
                             }
                             .buttonStyle(.borderedProminent)
                         }
@@ -175,8 +174,13 @@ struct GeneralSettingsView: View {
             save()
             NotificationCenter.default.post(name: NSNotification.Name("clipFlowShowInMenuBarChanged"), object: nil)
         }
-        .sheet(isPresented: $showSettingsPaywall) {
+        .sheet(isPresented: $proManager.showPaywall) {
             UpgradePaywallView()
+        }
+        .onChange(of: proManager.isPro) { isNowPro in
+            if isNowPro {
+                proManager.showPaywall = false
+            }
         }
     }
     
