@@ -185,9 +185,17 @@ struct GeneralSettingsView: View {
         }
         .onChange(of: settings.enableHistory) { _ in save() }
         .onChange(of: launchAtLogin) { newValue in
-            LaunchAtLoginManager.shared.setLaunchAtLogin(newValue)
-            settings.launchAtLogin = newValue
-            save()
+            let success = LaunchAtLoginManager.shared.setLaunchAtLogin(newValue)
+            if success {
+                settings.launchAtLogin = newValue
+                save()
+            } else {
+                DispatchQueue.main.async {
+                    launchAtLogin = LaunchAtLoginManager.shared.isEnabled
+                    settings.launchAtLogin = launchAtLogin
+                    save()
+                }
+            }
         }
         .onChange(of: settings.showInMenuBar) { _ in
             save()
@@ -200,6 +208,9 @@ struct GeneralSettingsView: View {
             if isNowPro {
                 proManager.showPaywall = false
             }
+        }
+        .onAppear {
+            launchAtLogin = LaunchAtLoginManager.shared.isEnabled
         }
     }
     

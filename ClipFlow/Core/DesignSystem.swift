@@ -1,4 +1,5 @@
 import SwiftUI
+import AppKit
 
 // MARK: - Design System
 // Centralised design tokens for Clipmory's Fluent UI–inspired light panel.
@@ -26,8 +27,17 @@ enum CFColor {
             return NSColor.white.withAlphaComponent(0.85)
         }
     }))
-    /// Selected card border (macOS focus ring style)
-    static let selectedBorder = Color.accentColor.opacity(0.8)
+    /// Selected card border (subtle macOS accent outline)
+    static let selectedBorder = Color.accentColor.opacity(0.40)
+    /// Selected card background base - keeps crisp luminous white in light mode
+    static let selectedBackground = Color(nsColor: NSColor(name: nil, dynamicProvider: { appearance in
+        let match = appearance.bestMatch(from: [.aqua, .darkAqua])
+        if match == .darkAqua {
+            return NSColor(white: 0.28, alpha: 0.85)
+        } else {
+            return NSColor.white.withAlphaComponent(0.92)
+        }
+    }))
     /// Active tab underline — macOS Accent
     static let tabAccent = Color.accentColor
     /// Selected tab button background - white in light mode
@@ -105,4 +115,36 @@ extension View {
     func cfShadow(_ s: CFShadow) -> some View {
         self.shadow(color: s.color, radius: s.radius, x: s.x, y: s.y)
     }
+
+    /// Changes the mouse cursor to a pointing hand on hover
+    func pointingHandCursor() -> some View {
+        self.modifier(PointingHandModifier())
+    }
 }
+
+// MARK: - Pointing Hand Cursor Modifier
+
+struct PointingHandModifier: ViewModifier {
+    @State private var isHovered = false
+
+    func body(content: Content) -> some View {
+        content
+            .onHover { hovering in
+                if hovering != isHovered {
+                    isHovered = hovering
+                    if hovering {
+                        NSCursor.pointingHand.push()
+                    } else {
+                        NSCursor.pop()
+                    }
+                }
+            }
+            .onDisappear {
+                if isHovered {
+                    isHovered = false
+                    NSCursor.pop()
+                }
+            }
+    }
+}
+

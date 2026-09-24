@@ -2,12 +2,14 @@
 set -e
 
 echo "🍎 [1/3] Building Clipmory for Mac App Store (Sandbox + StoreKit 2)..."
+DERIVED_DATA_PATH="./build/DerivedData-AppStore"
 xcodebuild -project ClipFlow.xcodeproj -scheme ClipFlow -configuration Release -destination 'platform=macOS' \
+    -derivedDataPath "$DERIVED_DATA_PATH" \
     SWIFT_ACTIVE_COMPILATION_CONDITIONS="APP_STORE" \
     CODE_SIGN_ENTITLEMENTS="ClipFlow/Resources/ClipFlow-AppStore.entitlements" \
-    build > /dev/null
+    build
 
-BUILD_APP="/Users/owel/Library/Developer/Xcode/DerivedData/ClipFlow-elmwtrcpaaulkrhjsflimlcgqtrb/Build/Products/Release/ClipFlow.app"
+BUILD_APP="$DERIVED_DATA_PATH/Build/Products/Release/ClipFlow.app"
 DIST_DIR="./dist/appstore"
 rm -rf "$DIST_DIR"
 mkdir -p "$DIST_DIR"

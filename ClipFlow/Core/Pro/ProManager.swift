@@ -61,10 +61,10 @@ final class ProManager: ObservableObject {
         return dir.appendingPathComponent(".trial_record")
     }
     
-    /// Evaluates or initializes the 7-Day Free Trial tied permanently to the Mac's hardware UUID.
+    /// Evaluates or initializes the 7-Day Free Trial tied to this anonymous application instance.
     func refreshTrialStatus() {
-        let macUUID = LemonSqueezyService.shared.getMacUUID()
-        let trialStartDate = getOrCreateTrialRecord(uuid: macUUID)
+        let instanceID = LemonSqueezyService.shared.getAppInstanceID()
+        let trialStartDate = getOrCreateTrialRecord(uuid: instanceID)
         
         let elapsed = Date().timeIntervalSince(trialStartDate)
         

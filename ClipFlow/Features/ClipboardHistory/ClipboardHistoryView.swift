@@ -13,6 +13,7 @@ struct ClipboardHistoryView: View {
     
     @State private var interfaceStyle: InterfaceStyle = SettingsRepository.shared.load().interfaceStyle
     @State private var isClearHovered = false
+    @State private var isSelectHovered = false
     @State private var isFreeBadgeHovered = false
 
     private var displayItems: [ClipboardItem] {
@@ -21,13 +22,13 @@ struct ClipboardHistoryView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            listHeader
-                .opacity(headerAppeared ? 1 : 0)
-                .offset(y: headerAppeared ? 0 : 8)
-                
-            Divider()
-                .padding(.horizontal, 12)
-                .opacity(headerAppeared ? 0.5 : 0)
+                listHeader
+                    .opacity(headerAppeared ? 1 : 0)
+                    .offset(y: headerAppeared ? 0 : 8)
+                    
+                Divider()
+                    .padding(.horizontal, 12)
+                    .opacity(headerAppeared ? 0.5 : 0)
 
             if displayItems.isEmpty {
                 if !viewModel.searchQuery.isEmpty {
@@ -41,11 +42,31 @@ struct ClipboardHistoryView: View {
                     .offset(y: cardsAppeared ? 0 : 12)
             }
         }
+        .overlay(alignment: .bottom) {
+            if viewModel.isSelectionMode || !viewModel.selectedItemIDs.isEmpty {
+                batchActionBar
+                    .padding(.horizontal, 12)
+                    .padding(.bottom, 10)
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
+            }
+        }
+        .animation(.spring(response: 0.3, dampingFraction: 0.8), value: viewModel.isSelectionMode)
+        .animation(.spring(response: 0.3, dampingFraction: 0.8), value: viewModel.selectedItemIDs.count)
+        .onExitCommand {
+            if viewModel.isSelectionMode || !viewModel.selectedItemIDs.isEmpty {
+                viewModel.clearSelection()
+            }
+        }
         .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("clipFlowWindowWillOpen"))) { _ in
+            withAnimation(.easeInOut(duration: 0.15)) {
+                interfaceStyle = SettingsRepository.shared.load().interfaceStyle
+            }
             triggerAnimation()
         }
         .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("clipFlowInterfaceStyleChanged"))) { _ in
-            interfaceStyle = SettingsRepository.shared.load().interfaceStyle
+            withAnimation(.easeInOut(duration: 0.15)) {
+                interfaceStyle = SettingsRepository.shared.load().interfaceStyle
+            }
         }
         .onAppear {
             triggerAnimation()
@@ -84,10 +105,12 @@ struct ClipboardHistoryView: View {
 
     private var listHeader: some View {
         VStack(spacing: 8) {
-            HStack(alignment: .center, spacing: 8) {
-                Text("Clipboard")
-                    .font(.system(size: 18, weight: .semibold))
+            HStack(alignment: .center, spacing: 6) {
+                Text("Clipmory")
+                    .font(.system(size: 17, weight: .semibold))
                     .foregroundStyle(CFColor.primaryText)
+                    .lineLimit(1)
+                    .fixedSize()
                 
                 // Licensing / Trial Badge
                 if proManager.isPro {
@@ -115,16 +138,17 @@ struct ClipboardHistoryView: View {
                     Button {
                         proManager.triggerPaywall(reason: "You are on day \(8 - proManager.trialDaysRemaining) of your 7-day free trial. Upgrade anytime for lifetime updates.")
                     } label: {
-                        HStack(spacing: 4) {
-                            Text("7-DAY TRIAL (\(proManager.trialDaysRemaining)d left)")
+                        HStack(spacing: 3) {
+                            Text("TRIAL (\(proManager.trialDaysRemaining)d)")
                                 .font(.system(size: 9.5, weight: .bold))
                                 .foregroundStyle(Color.accentColor)
+                                .lineLimit(1)
                             
                             Image(systemName: "arrow.up.right")
                                 .font(.system(size: 7.5, weight: .semibold))
                                 .foregroundStyle(Color.accentColor)
                         }
-                        .padding(.horizontal, 7)
+                        .padding(.horizontal, 6)
                         .padding(.vertical, 3.5)
                         .background(
                             RoundedRectangle(cornerRadius: 6, style: .continuous)
@@ -132,13 +156,15 @@ struct ClipboardHistoryView: View {
                         )
                         .overlay(
                             RoundedRectangle(cornerRadius: 6, style: .continuous)
-                                .strokeBorder(Color.accentColor.opacity(0.3), lineWidth: 1)
+                                .strokeBorder(Color.accentColor.opacity(isFreeBadgeHovered ? 0.5 : 0.3), lineWidth: 1)
                         )
                         .cfShadow(CFShadow.card)
                     }
                     .buttonStyle(.plain)
                     .onHover { isFreeBadgeHovered = $0 }
+                    .pointingHandCursor()
                     .help("7-Day Free Trial Active — Click to Upgrade to Pro")
+                    .fixedSize()
                 } else {
                     Button {
                         proManager.triggerPaywall(reason: "Your 7-day free trial has expired. Upgrade to Clipmory Pro to continue using Clipmory.")
@@ -156,41 +182,88 @@ struct ClipboardHistoryView: View {
                         .padding(.vertical, 3.5)
                         .background(
                             RoundedRectangle(cornerRadius: 6, style: .continuous)
-                                .fill(Color.red.opacity(0.08))
+                                .fill(Color.red.opacity(isFreeBadgeHovered ? 0.14 : 0.08))
                         )
                         .overlay(
                             RoundedRectangle(cornerRadius: 6, style: .continuous)
-                                .strokeBorder(Color.red.opacity(0.3), lineWidth: 1)
+                                .strokeBorder(Color.red.opacity(isFreeBadgeHovered ? 0.5 : 0.3), lineWidth: 1)
                         )
                         .cfShadow(CFShadow.card)
                     }
                     .buttonStyle(.plain)
                     .onHover { isFreeBadgeHovered = $0 }
+                    .pointingHandCursor()
                     .help("Free Trial Expired — Upgrade to Continue")
                 }
                 
                 Spacer()
                 
-                Button {
-                    viewModel.clearAll()
-                } label: {
-                    Text("Clear all")
-                        .font(.system(size: 11, weight: .medium))
-                        .foregroundStyle(CFColor.clearAll)
-                        .padding(.horizontal, 10)
+                HStack(spacing: 6) {
+                    // Multi-select toggle button
+                    Button {
+                        withAnimation(.easeInOut(duration: 0.15)) {
+                            if viewModel.isSelectionMode {
+                                viewModel.clearSelection()
+                            } else {
+                                viewModel.isSelectionMode = true
+                            }
+                        }
+                    } label: {
+                        HStack(spacing: 4) {
+                            Image(systemName: viewModel.isSelectionMode ? "checkmark.circle.fill" : "checkmark.circle")
+                                .font(.system(size: 10, weight: .semibold))
+                                .foregroundStyle(viewModel.isSelectionMode ? Color.accentColor : CFColor.secondaryText)
+                            Text(viewModel.isSelectionMode ? "Done" : "Select")
+                                .font(.system(size: 11, weight: .medium))
+                                .foregroundStyle(CFColor.primaryText)
+                                .lineLimit(1)
+                                .fixedSize(horizontal: true, vertical: false)
+                        }
+                        .padding(.horizontal, 8)
                         .padding(.vertical, 4)
                         .background(
                             RoundedRectangle(cornerRadius: 6, style: .continuous)
-                                .fill(isClearHovered ? CFColor.cardHover : CFColor.cardBackground)
+                                .fill(viewModel.isSelectionMode ? CFColor.cardHover : (isSelectHovered ? CFColor.cardHover : CFColor.cardBackground))
                         )
                         .overlay(
                             RoundedRectangle(cornerRadius: 6, style: .continuous)
-                                .strokeBorder(Color.primary.opacity(0.06), lineWidth: 1)
+                                .strokeBorder(viewModel.isSelectionMode ? Color.accentColor.opacity(0.35) : (isSelectHovered ? Color.primary.opacity(0.18) : Color.primary.opacity(0.08)), lineWidth: 1)
                         )
                         .cfShadow(CFShadow.card)
+                    }
+                    .buttonStyle(.plain)
+                    .onHover { isSelectHovered = $0 }
+                    .pointingHandCursor()
+                    .help(viewModel.isSelectionMode ? "Exit selection mode" : "Select multiple items to paste or copy")
+                    .fixedSize()
+
+                    Button {
+                        viewModel.clearAll()
+                    } label: {
+                        Text("Clear all")
+                            .font(.system(size: 11, weight: .medium))
+                            .lineLimit(1)
+                            .fixedSize(horizontal: true, vertical: false)
+                            .foregroundStyle(isClearHovered ? Color.red : CFColor.clearAll)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 4)
+                            .background(
+                                RoundedRectangle(cornerRadius: 6, style: .continuous)
+                                    .fill(isClearHovered ? Color.red.opacity(0.08) : CFColor.cardBackground)
+                            )
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 6, style: .continuous)
+                                    .strokeBorder(isClearHovered ? Color.red.opacity(0.25) : Color.primary.opacity(0.08), lineWidth: 1)
+                            )
+                            .cfShadow(CFShadow.card)
+                    }
+                    .buttonStyle(.plain)
+                    .onHover { isClearHovered = $0 }
+                    .pointingHandCursor()
+                    .help("Clear clipboard history")
+                    .fixedSize()
                 }
-                .buttonStyle(.plain)
-                .onHover { isClearHovered = $0 }
+                .fixedSize(horizontal: true, vertical: false)
             }
             
             // Search Bar
@@ -210,12 +283,19 @@ struct ClipboardHistoryView: View {
                             .foregroundStyle(CFColor.secondaryText)
                     }
                     .buttonStyle(.plain)
+                    .pointingHandCursor()
                 }
             }
             .padding(.vertical, 6)
             .padding(.horizontal, 8)
-            .background(Color.black.opacity(0.05))
-            .cornerRadius(6)
+            .background(
+                RoundedRectangle(cornerRadius: 8, style: .continuous)
+                    .fill(Color(nsColor: .controlBackgroundColor).opacity(0.55))
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 8, style: .continuous)
+                    .strokeBorder(Color.primary.opacity(0.06), lineWidth: 0.5)
+            )
         }
         .padding(.horizontal, 14)
         .padding(.top, 12)
@@ -271,6 +351,7 @@ struct ClipboardHistoryView: View {
             }
             .padding(.horizontal, 10)
             .padding(.vertical, 8)
+            .padding(.bottom, (viewModel.isSelectionMode || !viewModel.selectedItemIDs.isEmpty) ? 58 : 0)
             .animation(.easeInOut(duration: 0.2), value: displayItems)
         }
     }
@@ -286,7 +367,12 @@ struct ClipboardHistoryView: View {
             onPin:         { viewModel.togglePin(item.id) },
             onFavorite:    { viewModel.toggleFavorite(item.id) },
             onPaste:       { viewModel.paste(item.id) },
-            style:         interfaceStyle
+            style:         interfaceStyle,
+            isSelectionMode: viewModel.isSelectionMode,
+            isInMultiSelect: viewModel.selectedItemIDs.contains(item.id),
+            onToggleMultiSelect: { viewModel.toggleSelection(for: item.id) },
+            onShiftSelect: { viewModel.selectRange(to: item.id, in: displayItems) },
+            onCommandSelect: { viewModel.toggleSelection(for: item.id) }
         )
     }
 
@@ -341,6 +427,142 @@ struct ClipboardHistoryView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding()
+    }
+
+    // MARK: - Batch Action Bar
+
+    private var batchActionBar: some View {
+        HStack(spacing: 8) {
+            // Count badge
+            HStack(spacing: 5) {
+                Image(systemName: "checkmark.circle.fill")
+                    .font(.system(size: 11, weight: .semibold))
+                    .foregroundStyle(Color.accentColor)
+                Text("\(viewModel.selectedItemIDs.count)")
+                    .font(.system(size: 11.5, weight: .semibold))
+                    .foregroundStyle(CFColor.primaryText)
+            }
+            .padding(.horizontal, 8)
+            .padding(.vertical, 4)
+            .background(
+                Capsule()
+                    .fill(Color.primary.opacity(0.06))
+            )
+            .help("\(viewModel.selectedItemIDs.count) items selected")
+
+            Spacer()
+
+            // Select All / Deselect (Icon button)
+            Button {
+                viewModel.selectAll(items: displayItems)
+            } label: {
+                Image(systemName: viewModel.selectedItemIDs.count == displayItems.count ? "checklist.checked" : "checklist")
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundStyle(viewModel.selectedItemIDs.count == displayItems.count ? Color.accentColor : CFColor.primaryText)
+                    .frame(width: 28, height: 28)
+                    .background(
+                        RoundedRectangle(cornerRadius: 6, style: .continuous)
+                            .fill(Color.primary.opacity(0.06))
+                    )
+            }
+            .buttonStyle(.plain)
+            .pointingHandCursor()
+            .help(viewModel.selectedItemIDs.count == displayItems.count ? "Deselect All" : "Select All")
+
+            // Copy button (Icon button)
+            Button {
+                viewModel.copySelected(orderedItems: displayItems)
+            } label: {
+                Image(systemName: "doc.on.doc")
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundStyle(CFColor.primaryText)
+                    .frame(width: 28, height: 28)
+                    .background(
+                        RoundedRectangle(cornerRadius: 6, style: .continuous)
+                            .fill(Color.primary.opacity(0.06))
+                    )
+            }
+            .buttonStyle(.plain)
+            .pointingHandCursor()
+            .disabled(viewModel.selectedItemIDs.isEmpty)
+            .opacity(viewModel.selectedItemIDs.isEmpty ? 0.4 : 1.0)
+            .help("Copy selected items to clipboard")
+
+            // Delete button (Icon button)
+            Button {
+                viewModel.deleteSelected()
+            } label: {
+                Image(systemName: "trash")
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundStyle(CFColor.secondaryText)
+                    .frame(width: 28, height: 28)
+                    .background(
+                        RoundedRectangle(cornerRadius: 6, style: .continuous)
+                            .fill(Color.primary.opacity(0.06))
+                    )
+            }
+            .buttonStyle(.plain)
+            .pointingHandCursor()
+            .disabled(viewModel.selectedItemIDs.isEmpty)
+            .opacity(viewModel.selectedItemIDs.isEmpty ? 0.4 : 1.0)
+            .help("Delete selected items")
+
+            // Paste All Button (Primary Icon button with count)
+            Button {
+                viewModel.pasteSelected(orderedItems: displayItems)
+            } label: {
+                HStack(spacing: 4) {
+                    Image(systemName: "arrow.right.doc.on.clipboard")
+                        .font(.system(size: 11, weight: .semibold))
+                    if !viewModel.selectedItemIDs.isEmpty {
+                        Text("\(viewModel.selectedItemIDs.count)")
+                            .font(.system(size: 11, weight: .semibold))
+                    }
+                }
+                .foregroundStyle(.white)
+                .padding(.horizontal, 10)
+                .frame(height: 28)
+                .background(
+                    RoundedRectangle(cornerRadius: 6, style: .continuous)
+                        .fill(viewModel.selectedItemIDs.isEmpty ? Color.gray.opacity(0.4) : Color.accentColor)
+                )
+                .cfShadow(CFShadow.card)
+            }
+            .buttonStyle(.plain)
+            .pointingHandCursor()
+            .disabled(viewModel.selectedItemIDs.isEmpty)
+            .opacity(viewModel.selectedItemIDs.isEmpty ? 0.4 : 1.0)
+            .keyboardShortcut(.defaultAction)
+            .help("Paste all selected items (Return)")
+
+            // Done / Exit Selection Button (Icon button)
+            Button {
+                viewModel.clearSelection()
+            } label: {
+                Image(systemName: "xmark")
+                    .font(.system(size: 11, weight: .bold))
+                    .foregroundStyle(CFColor.secondaryText)
+                    .frame(width: 26, height: 26)
+                    .background(
+                        Circle()
+                            .fill(Color.primary.opacity(0.06))
+                    )
+            }
+            .buttonStyle(.plain)
+            .pointingHandCursor()
+            .help("Done / Exit Selection Mode (Esc)")
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 8)
+        .background(
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .fill(.ultraThinMaterial)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .strokeBorder(Color.primary.opacity(0.08), lineWidth: 0.5)
+        )
+        .shadow(color: Color.black.opacity(0.12), radius: 8, x: 0, y: 3)
     }
 }
 

@@ -1480,7 +1480,7 @@ struct ClipFlowAppPreview: View {
             
             // Sub header
             HStack {
-                Text("Clipboard").font(.system(size: 16, weight: .bold)).foregroundColor(.white)
+                Text("Clipmory").font(.system(size: 16, weight: .bold)).foregroundColor(.white)
                 Spacer()
                 Text("Clear all")
                     .font(.system(size: 11, weight: .medium))

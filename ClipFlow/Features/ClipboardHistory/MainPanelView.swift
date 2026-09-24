@@ -118,6 +118,7 @@ struct MainPanelView: View {
         }
         .animation(.spring(response: 0.3, dampingFraction: 0.8), value: proManager.showPaywall)
         .background(.regularMaterial)
+        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .blur(radius: windowBlur)
         .opacity(windowOpacity)

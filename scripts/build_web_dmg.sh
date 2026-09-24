@@ -2,9 +2,10 @@
 set -e
 
 echo "🚀 [1/4] Building Clipmory (Direct Web / DMG Release)..."
-xcodebuild -project ClipFlow.xcodeproj -scheme ClipFlow -configuration Release -destination 'platform=macOS' build > /dev/null
+DERIVED_DATA_PATH="./build/DerivedData-Web"
+xcodebuild -project ClipFlow.xcodeproj -scheme ClipFlow -configuration Release -destination 'platform=macOS' -derivedDataPath "$DERIVED_DATA_PATH" build
 
-BUILD_APP="/Users/owel/Library/Developer/Xcode/DerivedData/ClipFlow-elmwtrcpaaulkrhjsflimlcgqtrb/Build/Products/Release/ClipFlow.app"
+BUILD_APP="$DERIVED_DATA_PATH/Build/Products/Release/ClipFlow.app"
 DIST_DIR="./dist/web"
 rm -rf "$DIST_DIR"
 mkdir -p "$DIST_DIR/staging"

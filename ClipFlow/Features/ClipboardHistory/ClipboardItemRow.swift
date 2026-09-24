@@ -14,6 +14,11 @@ struct ClipboardItemRow: View {
     let onFavorite: () -> Void
     let onPaste: () -> Void
     let style: InterfaceStyle // New
+    var isSelectionMode: Bool = false
+    var isInMultiSelect: Bool = false
+    var onToggleMultiSelect: (() -> Void)? = nil
+    var onShiftSelect: (() -> Void)? = nil
+    var onCommandSelect: (() -> Void)? = nil
 
     @State private var isHovered = false
     @State private var showActions = false
@@ -64,6 +69,29 @@ struct ClipboardItemRow: View {
 
     private var contentBlock: some View {
         HStack(spacing: 0) {
+            // Selection Checkbox
+            if isSelectionMode || isInMultiSelect {
+                Button {
+                    let modifiers = NSEvent.modifierFlags
+                    if modifiers.contains(.shift), let onShiftSelect = onShiftSelect {
+                        onShiftSelect()
+                    } else if modifiers.contains(.command), let onCommandSelect = onCommandSelect {
+                        onCommandSelect()
+                    } else {
+                        onToggleMultiSelect?()
+                    }
+                } label: {
+                    Image(systemName: isInMultiSelect ? "checkmark.circle.fill" : "circle")
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundStyle(isInMultiSelect ? Color(nsColor: .controlAccentColor) : CFColor.secondaryText.opacity(0.5))
+                        .contentShape(Circle())
+                }
+                .buttonStyle(.plain)
+                .pointingHandCursor()
+                .padding(.leading, 10)
+                .transition(.scale.combined(with: .opacity))
+            }
+
             // LEFT SIDE: Text and badges
             VStack(alignment: .leading, spacing: 0) {
                 if let appName = item.sourceAppName {
@@ -112,7 +140,16 @@ struct ClipboardItemRow: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .contentShape(Rectangle())
             .onTapGesture {
-                onSelect()
+                let modifiers = NSEvent.modifierFlags
+                if modifiers.contains(.shift), let onShiftSelect = onShiftSelect {
+                    onShiftSelect()
+                } else if modifiers.contains(.command), let onCommandSelect = onCommandSelect {
+                    onCommandSelect()
+                } else if isSelectionMode {
+                    onToggleMultiSelect?()
+                } else {
+                    onSelect()
+                }
                 if showActions {
                     withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
                         showActions = false
@@ -135,6 +172,8 @@ struct ClipboardItemRow: View {
                         .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
+                .pointingHandCursor()
+                .opacity(isHovered || showActions ? 1 : 0)
                 
                 Spacer()
                 
@@ -171,41 +210,63 @@ struct ClipboardItemRow: View {
                             }
                         }
                         .buttonStyle(.plain)
+                        .pointingHandCursor()
                         .help(isRevealed ? "Hide sensitive content" : "Authenticate to reveal sensitive content")
                     }
                     
-                    Button(action: onFavorite) {
-                        Image(systemName: item.isFavorite ? "star.fill" : "star")
-                            .font(.system(size: 12))
-                            .foregroundStyle(item.isFavorite ? Color.yellow : CFColor.secondaryText)
+                    if isHovered || item.isFavorite {
+                        Button(action: onFavorite) {
+                            Image(systemName: item.isFavorite ? "star.fill" : "star")
+                                .font(.system(size: 12))
+                                .foregroundStyle(item.isFavorite ? Color.yellow : CFColor.secondaryText)
+                        }
+                        .buttonStyle(.plain)
+                        .pointingHandCursor()
+                        .help(item.isFavorite ? "Unfavorite" : "Favorite")
+                        .transition(.opacity)
                     }
-                    .buttonStyle(.plain)
-                    .help(item.isFavorite ? "Unfavorite" : "Favorite")
                     
-                    Button(action: onPin) {
-                        Image(systemName: item.isPinned ? "pin.fill" : "pin")
-                            .font(.system(size: 12))
-                            .foregroundStyle(item.isPinned ? CFColor.pinActive : CFColor.secondaryText)
+                    if isHovered || item.isPinned {
+                        Button(action: onPin) {
+                            Image(systemName: item.isPinned ? "pin.fill" : "pin")
+                                .font(.system(size: 12))
+                                .foregroundStyle(item.isPinned ? CFColor.pinActive : CFColor.secondaryText)
+                        }
+                        .buttonStyle(.plain)
+                        .pointingHandCursor()
+                        .help(item.isPinned ? "Unpin" : "Pin")
+                        .transition(.opacity)
                     }
-                    .buttonStyle(.plain)
-                    .help(item.isPinned ? "Unpin" : "Pin")
                 }
             }
+            .animation(.easeInOut(duration: 0.15), value: isHovered)
             .padding(.vertical, style == .compact ? 6 : (style == .spacious ? 14 : 10))
             .padding(.trailing, style == .compact ? 8 : (style == .spacious ? 16 : 12))
         }
         .background(
             RoundedRectangle(cornerRadius: CFRadius.card, style: .continuous)
-                .fill(isHovered && !isSelected && !showActions ? CFColor.cardHover : CFColor.cardBackground)
+                .fill(
+                    (isInMultiSelect || isSelected)
+                        ? CFColor.selectedBackground
+                        : (isHovered && !showActions ? CFColor.cardHover : CFColor.cardBackground)
+                )
+                .overlay(
+                    (isInMultiSelect || isSelected)
+                        ? RoundedRectangle(cornerRadius: CFRadius.card, style: .continuous)
+                            .fill(Color.accentColor.opacity(0.06))
+                        : nil
+                )
         )
         .overlay(
             RoundedRectangle(cornerRadius: CFRadius.card, style: .continuous)
                 .strokeBorder(
-                    isSelected ? CFColor.selectedBorder : Color.clear,
-                    lineWidth: 2
+                    (isInMultiSelect || isSelected)
+                        ? CFColor.selectedBorder
+                        : (isHovered && !showActions ? Color.primary.opacity(0.12) : Color.clear),
+                    lineWidth: (isInMultiSelect || isSelected) ? 1.5 : 1
                 )
         )
-        .cfShadow(isSelected ? CFShadow.cardSelected : CFShadow.card)
+        .cfShadow(isInMultiSelect ? CFShadow.cardSelected : (isSelected ? CFShadow.cardSelected : CFShadow.card))
     }
 
 

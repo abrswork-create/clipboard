@@ -14,9 +14,10 @@ final class EncryptionService {
 
     private init() {}
 
-    // MARK: - Hardware-Derived Key
+    // MARK: - App-Instance Derived Key
 
-    /// Derives a 256-bit AES-GCM symmetric key bound permanently to this physical Mac.
+    /// Derives a 256-bit AES-GCM symmetric key using an anonymous local App Instance ID.
+    /// This avoids binding encryption to physical Mac hardware identifiers.
     private func getOrCreateKey() -> SymmetricKey {
         lock.lock()
         defer { lock.unlock() }
@@ -25,9 +26,9 @@ final class EncryptionService {
             return key
         }
 
-        let macUUID = LemonSqueezyService.shared.getMacUUID()
+        let instanceID = LemonSqueezyService.shared.getAppInstanceID()
         let salt = "ClipFlowMasterSalt_2026_x89a".data(using: .utf8)!
-        let inputKeyMaterial = SymmetricKey(data: macUUID.data(using: .utf8)!)
+        let inputKeyMaterial = SymmetricKey(data: instanceID.data(using: .utf8)!)
 
         let derivedKey = HKDF<SHA256>.deriveKey(
             inputKeyMaterial: inputKeyMaterial,

@@ -1,5 +1,4 @@
 import Foundation
-import IOKit
 import Security
 
 // MARK: - LemonSqueezyService
@@ -7,7 +6,7 @@ import Security
 // https://docs.lemonsqueezy.com/api/licenses
 //
 // Features:
-// 1. Hardware-bound licensing: Uses Mac's IOPlatformUUID as `instance_name` so licenses cannot be shared past the device limit.
+// 1. Anonymous App Instance ID: Avoids linking any physical Mac hardware UUID or computer name.
 // 2. Offline persistence: Securely saves verified activation tokens in macOS Keychain.
 // 3. Fallback support: Can operate completely offline once activated.
 
@@ -99,35 +98,23 @@ public final class LemonSqueezyService: Sendable {
 
     private init() {}
 
-    // MARK: - Hardware UUID Fingerprint
+    // MARK: - Anonymous App Instance ID
 
-    /// Fetches the Mac's permanent hardware UUID from IOKit.
-    /// This ensures licenses are bound to this specific computer.
-    public func getMacUUID() -> String {
-        let platformExpert = IOServiceGetMatchingService(
-            kIOMainPortDefault,
-            IOServiceMatching("IOPlatformExpertDevice")
-        )
-        guard platformExpert != 0 else {
-            return Host.current().localizedName ?? "Mac"
+    /// Generates or retrieves an anonymous, privacy-safe application instance ID.
+    /// This completely avoids linking hardware UUIDs, serial numbers, or computer names.
+    public func getAppInstanceID() -> String {
+        let key = "com.clipflow.anonymous_instance_id"
+        if let existing = UserDefaults.standard.string(forKey: key) {
+            return existing
         }
-        defer { IOObjectRelease(platformExpert) }
-
-        if let uuidProperty = IORegistryEntryCreateCFProperty(
-            platformExpert,
-            kIOPlatformUUIDKey as CFString,
-            kCFAllocatorDefault,
-            0
-        ) {
-            let uuid = uuidProperty.takeRetainedValue() as? String
-            return uuid ?? (Host.current().localizedName ?? "Mac")
-        }
-        return Host.current().localizedName ?? "Mac"
+        let newID = UUID().uuidString
+        UserDefaults.standard.set(newID, forKey: key)
+        return newID
     }
 
     // MARK: - Activation API Call
 
-    /// Activates a license key with Lemon Squeezy using the device's hardware UUID.
+    /// Activates a license key with Lemon Squeezy using an anonymous instance identifier.
     public func activateLicense(key: String) async -> Result<LemonActivationResponse, LicenseError> {
         let trimmedKey = key.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmedKey.isEmpty else {
@@ -139,7 +126,7 @@ public final class LemonSqueezyService: Sendable {
         request.setValue("application/json", forHTTPHeaderField: "Accept")
         request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
 
-        let instanceName = "\(Host.current().localizedName ?? "Mac") (\(getMacUUID().prefix(8)))"
+        let instanceName = "Mac (\(getAppInstanceID().prefix(8)))"
         let bodyParameters: [String: String] = [
             "license_key": trimmedKey,
             "instance_name": instanceName

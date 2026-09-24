@@ -457,21 +457,45 @@ final class LaunchAtLoginManager {
     
     private init() {}
     
-    func setLaunchAtLogin(_ enabled: Bool) {
+    var isEnabled: Bool {
+        SMAppService.mainApp.status == .enabled
+    }
+    
+    var statusDescription: String {
+        switch SMAppService.mainApp.status {
+        case .enabled: return "enabled"
+        case .notRegistered: return "notRegistered"
+        case .requiresApproval: return "requiresApproval"
+        case .notFound: return "notFound"
+        @unknown default: return "unknown(\(SMAppService.mainApp.status.rawValue))"
+        }
+    }
+    
+    @discardableResult
+    func setLaunchAtLogin(_ enabled: Bool) -> Bool {
+        let currentStatus = SMAppService.mainApp.status
+        NSLog("[LaunchAtLogin] Target enabled: %d, Current SMAppService status: %@", enabled, statusDescription)
         do {
             if enabled {
-                if SMAppService.mainApp.status == .notRegistered {
+                if currentStatus == .requiresApproval {
+                    SMAppService.openSystemSettingsLoginItems()
+                } else if currentStatus != .enabled {
                     try SMAppService.mainApp.register()
-                    print("Successfully registered to launch at login.")
+                    NSLog("[LaunchAtLogin] Successfully registered to launch at login. New status: %@", statusDescription)
                 }
             } else {
-                if SMAppService.mainApp.status == .enabled {
+                if currentStatus == .enabled || currentStatus == .requiresApproval {
                     try SMAppService.mainApp.unregister()
-                    print("Successfully unregistered from launch at login.")
+                    NSLog("[LaunchAtLogin] Successfully unregistered from launch at login. New status: %@", statusDescription)
                 }
             }
+            return true
         } catch {
-            print("Failed to set launch at login: \(error.localizedDescription)")
+            NSLog("[LaunchAtLogin] Failed to set launch at login: %@", error.localizedDescription)
+            if SMAppService.mainApp.status == .requiresApproval {
+                SMAppService.openSystemSettingsLoginItems()
+            }
+            return false
         }
     }
 }

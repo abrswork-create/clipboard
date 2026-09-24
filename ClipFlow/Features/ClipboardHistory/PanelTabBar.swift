@@ -28,7 +28,7 @@ enum PanelTab: CaseIterable, Identifiable {
         case .image:      return "Images"
         case .kaomoji:    return "Kaomoji"
         case .symbols:    return "Symbols"
-        case .clipboard:  return "Clipboard"
+        case .clipboard:  return "Clipmory"
         }
     }
 }
@@ -40,17 +40,24 @@ struct PanelTabBar: View {
     let onClose: () -> Void
     
     @State private var itemsAppeared = true
+    @State private var hoveredTab: PanelTab? = nil
 
     var body: some View {
         VStack(spacing: 0) {
-            // Tab row
-            HStack(alignment: .center, spacing: 2) {
+            // Tab row in segmented pill bar
+            HStack(alignment: .center, spacing: 3) {
                 ForEach(PanelTab.allCases) { tab in
                     tabButton(tab)
                 }
             }
-            .padding(.horizontal, 8)
-            .padding(.bottom, 0)
+            .padding(3)
+            .background(
+                RoundedRectangle(cornerRadius: 8, style: .continuous)
+                    .fill(Color.primary.opacity(0.04))
+            )
+            .padding(.horizontal, 10)
+            .padding(.top, 12)
+            .padding(.bottom, 8)
             .opacity(itemsAppeared ? 1 : 0)
             .offset(y: itemsAppeared ? 0 : 8)
 
@@ -77,6 +84,7 @@ struct PanelTabBar: View {
 
     private func tabButton(_ tab: PanelTab) -> some View {
         let isSelected = selectedTab == tab
+        let isHovered = hoveredTab == tab
 
         return Button {
             withAnimation(.easeInOut(duration: 0.15)) {
@@ -88,16 +96,25 @@ struct PanelTabBar: View {
                     RoundedRectangle(cornerRadius: 6, style: .continuous)
                         .fill(CFColor.selectedTabBackground)
                         .cfShadow(CFShadow.card)
+                } else if isHovered {
+                    RoundedRectangle(cornerRadius: 6, style: .continuous)
+                        .fill(CFColor.cardHover)
                 }
                 
                 Image(systemName: tab.icon)
-                    .font(.system(size: 15, weight: .medium))
-                    .foregroundStyle(isSelected ? CFColor.primaryText : CFColor.tabInactive)
+                    .font(.system(size: 15, weight: isSelected ? .semibold : .medium))
+                    .foregroundStyle(isSelected ? CFColor.primaryText : (isHovered ? CFColor.primaryText : CFColor.tabInactive))
             }
-            .frame(width: 36, height: 32)
+            .frame(width: 40, height: 30)
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
+        .onHover { inside in
+            withAnimation(.easeInOut(duration: 0.12)) {
+                hoveredTab = inside ? tab : (hoveredTab == tab ? nil : hoveredTab)
+            }
+        }
+        .pointingHandCursor()
         .help(tab.label)
     }
 

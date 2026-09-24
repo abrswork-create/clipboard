@@ -19,6 +19,12 @@ final class ClipboardHistoryViewModel: ObservableObject {
     @Published var selectedItemID: UUID? = nil
     @Published var showEngagementPrompt: Bool = false
 
+    // MARK: - Multi-Selection
+    @Published var isSelectionMode: Bool = false
+    @Published var selectedItemIDs: Set<UUID> = []
+    @Published var anchorItemID: UUID? = nil
+    private var baseSelectedIDs: Set<UUID> = []
+
     // MARK: Private
     private let store: ClipboardStore
 
@@ -38,11 +44,114 @@ final class ClipboardHistoryViewModel: ObservableObject {
 
         withAnimation(.easeInOut(duration: 0.15)) {
             selectedItemID = selectedItemID == id ? nil : id
+            anchorItemID = id
+            baseSelectedIDs = selectedItemID != nil ? [id] : []
         }
         
         if let item = store.items.first(where: { $0.id == id }) {
             PasteService.paste(item)
             checkEngagement()
+        }
+    }
+
+    func toggleSelection(for id: UUID) {
+        withAnimation(.easeInOut(duration: 0.15)) {
+            if selectedItemIDs.contains(id) {
+                selectedItemIDs.remove(id)
+            } else {
+                selectedItemIDs.insert(id)
+            }
+            anchorItemID = id
+            baseSelectedIDs = selectedItemIDs
+            if !selectedItemIDs.isEmpty {
+                isSelectionMode = true
+            }
+        }
+    }
+
+    func selectRange(to targetID: UUID, in items: [ClipboardItem]) {
+        withAnimation(.easeInOut(duration: 0.15)) {
+            let anchorID: UUID
+            if let existing = anchorItemID {
+                anchorID = existing
+            } else {
+                anchorID = targetID
+                anchorItemID = targetID
+                baseSelectedIDs = selectedItemIDs
+            }
+            
+            guard let anchorIndex = items.firstIndex(where: { $0.id == anchorID }),
+                  let targetIndex = items.firstIndex(where: { $0.id == targetID }) else {
+                toggleSelection(for: targetID)
+                return
+            }
+            
+            let startIndex = min(anchorIndex, targetIndex)
+            let endIndex = max(anchorIndex, targetIndex)
+            let rangeIDs = Set(items[startIndex...endIndex].map { $0.id })
+            
+            selectedItemIDs = baseSelectedIDs.union(rangeIDs)
+            isSelectionMode = true
+        }
+    }
+
+    func selectAll(items: [ClipboardItem]) {
+        withAnimation(.easeInOut(duration: 0.15)) {
+            let ids = items.map { $0.id }
+            if selectedItemIDs.count == ids.count {
+                selectedItemIDs.removeAll()
+                baseSelectedIDs.removeAll()
+                anchorItemID = nil
+            } else {
+                selectedItemIDs = Set(ids)
+                baseSelectedIDs = selectedItemIDs
+                anchorItemID = items.first?.id
+            }
+        }
+    }
+
+    func clearSelection() {
+        withAnimation(.easeInOut(duration: 0.15)) {
+            selectedItemIDs.removeAll()
+            baseSelectedIDs.removeAll()
+            anchorItemID = nil
+            isSelectionMode = false
+        }
+    }
+
+    func pasteSelected(orderedItems: [ClipboardItem]) {
+        guard ProManager.shared.hasFullAccess else {
+            ProManager.shared.triggerPaywall(reason: "Your 7-day free trial has expired. Upgrade to Clipmory Pro to paste items and continue using Clipmory.")
+            return
+        }
+
+        let itemsToPaste = orderedItems.filter { selectedItemIDs.contains($0.id) }
+        guard !itemsToPaste.isEmpty else { return }
+
+        PasteService.paste(items: itemsToPaste)
+        checkEngagement()
+        clearSelection()
+    }
+
+    func copySelected(orderedItems: [ClipboardItem]) {
+        let itemsToCopy = orderedItems.filter { selectedItemIDs.contains($0.id) }
+        guard !itemsToCopy.isEmpty else { return }
+
+        PasteService.copy(items: itemsToCopy)
+        clearSelection()
+    }
+
+    func deleteSelected() {
+        let idsToDelete = selectedItemIDs
+        withAnimation(.easeInOut(duration: 0.2)) {
+            for id in idsToDelete {
+                if selectedItemID == id { selectedItemID = nil }
+                store.delete(id)
+            }
+            selectedItemIDs.removeAll()
+            baseSelectedIDs.removeAll()
+            anchorItemID = nil
+            isSelectionMode = false
         }
     }
 
