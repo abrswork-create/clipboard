@@ -103,7 +103,7 @@ public final class LemonSqueezyService: Sendable {
     /// Generates or retrieves an anonymous, privacy-safe application instance ID.
     /// This completely avoids linking hardware UUIDs, serial numbers, or computer names.
     public func getAppInstanceID() -> String {
-        let key = "com.clipflow.anonymous_instance_id"
+        let key = "com.clipmory.anonymous_instance_id"
         if let existing = UserDefaults.standard.string(forKey: key) {
             return existing
         }

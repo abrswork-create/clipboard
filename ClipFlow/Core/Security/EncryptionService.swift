@@ -33,7 +33,7 @@ final class EncryptionService {
         let derivedKey = HKDF<SHA256>.deriveKey(
             inputKeyMaterial: inputKeyMaterial,
             salt: salt,
-            info: "com.clipflow.master_encryption_key".data(using: .utf8)!,
+            info: "com.clipmory.master_encryption_key".data(using: .utf8)!,
             outputByteCount: 32
         )
 

@@ -10,7 +10,7 @@ final class StoreKitManager: ObservableObject {
     static let shared = StoreKitManager()
     
     // Product ID configured in App Store Connect
-    static let proLifetimeProductID = "com.clipflow.ClipFlow.pro.lifetime"
+    static let proLifetimeProductID = "com.clipmory.app.pro.lifetime"
     
     @Published var products: [Product] = []
     @Published var isPurchasing: Bool = false

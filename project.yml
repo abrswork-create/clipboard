@@ -1,6 +1,6 @@
 name: ClipFlow
 options:
-  bundleIdPrefix: com.clipflow
+  bundleIdPrefix: com.clipmory
   deploymentTarget:
     macOS: "13.0"
   xcodeVersion: "15.0"
@@ -10,7 +10,7 @@ options:
 
 settings:
   base:
-    PRODUCT_BUNDLE_IDENTIFIER: com.clipflow.ClipFlow
+    PRODUCT_BUNDLE_IDENTIFIER: com.clipmory.app
     MARKETING_VERSION: "1.0"
     CURRENT_PROJECT_VERSION: "1"
     SWIFT_VERSION: "5.9"

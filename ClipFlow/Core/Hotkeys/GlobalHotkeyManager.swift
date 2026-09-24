@@ -126,7 +126,7 @@ final class GlobalHotkeyManager: @unchecked Sendable {
 // MARK: - Notification Name
 
 extension Notification.Name {
-    static let clipFlowHotkeyFired = Notification.Name("com.clipflow.hotkeyFired")
-    static let clipFlowCaptureHotkeyFired = Notification.Name("com.clipflow.captureHotkeyFired")
-    static let clipFlowCaptureImageOnlyHotkeyFired = Notification.Name("com.clipflow.captureImageOnlyHotkeyFired")
+    static let clipFlowHotkeyFired = Notification.Name("com.clipmory.hotkeyFired")
+    static let clipFlowCaptureHotkeyFired = Notification.Name("com.clipmory.captureHotkeyFired")
+    static let clipFlowCaptureImageOnlyHotkeyFired = Notification.Name("com.clipmory.captureImageOnlyHotkeyFired")
 }

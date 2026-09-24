@@ -18,7 +18,7 @@ final class GifLoader {
         
         let baseDir = fileManager.urls(for: .cachesDirectory, in: .userDomainMask).first
             ?? URL(fileURLWithPath: NSTemporaryDirectory())
-        cacheDirectory = baseDir.appendingPathComponent("com.clipflow.ClipFlow/GifCache", isDirectory: true)
+        cacheDirectory = baseDir.appendingPathComponent("com.clipmory.app/GifCache", isDirectory: true)
         
         try? fileManager.createDirectory(at: cacheDirectory, withIntermediateDirectories: true)
     }
