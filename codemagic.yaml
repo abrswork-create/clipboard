@@ -111,32 +111,26 @@ workflows:
             exit 1
           fi
 
-          # 4. Configure Keychain Access Control so productbuild has non-interactive access to the private key
-          echo "Setting keychain partition lists for non-interactive signing..."
-          for KC in $(find "$HOME/Library/codemagic-cli-tools/keychains" -name "*.keychain-db" 2>/dev/null); do
-            security unlock-keychain -p "" "$KC" 2>/dev/null || true
-            security set-key-partition-list -S apple-tool:,apple:,codesign:,productbuild: -s -k "" "$KC" 2>/dev/null || true
-          done
-          for KC in $(security list-keychains | tr -d ' "'); do
-            security unlock-keychain -p "" "$KC" 2>/dev/null || true
-            security set-key-partition-list -S apple-tool:,apple:,codesign:,productbuild: -s -k "" "$KC" 2>/dev/null || true
-          done
-
-          # 5. Sign application bundle with App Sandbox entitlements & runtime options
+          # 4. Sign application bundle with App Sandbox entitlements & runtime options
           codesign --force --verify --verbose --sign "$APP_CERT" \
             --options runtime \
             --entitlements "ClipFlow/Resources/ClipFlow-AppStore.entitlements" \
             "$DIST_DIR/Clipmory.app"
 
-          # 6. Build signed .pkg installer for App Store Connect
+          # 5. Build package component with productbuild, then sign with productsign (natively whitelisted by Codemagic)
+          echo "Building package component..."
+          xcrun productbuild --component "$DIST_DIR/Clipmory.app" /Applications/ unsigned.pkg
+
+          echo "Signing package with productsign using '$INSTALLER_CERT'..."
           CM_KC=$(find "$HOME/Library/codemagic-cli-tools/keychains" -name "*.keychain-db" 2>/dev/null | head -n 1)
           if [ -n "$CM_KC" ]; then
-            xcrun productbuild --component "$DIST_DIR/Clipmory.app" /Applications/ --sign "$INSTALLER_CERT" --keychain "$CM_KC" "$DIST_DIR/Clipmory.pkg"
+            xcrun productsign --keychain "$CM_KC" --sign "$INSTALLER_CERT" unsigned.pkg "$DIST_DIR/Clipmory.pkg"
           else
-            xcrun productbuild --component "$DIST_DIR/Clipmory.app" /Applications/ --sign "$INSTALLER_CERT" "$DIST_DIR/Clipmory.pkg"
+            xcrun productsign --sign "$INSTALLER_CERT" unsigned.pkg "$DIST_DIR/Clipmory.pkg"
           fi
+          rm -f unsigned.pkg
 
-          # 7. Verify pkg signature
+          # 6. Verify pkg signature
           pkgutil --check-signature "$DIST_DIR/Clipmory.pkg"
 
           ditto -c -k --sequesterRsrc --keepParent "$DIST_DIR/Clipmory.app" "$DIST_DIR/Clipmory-AppStore.zip"
