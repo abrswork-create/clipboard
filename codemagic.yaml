@@ -19,18 +19,37 @@ workflows:
         script: chmod +x ./scripts/*.sh
       - name: Initialize keychain
         script: keychain initialize
+      - name: Set up signing private key
+        script: |
+          if [ -z "$CERTIFICATE_PRIVATE_KEY" ]; then
+            echo "CERTIFICATE_PRIVATE_KEY not set in UI, generating RSA 2048 key automatically..."
+            ssh-keygen -t rsa -b 2048 -m PEM -f /tmp/mac_cert_key -q -N ""
+            echo "CERTIFICATE_PRIVATE_KEY<<EOF" >> $CM_ENV
+            cat /tmp/mac_cert_key >> $CM_ENV
+            echo "EOF" >> $CM_ENV
+            export CERTIFICATE_PRIVATE_KEY=$(cat /tmp/mac_cert_key)
+          fi
       - name: Fetch Mac App Store provisioning profiles & certificates
         script: |
+          if [ -z "$CERTIFICATE_PRIVATE_KEY" ] && [ -f /tmp/mac_cert_key ]; then
+            export CERTIFICATE_PRIVATE_KEY=$(cat /tmp/mac_cert_key)
+          fi
           app-store-connect fetch-signing-files "$BUNDLE_ID" \
             --platform MAC_OS \
             --type MAC_APP_STORE \
             --create
       - name: Fetch Mac App Distribution certificates
         script: |
+          if [ -z "$CERTIFICATE_PRIVATE_KEY" ] && [ -f /tmp/mac_cert_key ]; then
+            export CERTIFICATE_PRIVATE_KEY=$(cat /tmp/mac_cert_key)
+          fi
           app-store-connect certificates list --type MAC_APP_DISTRIBUTION --save || \
           app-store-connect certificates create --type MAC_APP_DISTRIBUTION --save
       - name: Fetch Mac Installer Distribution certificates
         script: |
+          if [ -z "$CERTIFICATE_PRIVATE_KEY" ] && [ -f /tmp/mac_cert_key ]; then
+            export CERTIFICATE_PRIVATE_KEY=$(cat /tmp/mac_cert_key)
+          fi
           app-store-connect certificates list --type MAC_INSTALLER_DISTRIBUTION --save || \
           app-store-connect certificates create --type MAC_INSTALLER_DISTRIBUTION --save
       - name: Add certificates to keychain
