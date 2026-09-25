@@ -1,33 +1,84 @@
 # Codemagic CI/CD configuration for Clipmory (macOS)
-# Documentation: https://docs.codemagic.io/yaml-basic-configuration/yaml-getting-started/
+# Documentation: https://docs.codemagic.io/yaml-code-signing/signing-macos/
 
 workflows:
-  macos-all-release:
-    name: Clipmory macOS Release (Web DMG & App Store)
-    max_build_duration: 60
+  macos-appstore-publish:
+    name: Clipmory Mac App Store Publish
+    max_build_duration: 45
     instance_type: mac_mini_m2
+    integrations:
+      app_store_connect: publisher
     environment:
       xcode: latest
-    triggering:
-      events:
-        - push
-        - tag
-      branch_patterns:
-        - pattern: 'main'
-          include: true
-          source: true
+      groups:
+        - appstore_credentials
+      vars:
+        BUNDLE_ID: "com.clipmory.app"
     scripts:
       - name: Make build scripts executable
+        script: chmod +x ./scripts/*.sh
+      - name: Initialize keychain
+        script: keychain initialize
+      - name: Fetch Mac App Store provisioning profiles & certificates
         script: |
-          chmod +x ./scripts/*.sh
-      - name: Build Web DMG and App Store Targets
+          app-store-connect fetch-signing-files "$BUNDLE_ID" \
+            --platform MAC_OS \
+            --type MAC_APP_STORE \
+            --create
+      - name: Fetch Mac App Distribution certificates
         script: |
-          ./scripts/build_all.sh
+          app-store-connect certificates list --type MAC_APP_DISTRIBUTION --save || \
+          app-store-connect certificates create --type MAC_APP_DISTRIBUTION --save
+      - name: Fetch Mac Installer Distribution certificates
+        script: |
+          app-store-connect certificates list --type MAC_INSTALLER_DISTRIBUTION --save || \
+          app-store-connect certificates create --type MAC_INSTALLER_DISTRIBUTION --save
+      - name: Add certificates to keychain
+        script: keychain add-certificates
+      - name: Apply provisioning profile to Xcode project
+        script: xcode-project use-profiles
+      - name: Build Mac App Store target
+        script: |
+          xcodebuild -project ClipFlow.xcodeproj \
+            -scheme ClipFlow \
+            -configuration Release \
+            -destination 'platform=macOS' \
+            -derivedDataPath "./build/DerivedData-AppStore" \
+            SWIFT_ACTIVE_COMPILATION_CONDITIONS="APP_STORE" \
+            CODE_SIGN_ENTITLEMENTS="ClipFlow/Resources/ClipFlow-AppStore.entitlements" \
+            build
+      - name: Package signed .pkg installer for App Store Connect
+        script: |
+          set -e
+          BUILD_APP="./build/DerivedData-AppStore/Build/Products/Release/ClipFlow.app"
+          DIST_DIR="./dist/appstore"
+          rm -rf "$DIST_DIR"
+          mkdir -p "$DIST_DIR"
+          cp -R "$BUILD_APP" "$DIST_DIR/Clipmory.app"
+
+          # Sign application bundle with App Sandbox entitlements
+          APP_CERT=$(keychain list-certificates | jq -r '.[] | select(.common_name | contains("Apple Distribution") or contains("3rd Party Mac Developer Application")) | .common_name' | head -n 1)
+          if [ -n "$APP_CERT" ]; then
+            codesign --force --verify --verbose --sign "$APP_CERT" --entitlements "ClipFlow/Resources/ClipFlow-AppStore.entitlements" "$DIST_DIR/Clipmory.app"
+          fi
+
+          # Find Installer Certificate
+          INSTALLER_CERT=$(keychain list-certificates | jq -r '.[] | select(.common_name | contains("3rd Party Mac Developer Installer") or contains("Mac Installer Distribution")) | .common_name' | head -n 1)
+
+          if [ -n "$INSTALLER_CERT" ]; then
+            xcrun productbuild --component "$DIST_DIR/Clipmory.app" /Applications/ --sign "$INSTALLER_CERT" "$DIST_DIR/Clipmory.pkg"
+          else
+            xcrun productbuild --component "$DIST_DIR/Clipmory.app" /Applications/ "$DIST_DIR/Clipmory.pkg"
+          fi
+          ditto -c -k --sequesterRsrc --keepParent "$DIST_DIR/Clipmory.app" "$DIST_DIR/Clipmory-AppStore.zip"
     artifacts:
-      - dist/web/*.dmg
-      - dist/web/*.zip
-      - dist/appstore/*.app
+      - dist/appstore/*.pkg
       - dist/appstore/*.zip
+      - dist/appstore/*.app
+    publishing:
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true
 
   macos-web-dmg:
     name: Clipmory Web DMG Release
@@ -37,28 +88,9 @@ workflows:
       xcode: latest
     scripts:
       - name: Make build scripts executable
-        script: |
-          chmod +x ./scripts/*.sh
+        script: chmod +x ./scripts/*.sh
       - name: Build Direct Web DMG
-        script: |
-          ./scripts/build_web_dmg.sh
+        script: ./scripts/build_web_dmg.sh
     artifacts:
       - dist/web/*.dmg
       - dist/web/*.zip
-
-  macos-appstore:
-    name: Clipmory App Store Target
-    max_build_duration: 30
-    instance_type: mac_mini_m2
-    environment:
-      xcode: latest
-    scripts:
-      - name: Make build scripts executable
-        script: |
-          chmod +x ./scripts/*.sh
-      - name: Build App Store Target (Sandbox + StoreKit 2)
-        script: |
-          ./scripts/build_appstore.sh
-    artifacts:
-      - dist/appstore/*.app
-      - dist/appstore/*.zip
