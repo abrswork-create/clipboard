@@ -9,7 +9,7 @@ xcodebuild -project ClipFlow.xcodeproj -scheme ClipFlow -configuration Release -
     CODE_SIGN_ENTITLEMENTS="ClipFlow/Resources/ClipFlow-AppStore.entitlements" \
     build
 
-BUILD_APP="$DERIVED_DATA_PATH/Build/Products/Release/ClipFlow.app"
+BUILD_APP=$(find "$DERIVED_DATA_PATH/Build/Products/Release" -maxdepth 1 -name "*.app" | head -n 1)
 DIST_DIR="./dist/appstore"
 rm -rf "$DIST_DIR"
 mkdir -p "$DIST_DIR"

@@ -69,7 +69,7 @@ workflows:
       - name: Package signed .pkg installer for App Store Connect
         script: |
           set -e
-          BUILD_APP="./build/DerivedData-AppStore/Build/Products/Release/ClipFlow.app"
+          BUILD_APP=$(find ./build/DerivedData-AppStore/Build/Products/Release -maxdepth 1 -name "*.app" | head -n 1)
           DIST_DIR="./dist/appstore"
           rm -rf "$DIST_DIR"
           mkdir -p "$DIST_DIR"

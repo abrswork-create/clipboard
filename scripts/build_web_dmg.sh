@@ -5,7 +5,7 @@ echo "🚀 [1/4] Building Clipmory (Direct Web / DMG Release)..."
 DERIVED_DATA_PATH="./build/DerivedData-Web"
 xcodebuild -project ClipFlow.xcodeproj -scheme ClipFlow -configuration Release -destination 'platform=macOS' -derivedDataPath "$DERIVED_DATA_PATH" build
 
-BUILD_APP="$DERIVED_DATA_PATH/Build/Products/Release/ClipFlow.app"
+BUILD_APP=$(find "$DERIVED_DATA_PATH/Build/Products/Release" -maxdepth 1 -name "*.app" | head -n 1)
 DIST_DIR="./dist/web"
 rm -rf "$DIST_DIR"
 mkdir -p "$DIST_DIR/staging"
