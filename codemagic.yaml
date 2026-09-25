@@ -75,6 +75,14 @@ workflows:
           mkdir -p "$DIST_DIR"
           cp -R "$BUILD_APP" "$DIST_DIR/Clipmory.app"
 
+          # Embed provisioning profile into app bundle
+          PROFILES=$(find "$HOME/Library/MobileDevice/Provisioning Profiles" -name "*.provisionprofile" 2>/dev/null || true)
+          if [ -n "$PROFILES" ]; then
+            LATEST_PROFILE=$(ls -t "$HOME/Library/MobileDevice/Provisioning Profiles/"*.provisionprofile | head -n 1)
+            echo "Embedding provisioning profile: $LATEST_PROFILE"
+            cp "$LATEST_PROFILE" "$DIST_DIR/Clipmory.app/Contents/embedded.provisionprofile"
+          fi
+
           # Sign application bundle with App Sandbox entitlements
           APP_CERT=$(keychain list-certificates | jq -r '.[] | select(.common_name | contains("Apple Distribution") or contains("3rd Party Mac Developer Application")) | .common_name' | head -n 1)
           if [ -n "$APP_CERT" ]; then

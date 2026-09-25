@@ -45,6 +45,7 @@ targets:
         CFBundleDisplayName: Clipmory
         CFBundleShortVersionString: "1.0"
         CFBundleVersion: "1"
+        LSApplicationCategoryType: "public.app-category.utilities"
         NSPasteboardUsageDescription: "Clipmory stores your clipboard history locally on your Mac so you can access it anytime."
         NSSupportsAutomaticTermination: false
         NSSupportsSuddenTermination: false
