@@ -38,20 +38,20 @@ workflows:
             --platform MAC_OS \
             --type MAC_APP_STORE \
             --create
-      - name: Fetch Mac App Distribution certificates
+      - name: Fetch or create Mac App Distribution certificates
         script: |
           if [ -z "$CERTIFICATE_PRIVATE_KEY" ] && [ -f /tmp/mac_cert_key ]; then
             export CERTIFICATE_PRIVATE_KEY=$(cat /tmp/mac_cert_key)
           fi
-          app-store-connect certificates list --type MAC_APP_DISTRIBUTION --save || \
-          app-store-connect certificates create --type MAC_APP_DISTRIBUTION --save
-      - name: Fetch Mac Installer Distribution certificates
+          app-store-connect certificates create --type MAC_APP_DISTRIBUTION --save || \
+          app-store-connect certificates list --type MAC_APP_DISTRIBUTION --save || true
+      - name: Fetch or create Mac Installer Distribution certificates
         script: |
           if [ -z "$CERTIFICATE_PRIVATE_KEY" ] && [ -f /tmp/mac_cert_key ]; then
             export CERTIFICATE_PRIVATE_KEY=$(cat /tmp/mac_cert_key)
           fi
-          app-store-connect certificates list --type MAC_INSTALLER_DISTRIBUTION --save || \
-          app-store-connect certificates create --type MAC_INSTALLER_DISTRIBUTION --save
+          app-store-connect certificates create --type MAC_INSTALLER_DISTRIBUTION --save || \
+          app-store-connect certificates list --type MAC_INSTALLER_DISTRIBUTION --save || true
       - name: Add certificates to keychain
         script: keychain add-certificates
       - name: Apply provisioning profile to Xcode project
@@ -75,7 +75,15 @@ workflows:
           mkdir -p "$DIST_DIR"
           cp -R "$BUILD_APP" "$DIST_DIR/Clipmory.app"
 
-          # Embed provisioning profile into app bundle
+          # 1. Remove Sparkle (Strictly prohibited by Mac App Store rules; updates are handled by macOS App Store)
+          echo "Removing Sparkle framework and updater keys for Mac App Store sandbox compliance..."
+          rm -rf "$DIST_DIR/Clipmory.app/Contents/Frameworks/Sparkle.framework"
+          /usr/libexec/PlistBuddy -c "Delete :SUFeedURL" "$DIST_DIR/Clipmory.app/Contents/Info.plist" 2>/dev/null || true
+          /usr/libexec/PlistBuddy -c "Delete :SUEnableAutomaticChecks" "$DIST_DIR/Clipmory.app/Contents/Info.plist" 2>/dev/null || true
+          /usr/libexec/PlistBuddy -c "Delete :SUScheduledCheckInterval" "$DIST_DIR/Clipmory.app/Contents/Info.plist" 2>/dev/null || true
+          /usr/libexec/PlistBuddy -c "Delete :SUPublicEDKey" "$DIST_DIR/Clipmory.app/Contents/Info.plist" 2>/dev/null || true
+
+          # 2. Embed provisioning profile into app bundle
           PROFILES=$(find "$HOME/Library/MobileDevice/Provisioning Profiles" -name "*.provisionprofile" 2>/dev/null || true)
           if [ -n "$PROFILES" ]; then
             LATEST_PROFILE=$(ls -t "$HOME/Library/MobileDevice/Provisioning Profiles/"*.provisionprofile | head -n 1)
@@ -83,20 +91,38 @@ workflows:
             cp "$LATEST_PROFILE" "$DIST_DIR/Clipmory.app/Contents/embedded.provisionprofile"
           fi
 
-          # Sign application bundle with App Sandbox entitlements
-          APP_CERT=$(keychain list-certificates | jq -r '.[] | select(.common_name | contains("Apple Distribution") or contains("3rd Party Mac Developer Application")) | .common_name' | head -n 1)
-          if [ -n "$APP_CERT" ]; then
-            codesign --force --verify --verbose --sign "$APP_CERT" --entitlements "ClipFlow/Resources/ClipFlow-AppStore.entitlements" "$DIST_DIR/Clipmory.app"
+          # 3. Discover certificates in keychain
+          echo "=== Keychain Signing Identities ==="
+          security find-identity -v
+
+          APP_CERT=$(security find-identity -v | grep -E "3rd Party Mac Developer Application|Apple Distribution|Mac App Distribution" | head -n 1 | sed -e 's/.*"\(.*\)".*/\1/')
+          INSTALLER_CERT=$(security find-identity -v | grep -i "Installer" | head -n 1 | sed -e 's/.*"\(.*\)".*/\1/')
+
+          echo "Selected App Certificate: '$APP_CERT'"
+          echo "Selected Installer Certificate: '$INSTALLER_CERT'"
+
+          if [ -z "$APP_CERT" ]; then
+            echo "❌ ERROR: No Mac App Distribution certificate found in keychain!"
+            exit 1
           fi
 
-          # Find Installer Certificate
-          INSTALLER_CERT=$(keychain list-certificates | jq -r '.[] | select(.common_name | contains("3rd Party Mac Developer Installer") or contains("Mac Installer Distribution")) | .common_name' | head -n 1)
-
-          if [ -n "$INSTALLER_CERT" ]; then
-            xcrun productbuild --component "$DIST_DIR/Clipmory.app" /Applications/ --sign "$INSTALLER_CERT" "$DIST_DIR/Clipmory.pkg"
-          else
-            xcrun productbuild --component "$DIST_DIR/Clipmory.app" /Applications/ "$DIST_DIR/Clipmory.pkg"
+          if [ -z "$INSTALLER_CERT" ]; then
+            echo "❌ ERROR: No Mac Installer Distribution certificate found in keychain!"
+            exit 1
           fi
+
+          # 4. Sign application bundle with App Sandbox entitlements & runtime options
+          codesign --force --verify --verbose --sign "$APP_CERT" \
+            --options runtime \
+            --entitlements "ClipFlow/Resources/ClipFlow-AppStore.entitlements" \
+            "$DIST_DIR/Clipmory.app"
+
+          # 5. Build signed .pkg installer for App Store Connect
+          xcrun productbuild --component "$DIST_DIR/Clipmory.app" /Applications/ --sign "$INSTALLER_CERT" "$DIST_DIR/Clipmory.pkg"
+
+          # 6. Verify pkg signature
+          pkgutil --check-signature "$DIST_DIR/Clipmory.pkg"
+
           ditto -c -k --sequesterRsrc --keepParent "$DIST_DIR/Clipmory.app" "$DIST_DIR/Clipmory-AppStore.zip"
     artifacts:
       - dist/appstore/*.pkg

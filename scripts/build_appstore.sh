@@ -14,8 +14,15 @@ DIST_DIR="./dist/appstore"
 rm -rf "$DIST_DIR"
 mkdir -p "$DIST_DIR"
 
-echo "🔒 [2/3] Verifying App Sandbox entitlements..."
+echo "🔒 [2/3] Preparing App Store build & stripping Sparkle updater..."
 cp -R "$BUILD_APP" "$DIST_DIR/Clipmory.app"
+
+# Remove Sparkle (Prohibited in App Store; App Store handles all updates natively)
+rm -rf "$DIST_DIR/Clipmory.app/Contents/Frameworks/Sparkle.framework"
+/usr/libexec/PlistBuddy -c "Delete :SUFeedURL" "$DIST_DIR/Clipmory.app/Contents/Info.plist" 2>/dev/null || true
+/usr/libexec/PlistBuddy -c "Delete :SUEnableAutomaticChecks" "$DIST_DIR/Clipmory.app/Contents/Info.plist" 2>/dev/null || true
+/usr/libexec/PlistBuddy -c "Delete :SUScheduledCheckInterval" "$DIST_DIR/Clipmory.app/Contents/Info.plist" 2>/dev/null || true
+/usr/libexec/PlistBuddy -c "Delete :SUPublicEDKey" "$DIST_DIR/Clipmory.app/Contents/Info.plist" 2>/dev/null || true
 
 codesign -d --entitlements :- "$DIST_DIR/Clipmory.app"
 
