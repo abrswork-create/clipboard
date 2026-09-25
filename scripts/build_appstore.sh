@@ -19,8 +19,11 @@ cp -R "$BUILD_APP" "$DIST_DIR/Clipmory.app"
 
 codesign -d --entitlements :- "$DIST_DIR/Clipmory.app"
 
+ditto -c -k --sequesterRsrc --keepParent "$DIST_DIR/Clipmory.app" "$DIST_DIR/Clipmory-AppStore.zip"
+
 echo "✅ [3/3] App Store build ready at:"
-echo "   $DIST_DIR/Clipmory.app"
+echo "   - $DIST_DIR/Clipmory.app"
+echo "   - $DIST_DIR/Clipmory-AppStore.zip"
 echo ""
 echo "👉 To upload to App Store Connect / TestFlight:"
 echo "   1. Open ClipFlow.xcodeproj in Xcode."

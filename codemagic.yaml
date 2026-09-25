@@ -1,0 +1,64 @@
+# Codemagic CI/CD configuration for Clipmory (macOS)
+# Documentation: https://docs.codemagic.io/yaml-basic-configuration/yaml-getting-started/
+
+workflows:
+  macos-all-release:
+    name: Clipmory macOS Release (Web DMG & App Store)
+    max_build_duration: 60
+    instance_type: mac_mini_m2
+    environment:
+      xcode: latest
+    triggering:
+      events:
+        - push
+        - tag
+      branch_patterns:
+        - pattern: 'main'
+          include: true
+          source: true
+    scripts:
+      - name: Make build scripts executable
+        script: |
+          chmod +x ./scripts/*.sh
+      - name: Build Web DMG and App Store Targets
+        script: |
+          ./scripts/build_all.sh
+    artifacts:
+      - dist/web/*.dmg
+      - dist/web/*.zip
+      - dist/appstore/*.app
+      - dist/appstore/*.zip
+
+  macos-web-dmg:
+    name: Clipmory Web DMG Release
+    max_build_duration: 30
+    instance_type: mac_mini_m2
+    environment:
+      xcode: latest
+    scripts:
+      - name: Make build scripts executable
+        script: |
+          chmod +x ./scripts/*.sh
+      - name: Build Direct Web DMG
+        script: |
+          ./scripts/build_web_dmg.sh
+    artifacts:
+      - dist/web/*.dmg
+      - dist/web/*.zip
+
+  macos-appstore:
+    name: Clipmory App Store Target
+    max_build_duration: 30
+    instance_type: mac_mini_m2
+    environment:
+      xcode: latest
+    scripts:
+      - name: Make build scripts executable
+        script: |
+          chmod +x ./scripts/*.sh
+      - name: Build App Store Target (Sandbox + StoreKit 2)
+        script: |
+          ./scripts/build_appstore.sh
+    artifacts:
+      - dist/appstore/*.app
+      - dist/appstore/*.zip

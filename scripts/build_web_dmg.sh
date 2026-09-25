@@ -24,9 +24,11 @@ hdiutil create -volname "Clipmory" -srcfolder "$DIST_DIR/staging" -ov -format UD
 
 ditto -c -k --sequesterRsrc --keepParent "$DIST_DIR/staging/Clipmory.app" "$DIST_DIR/Clipmory.zip"
 
-echo "🌐 [4/4] Copying to website folder..."
-cp "$DIST_DIR/Clipmory.dmg" "../../website/Clipmory.dmg"
-cp "$DIST_DIR/Clipmory.zip" "../../website/Clipmory.zip"
+if [ -d "../../website" ]; then
+    echo "🌐 [4/4] Copying to website folder..."
+    cp "$DIST_DIR/Clipmory.dmg" "../../website/Clipmory.dmg"
+    cp "$DIST_DIR/Clipmory.zip" "../../website/Clipmory.zip"
+fi
 
 echo "✅ Web build complete! DMG and ZIP available at:"
 echo "   - $DIST_DIR/Clipmory.dmg"
