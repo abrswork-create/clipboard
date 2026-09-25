@@ -111,16 +111,32 @@ workflows:
             exit 1
           fi
 
-          # 4. Sign application bundle with App Sandbox entitlements & runtime options
+          # 4. Configure Keychain Access Control so productbuild has non-interactive access to the private key
+          echo "Setting keychain partition lists for non-interactive signing..."
+          for KC in $(find "$HOME/Library/codemagic-cli-tools/keychains" -name "*.keychain-db" 2>/dev/null); do
+            security unlock-keychain -p "" "$KC" 2>/dev/null || true
+            security set-key-partition-list -S apple-tool:,apple:,codesign:,productbuild: -s -k "" "$KC" 2>/dev/null || true
+          done
+          for KC in $(security list-keychains | tr -d ' "'); do
+            security unlock-keychain -p "" "$KC" 2>/dev/null || true
+            security set-key-partition-list -S apple-tool:,apple:,codesign:,productbuild: -s -k "" "$KC" 2>/dev/null || true
+          done
+
+          # 5. Sign application bundle with App Sandbox entitlements & runtime options
           codesign --force --verify --verbose --sign "$APP_CERT" \
             --options runtime \
             --entitlements "ClipFlow/Resources/ClipFlow-AppStore.entitlements" \
             "$DIST_DIR/Clipmory.app"
 
-          # 5. Build signed .pkg installer for App Store Connect
-          xcrun productbuild --component "$DIST_DIR/Clipmory.app" /Applications/ --sign "$INSTALLER_CERT" "$DIST_DIR/Clipmory.pkg"
+          # 6. Build signed .pkg installer for App Store Connect
+          CM_KC=$(find "$HOME/Library/codemagic-cli-tools/keychains" -name "*.keychain-db" 2>/dev/null | head -n 1)
+          if [ -n "$CM_KC" ]; then
+            xcrun productbuild --component "$DIST_DIR/Clipmory.app" /Applications/ --sign "$INSTALLER_CERT" --keychain "$CM_KC" "$DIST_DIR/Clipmory.pkg"
+          else
+            xcrun productbuild --component "$DIST_DIR/Clipmory.app" /Applications/ --sign "$INSTALLER_CERT" "$DIST_DIR/Clipmory.pkg"
+          fi
 
-          # 6. Verify pkg signature
+          # 7. Verify pkg signature
           pkgutil --check-signature "$DIST_DIR/Clipmory.pkg"
 
           ditto -c -k --sequesterRsrc --keepParent "$DIST_DIR/Clipmory.app" "$DIST_DIR/Clipmory-AppStore.zip"
