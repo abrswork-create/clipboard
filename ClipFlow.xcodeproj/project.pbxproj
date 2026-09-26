@@ -71,7 +71,7 @@
 		C0EADA155B368B41C389DC79 /* QuickClipboardWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95E3D0820DDEDBF7AA8B444F /* QuickClipboardWindowController.swift */; };
 		C57C0DDCE7F568BA25B8DD1B /* SearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6033D9E343D598B542448BEA /* SearchView.swift */; };
 		CEA1829450924C01105B8171 /* ClipboardWriter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A87D3DEF3919890A8061C46 /* ClipboardWriter.swift */; };
-		D02B3F67AB115455AE2F6B8C /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = 68831CD9967B1E3EE37739AF /* Sparkle */; };
+		D02B3F67AB115455AE2F6B8C /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = 68831CD9967B1E3EE37739AF /* Sparkle */; settings = {ATTRIBUTES = (Weak, ); }; };
 		D173B62134B0C244E591043A /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CDFB76DD7564B5DCD9A3A092 /* Assets.xcassets */; };
 		D35A13D39E0DAEED8A9CC0AD /* ProManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 63E8393F00DB482CD5B2F7DE /* ProManager.swift */; };
 		A8BE8BD650665129A8ED011A /* StoreKitManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E470B59095E95CBE66FF762A /* StoreKitManager.swift */; };

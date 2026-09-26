@@ -7,6 +7,7 @@ xcodebuild -project ClipFlow.xcodeproj -scheme ClipFlow -configuration Release -
     -derivedDataPath "$DERIVED_DATA_PATH" \
     SWIFT_ACTIVE_COMPILATION_CONDITIONS="APP_STORE" \
     CODE_SIGN_ENTITLEMENTS="ClipFlow/Resources/ClipFlow-AppStore.entitlements" \
+    OTHER_LDFLAGS='$(inherited) -Xlinker -weak_framework -Xlinker Sparkle' \
     build
 
 BUILD_APP=$(find "$DERIVED_DATA_PATH/Build/Products/Release" -maxdepth 1 -name "*.app" | head -n 1)
@@ -24,6 +25,8 @@ rm -rf "$DIST_DIR/Clipmory.app/Contents/Frameworks/Sparkle.framework"
 /usr/libexec/PlistBuddy -c "Delete :SUScheduledCheckInterval" "$DIST_DIR/Clipmory.app/Contents/Info.plist" 2>/dev/null || true
 /usr/libexec/PlistBuddy -c "Delete :SUPublicEDKey" "$DIST_DIR/Clipmory.app/Contents/Info.plist" 2>/dev/null || true
 
+# Re-sign stripped bundle for local sandbox testing
+codesign --force --sign - --entitlements "ClipFlow/Resources/ClipFlow-AppStore.entitlements" "$DIST_DIR/Clipmory.app"
 codesign -d --entitlements :- "$DIST_DIR/Clipmory.app"
 
 ditto -c -k --sequesterRsrc --keepParent "$DIST_DIR/Clipmory.app" "$DIST_DIR/Clipmory-AppStore.zip"

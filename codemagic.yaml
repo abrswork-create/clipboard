@@ -65,6 +65,7 @@ workflows:
             -derivedDataPath "./build/DerivedData-AppStore" \
             SWIFT_ACTIVE_COMPILATION_CONDITIONS="APP_STORE" \
             CODE_SIGN_ENTITLEMENTS="ClipFlow/Resources/ClipFlow-AppStore.entitlements" \
+            OTHER_LDFLAGS='$(inherited) -Xlinker -weak_framework -Xlinker Sparkle' \
             build
       - name: Package signed .pkg installer for App Store Connect
         script: |
