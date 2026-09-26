@@ -11,10 +11,5 @@
 	<!-- Read and write access to files selected by the user in Open/Save dialogs -->
 	<key>com.apple.security.files.user-selected.read-write</key>
 	<true/>
-	<!-- Application identifier for TestFlight and App Store eligibility -->
-	<key>com.apple.application-identifier</key>
-	<string>8J8MPH7HLU.com.clipmory.app</string>
-	<key>com.apple.developer.team-identifier</key>
-	<string>8J8MPH7HLU</string>
 </dict>
 </plist>
