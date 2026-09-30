@@ -38,20 +38,20 @@ workflows:
             --platform MAC_OS \
             --type MAC_APP_STORE \
             --create
-      - name: Fetch or create Mac App Distribution certificates
+      - name: Fetch or list Mac Distribution certificates
         script: |
           if [ -z "$CERTIFICATE_PRIVATE_KEY" ] && [ -f /tmp/mac_cert_key ]; then
             export CERTIFICATE_PRIVATE_KEY=$(cat /tmp/mac_cert_key)
           fi
-          app-store-connect certificates create --type MAC_APP_DISTRIBUTION --save || \
           app-store-connect certificates list --type MAC_APP_DISTRIBUTION --save || true
+          app-store-connect certificates list --type DISTRIBUTION --save || true
       - name: Fetch or create Mac Installer Distribution certificates
         script: |
           if [ -z "$CERTIFICATE_PRIVATE_KEY" ] && [ -f /tmp/mac_cert_key ]; then
             export CERTIFICATE_PRIVATE_KEY=$(cat /tmp/mac_cert_key)
           fi
-          app-store-connect certificates create --type MAC_INSTALLER_DISTRIBUTION --save || \
-          app-store-connect certificates list --type MAC_INSTALLER_DISTRIBUTION --save || true
+          app-store-connect certificates list --type MAC_INSTALLER_DISTRIBUTION --save || \
+          app-store-connect certificates create --type MAC_INSTALLER_DISTRIBUTION --save || true
       - name: Add certificates to keychain
         script: keychain add-certificates
       - name: Apply provisioning profile to Xcode project
@@ -73,27 +73,48 @@ workflows:
           mkdir -p "$DIST_DIR"
           cp -R "$BUILD_APP" "$DIST_DIR/Clipmory.app"
 
-          # 1. Remove Sparkle (Strictly prohibited by Mac App Store rules; updates are handled by macOS App Store)
-          echo "Removing Sparkle framework and updater keys for Mac App Store sandbox compliance..."
+          # 1. Remove any stray Sparkle or non-sandbox keys if present
           rm -rf "$DIST_DIR/Clipmory.app/Contents/Frameworks/Sparkle.framework"
           /usr/libexec/PlistBuddy -c "Delete :SUFeedURL" "$DIST_DIR/Clipmory.app/Contents/Info.plist" 2>/dev/null || true
           /usr/libexec/PlistBuddy -c "Delete :SUEnableAutomaticChecks" "$DIST_DIR/Clipmory.app/Contents/Info.plist" 2>/dev/null || true
           /usr/libexec/PlistBuddy -c "Delete :SUScheduledCheckInterval" "$DIST_DIR/Clipmory.app/Contents/Info.plist" 2>/dev/null || true
           /usr/libexec/PlistBuddy -c "Delete :SUPublicEDKey" "$DIST_DIR/Clipmory.app/Contents/Info.plist" 2>/dev/null || true
 
-          # 2. Embed provisioning profile into app bundle
+          # 2. Discover and embed latest provisioning profile
           PROFILES=$(find "$HOME/Library/MobileDevice/Provisioning Profiles" -name "*.provisionprofile" 2>/dev/null || true)
-          if [ -n "$PROFILES" ]; then
-            LATEST_PROFILE=$(ls -t "$HOME/Library/MobileDevice/Provisioning Profiles/"*.provisionprofile | head -n 1)
-            echo "Embedding provisioning profile: $LATEST_PROFILE"
-            cp "$LATEST_PROFILE" "$DIST_DIR/Clipmory.app/Contents/embedded.provisionprofile"
+          if [ -z "$PROFILES" ]; then
+            echo "❌ ERROR: No provisioning profile found!"
+            exit 1
           fi
 
-          # 3. Discover certificates in keychain
+          LATEST_PROFILE=$(ls -t "$HOME/Library/MobileDevice/Provisioning Profiles/"*.provisionprofile | head -n 1)
+          echo "Embedding provisioning profile: $LATEST_PROFILE"
+          cp "$LATEST_PROFILE" "$DIST_DIR/Clipmory.app/Contents/embedded.provisionprofile"
+
+          # 3. Decode provisioning profile to extract certificate fingerprint, Team ID, and App ID
+          security cms -D -i "$LATEST_PROFILE" > /tmp/profile.plist
+          
+          TEAM_ID=$(/usr/libexec/PlistBuddy -c "Print :TeamIdentifier:0" /tmp/profile.plist 2>/dev/null || echo "")
+          APP_ID=$(/usr/libexec/PlistBuddy -c "Print :Entitlements:com.apple.application-identifier" /tmp/profile.plist 2>/dev/null || echo "")
+          if [ -z "$APP_ID" ] && [ -n "$TEAM_ID" ]; then
+            APP_ID="${TEAM_ID}.${BUNDLE_ID}"
+          fi
+          echo "Profile Team ID: '$TEAM_ID'"
+          echo "Profile App ID:  '$APP_ID'"
+
+          /usr/libexec/PlistBuddy -c "Print :DeveloperCertificates:0" /tmp/profile.plist > /tmp/cert.der
+          PROFILE_CERT_SHA1=$(openssl x509 -inform der -in /tmp/cert.der -noout -fingerprint -sha1 | cut -d'=' -f2 | tr -d ':')
+          echo "Certificate SHA-1 in profile: '$PROFILE_CERT_SHA1'"
+
           echo "=== Keychain Signing Identities ==="
           security find-identity -v
 
-          APP_CERT=$(security find-identity -v | grep -E "3rd Party Mac Developer Application|Apple Distribution|Mac App Distribution" | head -n 1 | sed -e 's/.*"\(.*\)".*/\1/')
+          APP_CERT="$PROFILE_CERT_SHA1"
+          if ! security find-identity -v | grep -i "$PROFILE_CERT_SHA1" >/dev/null 2>&1; then
+            echo "⚠️ Warning: Exact profile SHA-1 ($PROFILE_CERT_SHA1) not matched in find-identity output, falling back to name search..."
+            APP_CERT=$(security find-identity -v | grep -E "Apple Distribution|Mac App Distribution|3rd Party Mac Developer Application" | head -n 1 | sed -e 's/.*"\(.*\)".*/\1/')
+          fi
+
           INSTALLER_CERT=$(security find-identity -v | grep -i "Installer" | head -n 1 | sed -e 's/.*"\(.*\)".*/\1/')
 
           echo "Selected App Certificate: '$APP_CERT'"
@@ -109,13 +130,30 @@ workflows:
             exit 1
           fi
 
-          # 4. Sign application bundle with App Sandbox entitlements & runtime options
+          # 4. Prepare entitlements with required application-identifier & team-identifier
+          cp "Clipmory/Resources/Clipmory-AppStore.entitlements" /tmp/signing_entitlements.plist
+          if [ -n "$APP_ID" ]; then
+            /usr/libexec/PlistBuddy -c "Add :com.apple.application-identifier string $APP_ID" /tmp/signing_entitlements.plist 2>/dev/null || \
+            /usr/libexec/PlistBuddy -c "Set :com.apple.application-identifier $APP_ID" /tmp/signing_entitlements.plist
+          fi
+          if [ -n "$TEAM_ID" ]; then
+            /usr/libexec/PlistBuddy -c "Add :com.apple.developer.team-identifier string $TEAM_ID" /tmp/signing_entitlements.plist 2>/dev/null || \
+            /usr/libexec/PlistBuddy -c "Set :com.apple.developer.team-identifier $TEAM_ID" /tmp/signing_entitlements.plist
+          fi
+
+          echo "=== Signing Entitlements ==="
+          cat /tmp/signing_entitlements.plist
+
+          # Sign application bundle with App Sandbox entitlements & runtime options
           codesign --force --verify --verbose --sign "$APP_CERT" \
             --options runtime \
-            --entitlements "Clipmory/Resources/Clipmory-AppStore.entitlements" \
+            --entitlements /tmp/signing_entitlements.plist \
             "$DIST_DIR/Clipmory.app"
 
-          # 5. Build package component with productbuild, then sign with productsign (natively whitelisted by Codemagic)
+          echo "=== Verified Bundle Entitlements ==="
+          codesign -d --entitlements :- "$DIST_DIR/Clipmory.app"
+
+          # 5. Build package component with productbuild, then sign with productsign
           echo "Building package component..."
           xcrun productbuild --component "$DIST_DIR/Clipmory.app" /Applications/ unsigned.pkg
 
