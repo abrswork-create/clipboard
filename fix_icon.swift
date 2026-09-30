@@ -1,6 +1,6 @@
 import Cocoa
 
-let imagePath = "ClipFlow/Resources/Assets.xcassets/AppIcon.appiconset/clip board(1).png"
+let imagePath = "Clipmory/Resources/Assets.xcassets/AppIcon.appiconset/clip board(1).png"
 guard let image = NSImage(contentsOfFile: imagePath) else {
     print("Could not load image")
     exit(1)

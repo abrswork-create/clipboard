@@ -58,14 +58,11 @@ workflows:
         script: xcode-project use-profiles
       - name: Build Mac App Store target
         script: |
-          xcodebuild -project ClipFlow.xcodeproj \
-            -scheme ClipFlow \
+          xcodebuild -project Clipmory.xcodeproj \
+            -scheme Clipmory-AppStore \
             -configuration Release \
             -destination 'platform=macOS' \
             -derivedDataPath "./build/DerivedData-AppStore" \
-            SWIFT_ACTIVE_COMPILATION_CONDITIONS="APP_STORE" \
-            CODE_SIGN_ENTITLEMENTS="ClipFlow/Resources/ClipFlow-AppStore.entitlements" \
-            OTHER_LDFLAGS='$(inherited) -Xlinker -weak_framework -Xlinker Sparkle' \
             build
       - name: Package signed .pkg installer for App Store Connect
         script: |
@@ -115,7 +112,7 @@ workflows:
           # 4. Sign application bundle with App Sandbox entitlements & runtime options
           codesign --force --verify --verbose --sign "$APP_CERT" \
             --options runtime \
-            --entitlements "ClipFlow/Resources/ClipFlow-AppStore.entitlements" \
+            --entitlements "Clipmory/Resources/Clipmory-AppStore.entitlements" \
             "$DIST_DIR/Clipmory.app"
 
           # 5. Build package component with productbuild, then sign with productsign (natively whitelisted by Codemagic)

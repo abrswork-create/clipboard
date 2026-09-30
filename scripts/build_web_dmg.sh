@@ -3,7 +3,7 @@ set -e
 
 echo "🚀 [1/4] Building Clipmory (Direct Web / DMG Release)..."
 DERIVED_DATA_PATH="./build/DerivedData-Web"
-xcodebuild -project ClipFlow.xcodeproj -scheme ClipFlow -configuration Release -destination 'platform=macOS' -derivedDataPath "$DERIVED_DATA_PATH" build
+xcodebuild -project Clipmory.xcodeproj -scheme Clipmory -configuration Release -destination 'generic/platform=macOS' ARCHS="arm64 x86_64" ONLY_ACTIVE_ARCH=NO -derivedDataPath "$DERIVED_DATA_PATH" build
 
 BUILD_APP=$(find "$DERIVED_DATA_PATH/Build/Products/Release" -maxdepth 1 -name "*.app" | head -n 1)
 DIST_DIR="./dist/web"
@@ -14,7 +14,7 @@ echo "📦 [2/4] Packaging Clipmory.app..."
 cp -R "$BUILD_APP" "$DIST_DIR/staging/Clipmory.app"
 
 # Sign with hardened runtime & entitlements
-codesign -o runtime --entitlements "ClipFlow/Resources/ClipFlow.entitlements" --force --deep --sign - "$DIST_DIR/staging/Clipmory.app"
+codesign -o runtime --entitlements "Clipmory/Resources/Clipmory.entitlements" --force --deep --sign - "$DIST_DIR/staging/Clipmory.app"
 
 # Create Applications symlink for drag-and-drop
 ln -s /Applications "$DIST_DIR/staging/Applications"

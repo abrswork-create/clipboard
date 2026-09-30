@@ -3,11 +3,10 @@ set -e
 
 echo "🍎 [1/3] Building Clipmory for Mac App Store (Sandbox + StoreKit 2)..."
 DERIVED_DATA_PATH="./build/DerivedData-AppStore"
-xcodebuild -project ClipFlow.xcodeproj -scheme ClipFlow -configuration Release -destination 'platform=macOS' \
+xcodebuild -project Clipmory.xcodeproj -scheme Clipmory-AppStore -configuration Release -destination 'generic/platform=macOS' \
     -derivedDataPath "$DERIVED_DATA_PATH" \
-    SWIFT_ACTIVE_COMPILATION_CONDITIONS="APP_STORE" \
-    CODE_SIGN_ENTITLEMENTS="ClipFlow/Resources/ClipFlow-AppStore.entitlements" \
-    OTHER_LDFLAGS='$(inherited) -Xlinker -weak_framework -Xlinker Sparkle' \
+    ARCHS="arm64 x86_64" \
+    ONLY_ACTIVE_ARCH=NO \
     build
 
 BUILD_APP=$(find "$DERIVED_DATA_PATH/Build/Products/Release" -maxdepth 1 -name "*.app" | head -n 1)
@@ -26,16 +25,20 @@ rm -rf "$DIST_DIR/Clipmory.app/Contents/Frameworks/Sparkle.framework"
 /usr/libexec/PlistBuddy -c "Delete :SUPublicEDKey" "$DIST_DIR/Clipmory.app/Contents/Info.plist" 2>/dev/null || true
 
 # Re-sign stripped bundle for local sandbox testing
-codesign --force --sign - --entitlements "ClipFlow/Resources/ClipFlow-AppStore.entitlements" "$DIST_DIR/Clipmory.app"
+codesign --force --sign - --entitlements "Clipmory/Resources/Clipmory-AppStore.entitlements" "$DIST_DIR/Clipmory.app"
 codesign -d --entitlements :- "$DIST_DIR/Clipmory.app"
 
 ditto -c -k --sequesterRsrc --keepParent "$DIST_DIR/Clipmory.app" "$DIST_DIR/Clipmory-AppStore.zip"
 
+rm -rf /Applications/Clipmory.app 2>/dev/null || true
+cp -R "$DIST_DIR/Clipmory.app" /Applications/ 2>/dev/null || true
+
 echo "✅ [3/3] App Store build ready at:"
 echo "   - $DIST_DIR/Clipmory.app"
+echo "   - /Applications/Clipmory.app"
 echo "   - $DIST_DIR/Clipmory-AppStore.zip"
 echo ""
 echo "👉 To upload to App Store Connect / TestFlight:"
-echo "   1. Open ClipFlow.xcodeproj in Xcode."
+echo "   1. Open Clipmory.xcodeproj in Xcode."
 echo "   2. Select Product > Archive (with your Apple Developer Team ID selected)."
 echo "   3. Click 'Distribute App' > 'App Store Connect'."

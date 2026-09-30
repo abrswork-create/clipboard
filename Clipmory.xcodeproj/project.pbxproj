@@ -1,0 +1,1258 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		010C83CECB0BA1D2B2E32A80 /* ApplicationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 41C75D4D64C434F80982FBBD /* ApplicationService.swift */; };
+		014011FD85D00669FB904E63 /* DatabaseError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1BC693E03B99FD269BE5C39E /* DatabaseError.swift */; };
+		020DEA85FD79EC065F16F4F6 /* ClipboardClassifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77D5E77596D53F8DA6D94C3C /* ClipboardClassifier.swift */; };
+		049889069715755ADA63B29B /* ScreenCaptureService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49BC756E8BB9DFC50D156362 /* ScreenCaptureService.swift */; };
+		050BF043D2A4E12BD1241996 /* DatabaseMigration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D699602F2BD52AAAD861430 /* DatabaseMigration.swift */; };
+		05E5B6DDAF886C90ED5F0893 /* ClipboardWriter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0565F5EB88E9A2E12DEA1978 /* ClipboardWriter.swift */; };
+		06C6D80817E6B51E4E21B0D6 /* ClipboardMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2EC34A7D21749A675F94992B /* ClipboardMonitor.swift */; };
+		06F95447FABA9F6F233AB782 /* ContentDetectionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD410689C4377AB00C52ECEA /* ContentDetectionService.swift */; };
+		07B48A49A19DC46D6D30A880 /* ImagesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2680521491396EB6B15DA0F /* ImagesView.swift */; };
+		0D24872C57E41B7D34393B5B /* URLDetectionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 603C225AAF1D6F60DE5BD040 /* URLDetectionService.swift */; };
+		0D3830885C8D9DA02729BEE3 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4421B7F6F95E0D78D8EEF980 /* SettingsView.swift */; };
+		0DF7369B074E063529B0477F /* ScreenCaptureOverlayWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B5B2BCA5E3038D9A5832828 /* ScreenCaptureOverlayWindow.swift */; };
+		0F49981EFE7E93D827CF65D5 /* ClipmoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 592E22C29FF2ADA83C2535B4 /* ClipmoryTests.swift */; };
+		0F87D61AE7B7BE9C309CE478 /* PermissionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D662BD42922592BB70F168E0 /* PermissionManager.swift */; };
+		126A0F98F941C58554505EC2 /* ClipboardPreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 472ACE504E246BBD7168B01C /* ClipboardPreviewView.swift */; };
+		130E8EE70F296F9A68A8560E /* SearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D18738838923E9B8FAFEDCE /* SearchView.swift */; };
+		13F44CC1F9989DABE49E0990 /* ScreenCaptureOverlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 889E18A5ABEA856170365FB2 /* ScreenCaptureOverlayView.swift */; };
+		1585E874582546FD5FCFBFAF /* LemonSqueezyService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F3B982FC7226AB380DCA6D3 /* LemonSqueezyService.swift */; };
+		1804242479719291595B7A22 /* ClipboardPreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 472ACE504E246BBD7168B01C /* ClipboardPreviewView.swift */; };
+		194CFF425684268FB1ED0C8D /* ClipboardCollection.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3DF08F9BC73158BE5ED0750 /* ClipboardCollection.swift */; };
+		1A0B71018E2BB804992D8677 /* ClipmoryApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = E6192EB186F71598B6147A31 /* ClipmoryApp.swift */; };
+		1B592A97B51180B91B3D4912 /* QuickClipboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB7CDC00C0B6BC4C2878620E /* QuickClipboardView.swift */; };
+		1B699C3E148F83B4A3640B54 /* LemonSqueezyService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F3B982FC7226AB380DCA6D3 /* LemonSqueezyService.swift */; };
+		1BEE0ED35E3E38B957CF92DE /* ClipboardHistoryViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 806D168A7BE44CBBE37E14CC /* ClipboardHistoryViewModel.swift */; };
+		214ACF328A0407B5421D1DAC /* GeneralSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3515D03AFE671712C3F6BAFB /* GeneralSettingsView.swift */; };
+		21EAD5FFFD55F0627E960936 /* EncryptionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9AFF0364F18BDB940844E45 /* EncryptionService.swift */; };
+		233792F4F48DB35CA8D653B1 /* FileStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8FD6DCF8AFC2AAD4D57198E /* FileStorage.swift */; };
+		24B824E274E4F8FC69C7231A /* PermissionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D662BD42922592BB70F168E0 /* PermissionManager.swift */; };
+		27008C2F626E1FA4F06D8D8B /* KaomojiPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DC0413AF1978F84B9F5F499 /* KaomojiPickerView.swift */; };
+		2718A55281460ADCABC19B0B /* ClipboardItemRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 38CE61183438CFECA5471C39 /* ClipboardItemRow.swift */; };
+		273F2FB21DC3F8B5EAEF504B /* UpgradeBannerCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDC6F5A663CA87895CA2B7AC /* UpgradeBannerCard.swift */; };
+		282F9493BA5C9999BE42A418 /* SensitiveDataDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7AEFBBD16E9968704418F4E8 /* SensitiveDataDetector.swift */; };
+		290F61093F6ABE7E2ABCD5C7 /* QuickClipboardWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76C4E7B931EA1F785C4DA7F7 /* QuickClipboardWindowController.swift */; };
+		2A8BCB0CB37303F1CC68430B /* ClipmoryApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = E6192EB186F71598B6147A31 /* ClipmoryApp.swift */; };
+		2BDE183CFE11C8298D0E3D83 /* ScreenCaptureService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49BC756E8BB9DFC50D156362 /* ScreenCaptureService.swift */; };
+		2C7FF9450613E6767EAE0C95 /* EmojiData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54032C968A081D6085F4240B /* EmojiData.swift */; };
+		2CAD44F7F5BD6299CDBE5A52 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = DBC28A19096D7ED76E854B1B /* AppDelegate.swift */; };
+		30C6454998302CCF78593B0D /* ClipboardType.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCAABFCD842DDB8B139FF75E /* ClipboardType.swift */; };
+		328324EAEC5DB97477D9088D /* ClipboardMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2EC34A7D21749A675F94992B /* ClipboardMonitor.swift */; };
+		3483D50C49637BF789B98BA9 /* OCRService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D760BCC8F073D20F87D0EF6 /* OCRService.swift */; };
+		35FE76E724BED5284B0F91FE /* ClipboardReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F02ECDF4F16C8831E3F9B10 /* ClipboardReader.swift */; };
+		364FF9F5479F4808354B0AE6 /* ClipboardNormalizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3158559A5904C4C0FA27DEA2 /* ClipboardNormalizer.swift */; };
+		38D061BCEE5AA52312AEB91A /* SearchService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 124379B3CFAE235C6414C04A /* SearchService.swift */; };
+		397C0E7A49F86E9EA3794B64 /* DesignSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5112BDDDE1344B63243D79FE /* DesignSystem.swift */; };
+		39E599E8B239E8B4B8046670 /* StoreKitManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76E57EF860F639E5A808AC56 /* StoreKitManager.swift */; };
+		3B588D38121E632B1C32069F /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3470B73DD8AF3A7D009E9380 /* AppState.swift */; };
+		3D9E69664F01A1A4AEF27559 /* KaomojiPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DC0413AF1978F84B9F5F499 /* KaomojiPickerView.swift */; };
+		40D94F0EDA45FF4B0B66CB0C /* QuickClipboardViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3298B25AA2D8E9E915CF6875 /* QuickClipboardViewModel.swift */; };
+		42C6FB55654B3DAB6DF4D128 /* ClipboardItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = A23C10D14285BFC93564D5CA /* ClipboardItem.swift */; };
+		43B1B9295CA3384ADBC942D4 /* ImageService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26EEF2AFAA73467EF69E9A36 /* ImageService.swift */; };
+		44F8AFA828A24829B3A41B32 /* GifPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1B280556530E1B583F2BA2EE /* GifPickerView.swift */; };
+		4581088AE713DA394B000078 /* HotkeyConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C6B87210B6C555B2CAF30BA /* HotkeyConfiguration.swift */; };
+		4A14E08E5CA820EDEDB5EAC1 /* ClipboardStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD06FA7B362FCC19BBCC6569 /* ClipboardStore.swift */; };
+		4BC102123F84F42C1B6126CB /* ProManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E0548FA7B2C0F1A605A2BA0 /* ProManager.swift */; };
+		4C66F4A4C48E1CC3ABD77A42 /* PermissionStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = 174E5139941345808FB796FD /* PermissionStatus.swift */; };
+		544FA503835F6C0ABE7A8461 /* ImageService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26EEF2AFAA73467EF69E9A36 /* ImageService.swift */; };
+		550194D11710567F57650B73 /* MenuBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30F8F5D73723A8AE84E579E6 /* MenuBarView.swift */; };
+		5C87717C5B3CD1BE5FAC1BF9 /* UpgradePaywallView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8157D4C783456832CB0AD461 /* UpgradePaywallView.swift */; };
+		60469A33E7D92F9B3AFB5CC4 /* QuickClipboardViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3298B25AA2D8E9E915CF6875 /* QuickClipboardViewModel.swift */; };
+		62FA63665E5C6BF028006DC0 /* ClipboardWriter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0565F5EB88E9A2E12DEA1978 /* ClipboardWriter.swift */; };
+		670A441BCB9E3EE367CBEF31 /* PanelTabBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90BBEE0CE63C3F155CC5FE2E /* PanelTabBar.swift */; };
+		685790CB40320C17159E1ECF /* DatabaseMigration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D699602F2BD52AAAD861430 /* DatabaseMigration.swift */; };
+		68875A262C4C1D99B3D2FF22 /* StorageManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FAA2F032887711574935A760 /* StorageManager.swift */; };
+		68EF3298043E1514E00A0AAB /* StorageManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FAA2F032887711574935A760 /* StorageManager.swift */; };
+		69C24471DFF7FC2A306E09AB /* ApplicationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 41C75D4D64C434F80982FBBD /* ApplicationService.swift */; };
+		6AAC1580D1650A34F34C0B93 /* ShortcutRecorderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E98E779B56CDC05D15E18C9A /* ShortcutRecorderView.swift */; };
+		6B99C5C44BBC1486CF12EA9D /* KaomojiData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 62401E5C3AF681E136FBC6D5 /* KaomojiData.swift */; };
+		6C469E56FF36EA08458C5E24 /* ShortcutRecorderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E98E779B56CDC05D15E18C9A /* ShortcutRecorderView.swift */; };
+		6CDB38015FFE2EB8EBDEEEA4 /* GifPlayerComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2EC7890DFE8DBB3EBDC2FBE6 /* GifPlayerComponents.swift */; };
+		6D467E5BDE3DF354232869E9 /* PrivacyManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF177F89828FC5711248149C /* PrivacyManager.swift */; };
+		6F0E6BB6E825D0F72241680C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 70503B66B09053D170EC0685 /* Assets.xcassets */; };
+		71056DE28045B249C33A396B /* PasteService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A635796F4ABFC980415592D /* PasteService.swift */; };
+		71414E51EF7C4C537250E9AA /* ScreenCaptureOverlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 889E18A5ABEA856170365FB2 /* ScreenCaptureOverlayView.swift */; };
+		72CAF560B584F8DF9CA3ECFE /* SettingsRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3AB54F7F683A41F904E6B6F /* SettingsRepository.swift */; };
+		76F32667D0F0703F923A57DB /* GlobalHotkeyManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5C302C5581BECD82DBAD271E /* GlobalHotkeyManager.swift */; };
+		779A233E355A8D3F4429292B /* PreviewService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92B12CA9FE7925DE30D410D7 /* PreviewService.swift */; };
+		77DEEE7C864E1A5A6546AFBB /* PrivacyManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF177F89828FC5711248149C /* PrivacyManager.swift */; };
+		799FF549F51E833FBBE2AE45 /* ThumbnailStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD5724C49DCD7BD44390DBF4 /* ThumbnailStorage.swift */; };
+		7E6F25889F0FD492FF2912F7 /* MenuBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30F8F5D73723A8AE84E579E6 /* MenuBarView.swift */; };
+		7F6DA477DA9C5400EAEE8820 /* SettingsRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3AB54F7F683A41F904E6B6F /* SettingsRepository.swift */; };
+		83820E00D6BF9D15D8E882BD /* SymbolsData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DA5A81A2083144A398F825A /* SymbolsData.swift */; };
+		83F0082FF712355C20FF55CD /* KaomojiData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 62401E5C3AF681E136FBC6D5 /* KaomojiData.swift */; };
+		86EF31256E8E075F48B07DCE /* PermissionStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = 174E5139941345808FB796FD /* PermissionStatus.swift */; };
+		881DCEE68C5F21F00576B44B /* SearchViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2AC4AA108FD1A117EDBA77E /* SearchViewModel.swift */; };
+		885F6E7054017C3BD739E2E0 /* AppEnvironment.swift in Sources */ = {isa = PBXBuildFile; fileRef = D87E8EE94716CF46344470AB /* AppEnvironment.swift */; };
+		889CF7DEC39BB3A887146DC4 /* SensitiveDataDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7AEFBBD16E9968704418F4E8 /* SensitiveDataDetector.swift */; };
+		8A7E650CC68BC92182D98B4D /* ClipboardNormalizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3158559A5904C4C0FA27DEA2 /* ClipboardNormalizer.swift */; };
+		8BFF7A4317102AB739D35FE3 /* ClipboardType.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCAABFCD842DDB8B139FF75E /* ClipboardType.swift */; };
+		8C1BCA9093B263E3266CF95D /* UpgradePaywallView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8157D4C783456832CB0AD461 /* UpgradePaywallView.swift */; };
+		8F4C250E986D66ECEAA2F694 /* ClipboardMetadata.swift in Sources */ = {isa = PBXBuildFile; fileRef = 395027B4EB7DFAB8C5E1E1BA /* ClipboardMetadata.swift */; };
+		914B1A41074AB764E6CFEB77 /* ClipboardHistoryViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 806D168A7BE44CBBE37E14CC /* ClipboardHistoryViewModel.swift */; };
+		9645438E94E4171B8EE5CE57 /* ThumbnailStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD5724C49DCD7BD44390DBF4 /* ThumbnailStorage.swift */; };
+		9705D0BAB50B6E4FC229A2B6 /* ClipboardItemRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 38CE61183438CFECA5471C39 /* ClipboardItemRow.swift */; };
+		9880111946D745FEFA0644EE /* UpdateManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 696A3011629C38C1D64044A7 /* UpdateManager.swift */; };
+		98DB75D3ACA413C2AE8C8D46 /* ClipboardCollection.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3DF08F9BC73158BE5ED0750 /* ClipboardCollection.swift */; };
+		98F4A0B3F9F0D1E6571DD551 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D94DDEFD0AE40334D601123 /* OnboardingView.swift */; };
+		9A67E21D3EF47EBA2C6A0C10 /* SymbolsPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 268F4DA702CD1536EF132028 /* SymbolsPickerView.swift */; };
+		9B8F5D4D2E11BB2B70F66726 /* EmojiPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7594951C6787CB0B6D696FB4 /* EmojiPickerView.swift */; };
+		9C3710A3D88743021C84BEDF /* ScreenCaptureOverlayWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B5B2BCA5E3038D9A5832828 /* ScreenCaptureOverlayWindow.swift */; };
+		9C95099339163A4080A466A1 /* ClipboardRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23E9B6631829BD718D74A143 /* ClipboardRepository.swift */; };
+		9CE16BD846A6F3A006D0CD73 /* AppEnvironment.swift in Sources */ = {isa = PBXBuildFile; fileRef = D87E8EE94716CF46344470AB /* AppEnvironment.swift */; };
+		9DC566AF52BECB572A39CF9A /* FavoritesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8975B8B63DB4E8DF7DCB72B2 /* FavoritesView.swift */; };
+		A3B63E2A2F2B9124533B0FD6 /* DatabaseManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD527195D075EA69641E22C2 /* DatabaseManager.swift */; };
+		A627353E1A87686FA1DB512F /* ClipboardHistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0DF297B9DACE3D7FCC4955C /* ClipboardHistoryView.swift */; };
+		A7BEE446C6615A298E4E56DB /* ClipboardSourceApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6286F780AA01DE35029F669C /* ClipboardSourceApp.swift */; };
+		A81D7307E83A92399A53E215 /* PanelTabBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90BBEE0CE63C3F155CC5FE2E /* PanelTabBar.swift */; };
+		ABC69219F37DA261D584B161 /* SearchViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2AC4AA108FD1A117EDBA77E /* SearchViewModel.swift */; };
+		AC1ED747DCB872482933B5AF /* ClipboardReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F02ECDF4F16C8831E3F9B10 /* ClipboardReader.swift */; };
+		AD01A998FFB4CE9A7AEBA697 /* DesignSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5112BDDDE1344B63243D79FE /* DesignSystem.swift */; };
+		AD5381F8483E2E73EC8417A7 /* GeneralSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3515D03AFE671712C3F6BAFB /* GeneralSettingsView.swift */; };
+		AFA5E88FAB974A4B1BBC5800 /* GifLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE270A4C7377C8AD89B5A80F /* GifLoader.swift */; };
+		B127A2480F9FF7780A49736B /* OnboardingViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DF5A85ACD7A131F44663D5AD /* OnboardingViewModel.swift */; };
+		B5016B2AAD70350A42F7061F /* ClipboardStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD06FA7B362FCC19BBCC6569 /* ClipboardStore.swift */; };
+		B74367825888276446A441F6 /* ClipboardMetadata.swift in Sources */ = {isa = PBXBuildFile; fileRef = 395027B4EB7DFAB8C5E1E1BA /* ClipboardMetadata.swift */; };
+		BB5323ED0AB9E1325A5873F3 /* GifPlayerComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2EC7890DFE8DBB3EBDC2FBE6 /* GifPlayerComponents.swift */; };
+		BBC992DF8D6D390C498C3E92 /* ImagesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2680521491396EB6B15DA0F /* ImagesView.swift */; };
+		BCF10994B70A1BADE2437484 /* HotkeyError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 98569488D2AB28FE6E57F190 /* HotkeyError.swift */; };
+		BE56EA8AE8D64C91A061665C /* SearchService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 124379B3CFAE235C6414C04A /* SearchService.swift */; };
+		C06C52230581649BF542604D /* SymbolsData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DA5A81A2083144A398F825A /* SymbolsData.swift */; };
+		C0E1D2B3984566015F4527C2 /* FileStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8FD6DCF8AFC2AAD4D57198E /* FileStorage.swift */; };
+		C4628D6766C78EF1CC6DFE1D /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3470B73DD8AF3A7D009E9380 /* AppState.swift */; };
+		C6E00ECCE7D0F06F9EAFDA25 /* AppSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75DD1A8BE85B86D576BEB437 /* AppSettings.swift */; };
+		C9B1DCEC07B19826264FE8FD /* QuickClipboardWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76C4E7B931EA1F785C4DA7F7 /* QuickClipboardWindowController.swift */; };
+		CA190F3BC4D0A426AEE1E90D /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = DBC28A19096D7ED76E854B1B /* AppDelegate.swift */; };
+		CA5C66749523EC8AFFC26563 /* EmojiData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54032C968A081D6085F4240B /* EmojiData.swift */; };
+		CAEF401E0079173DA318668A /* PreviewService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92B12CA9FE7925DE30D410D7 /* PreviewService.swift */; };
+		CDA79F630A61E2BA613F139F /* ClipboardRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23E9B6631829BD718D74A143 /* ClipboardRepository.swift */; };
+		CF7FD60F048F38F55555324C /* DatabaseError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1BC693E03B99FD269BE5C39E /* DatabaseError.swift */; };
+		CFF10296FC07D78DB2E78D10 /* ClipboardItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = A23C10D14285BFC93564D5CA /* ClipboardItem.swift */; };
+		D20024FE211261B10717B2B3 /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = 9CD8C6B9C3AF7132591D8B7B /* Sparkle */; settings = {ATTRIBUTES = (Weak, ); }; };
+		D31030954EFA12200B908CC0 /* ClipboardHistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0DF297B9DACE3D7FCC4955C /* ClipboardHistoryView.swift */; };
+		D3AF4EC3B4920EACA880029F /* HotkeyConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C6B87210B6C555B2CAF30BA /* HotkeyConfiguration.swift */; };
+		D409C5587E3152595B206AC3 /* UpgradeBannerCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDC6F5A663CA87895CA2B7AC /* UpgradeBannerCard.swift */; };
+		D4F3E558B0E115B56D680CC0 /* OCRService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D760BCC8F073D20F87D0EF6 /* OCRService.swift */; };
+		D572633FB1A8C4EF37F8E105 /* GlobalHotkeyManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5C302C5581BECD82DBAD271E /* GlobalHotkeyManager.swift */; };
+		D5CB4BE5DB46C38641087A6C /* StoreKitManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76E57EF860F639E5A808AC56 /* StoreKitManager.swift */; };
+		D777BAA6385CD870874E9D6C /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D94DDEFD0AE40334D601123 /* OnboardingView.swift */; };
+		D904F0740F9D1A7BF4CB7556 /* GifLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE270A4C7377C8AD89B5A80F /* GifLoader.swift */; };
+		D94788A8DDDD9460A62CA6B8 /* EmojiPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7594951C6787CB0B6D696FB4 /* EmojiPickerView.swift */; };
+		D9E832EC1F6DF110566E09D7 /* EncryptionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9AFF0364F18BDB940844E45 /* EncryptionService.swift */; };
+		DABE2833FED4C28B6BB1DCDC /* FavoritesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8975B8B63DB4E8DF7DCB72B2 /* FavoritesView.swift */; };
+		DB8EE25AD7BB278662BBE10C /* GifPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1B280556530E1B583F2BA2EE /* GifPickerView.swift */; };
+		DCB52A125405794F188B4687 /* MainPanelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22D7046A8C47AFBE3C738BA3 /* MainPanelView.swift */; };
+		DCCD53124E907DC2070B4445 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4421B7F6F95E0D78D8EEF980 /* SettingsView.swift */; };
+		DF4D73AE7D68B12AAB8DF8BC /* URLDetectionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 603C225AAF1D6F60DE5BD040 /* URLDetectionService.swift */; };
+		E025E40753B4432748AC291A /* MainPanelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22D7046A8C47AFBE3C738BA3 /* MainPanelView.swift */; };
+		E2C1DB00C93A4CB77EA30CAE /* ProManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E0548FA7B2C0F1A605A2BA0 /* ProManager.swift */; };
+		E34929069658D2BCEC0CA07E /* ContentDetectionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD410689C4377AB00C52ECEA /* ContentDetectionService.swift */; };
+		E351B9C16E6133B8AD283EA8 /* QuickClipboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB7CDC00C0B6BC4C2878620E /* QuickClipboardView.swift */; };
+		E4D3B874E672455359C2E67D /* ClipboardClassifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77D5E77596D53F8DA6D94C3C /* ClipboardClassifier.swift */; };
+		E4D3D76111F712C27ACD4873 /* AppSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75DD1A8BE85B86D576BEB437 /* AppSettings.swift */; };
+		E55A476C902D4C9AC2BDE642 /* SearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D18738838923E9B8FAFEDCE /* SearchView.swift */; };
+		E5CDD9DAED3B669126AD89DA /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 70503B66B09053D170EC0685 /* Assets.xcassets */; };
+		EF558C83B55B3FF10ADE0574 /* OnboardingViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DF5A85ACD7A131F44663D5AD /* OnboardingViewModel.swift */; };
+		F2614736D22851476FDFFA47 /* DatabaseManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD527195D075EA69641E22C2 /* DatabaseManager.swift */; };
+		F59F24631E618292A2A480E0 /* PasteService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A635796F4ABFC980415592D /* PasteService.swift */; };
+		F5ED1E865F392CA29A7C4154 /* ClipboardSourceApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6286F780AA01DE35029F669C /* ClipboardSourceApp.swift */; };
+		F967978EF62F289EBF6CE992 /* SymbolsPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 268F4DA702CD1536EF132028 /* SymbolsPickerView.swift */; };
+		FB2EDC8E1A492AE928D3C34C /* UpdateManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 696A3011629C38C1D64044A7 /* UpdateManager.swift */; };
+		FC7357CDA2597D20F27C0206 /* HotkeyError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 98569488D2AB28FE6E57F190 /* HotkeyError.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		E09668CFE8B43ACA3F142F39 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = E16B5B6027A647B9D232467D /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 3CDF1A872B190A077E277CA7;
+			remoteInfo = Clipmory;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		0565F5EB88E9A2E12DEA1978 /* ClipboardWriter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipboardWriter.swift; sourceTree = "<group>"; };
+		0B5B2BCA5E3038D9A5832828 /* ScreenCaptureOverlayWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenCaptureOverlayWindow.swift; sourceTree = "<group>"; };
+		0D18738838923E9B8FAFEDCE /* SearchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchView.swift; sourceTree = "<group>"; };
+		124379B3CFAE235C6414C04A /* SearchService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchService.swift; sourceTree = "<group>"; };
+		174E5139941345808FB796FD /* PermissionStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionStatus.swift; sourceTree = "<group>"; };
+		1B280556530E1B583F2BA2EE /* GifPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GifPickerView.swift; sourceTree = "<group>"; };
+		1BC693E03B99FD269BE5C39E /* DatabaseError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatabaseError.swift; sourceTree = "<group>"; };
+		22D7046A8C47AFBE3C738BA3 /* MainPanelView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainPanelView.swift; sourceTree = "<group>"; };
+		23E9B6631829BD718D74A143 /* ClipboardRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipboardRepository.swift; sourceTree = "<group>"; };
+		268F4DA702CD1536EF132028 /* SymbolsPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SymbolsPickerView.swift; sourceTree = "<group>"; };
+		26EEF2AFAA73467EF69E9A36 /* ImageService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageService.swift; sourceTree = "<group>"; };
+		2D699602F2BD52AAAD861430 /* DatabaseMigration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatabaseMigration.swift; sourceTree = "<group>"; };
+		2D94DDEFD0AE40334D601123 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
+		2DC0413AF1978F84B9F5F499 /* KaomojiPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KaomojiPickerView.swift; sourceTree = "<group>"; };
+		2EC34A7D21749A675F94992B /* ClipboardMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipboardMonitor.swift; sourceTree = "<group>"; };
+		2EC7890DFE8DBB3EBDC2FBE6 /* GifPlayerComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GifPlayerComponents.swift; sourceTree = "<group>"; };
+		2F3B982FC7226AB380DCA6D3 /* LemonSqueezyService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LemonSqueezyService.swift; sourceTree = "<group>"; };
+		30F8F5D73723A8AE84E579E6 /* MenuBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarView.swift; sourceTree = "<group>"; };
+		3158559A5904C4C0FA27DEA2 /* ClipboardNormalizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipboardNormalizer.swift; sourceTree = "<group>"; };
+		3298B25AA2D8E9E915CF6875 /* QuickClipboardViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickClipboardViewModel.swift; sourceTree = "<group>"; };
+		3470B73DD8AF3A7D009E9380 /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
+		3515D03AFE671712C3F6BAFB /* GeneralSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeneralSettingsView.swift; sourceTree = "<group>"; };
+		38CE61183438CFECA5471C39 /* ClipboardItemRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipboardItemRow.swift; sourceTree = "<group>"; };
+		395027B4EB7DFAB8C5E1E1BA /* ClipboardMetadata.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipboardMetadata.swift; sourceTree = "<group>"; };
+		3D760BCC8F073D20F87D0EF6 /* OCRService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OCRService.swift; sourceTree = "<group>"; };
+		41C75D4D64C434F80982FBBD /* ApplicationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApplicationService.swift; sourceTree = "<group>"; };
+		4421B7F6F95E0D78D8EEF980 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		472ACE504E246BBD7168B01C /* ClipboardPreviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipboardPreviewView.swift; sourceTree = "<group>"; };
+		49BC756E8BB9DFC50D156362 /* ScreenCaptureService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenCaptureService.swift; sourceTree = "<group>"; };
+		5112BDDDE1344B63243D79FE /* DesignSystem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DesignSystem.swift; sourceTree = "<group>"; };
+		52E761C9B1F34E21D263B5E1 /* Clipmory-AppStore.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Clipmory-AppStore.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		54032C968A081D6085F4240B /* EmojiData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmojiData.swift; sourceTree = "<group>"; };
+		592E22C29FF2ADA83C2535B4 /* ClipmoryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipmoryTests.swift; sourceTree = "<group>"; };
+		5C302C5581BECD82DBAD271E /* GlobalHotkeyManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlobalHotkeyManager.swift; sourceTree = "<group>"; };
+		5E0548FA7B2C0F1A605A2BA0 /* ProManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProManager.swift; sourceTree = "<group>"; };
+		603C225AAF1D6F60DE5BD040 /* URLDetectionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLDetectionService.swift; sourceTree = "<group>"; };
+		62401E5C3AF681E136FBC6D5 /* KaomojiData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KaomojiData.swift; sourceTree = "<group>"; };
+		6286F780AA01DE35029F669C /* ClipboardSourceApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipboardSourceApp.swift; sourceTree = "<group>"; };
+		693FE45272867976863ECC54 /* Clipmory-AppStore.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "Clipmory-AppStore.entitlements"; sourceTree = "<group>"; };
+		696A3011629C38C1D64044A7 /* UpdateManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateManager.swift; sourceTree = "<group>"; };
+		6F02ECDF4F16C8831E3F9B10 /* ClipboardReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipboardReader.swift; sourceTree = "<group>"; };
+		70503B66B09053D170EC0685 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		7594951C6787CB0B6D696FB4 /* EmojiPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmojiPickerView.swift; sourceTree = "<group>"; };
+		75DD1A8BE85B86D576BEB437 /* AppSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettings.swift; sourceTree = "<group>"; };
+		76C4E7B931EA1F785C4DA7F7 /* QuickClipboardWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickClipboardWindowController.swift; sourceTree = "<group>"; };
+		76E57EF860F639E5A808AC56 /* StoreKitManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKitManager.swift; sourceTree = "<group>"; };
+		77D5E77596D53F8DA6D94C3C /* ClipboardClassifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipboardClassifier.swift; sourceTree = "<group>"; };
+		7A635796F4ABFC980415592D /* PasteService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasteService.swift; sourceTree = "<group>"; };
+		7AEFBBD16E9968704418F4E8 /* SensitiveDataDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SensitiveDataDetector.swift; sourceTree = "<group>"; };
+		7FABF0F777D256EEAAB83015 /* Clipmory.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Clipmory.entitlements; sourceTree = "<group>"; };
+		806D168A7BE44CBBE37E14CC /* ClipboardHistoryViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipboardHistoryViewModel.swift; sourceTree = "<group>"; };
+		8157D4C783456832CB0AD461 /* UpgradePaywallView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpgradePaywallView.swift; sourceTree = "<group>"; };
+		889E18A5ABEA856170365FB2 /* ScreenCaptureOverlayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenCaptureOverlayView.swift; sourceTree = "<group>"; };
+		8975B8B63DB4E8DF7DCB72B2 /* FavoritesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FavoritesView.swift; sourceTree = "<group>"; };
+		8C6B87210B6C555B2CAF30BA /* HotkeyConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HotkeyConfiguration.swift; sourceTree = "<group>"; };
+		8DA5A81A2083144A398F825A /* SymbolsData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SymbolsData.swift; sourceTree = "<group>"; };
+		90BBEE0CE63C3F155CC5FE2E /* PanelTabBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PanelTabBar.swift; sourceTree = "<group>"; };
+		92B12CA9FE7925DE30D410D7 /* PreviewService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreviewService.swift; sourceTree = "<group>"; };
+		98569488D2AB28FE6E57F190 /* HotkeyError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HotkeyError.swift; sourceTree = "<group>"; };
+		9EF843B6D890398572D87D6C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		A23C10D14285BFC93564D5CA /* ClipboardItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipboardItem.swift; sourceTree = "<group>"; };
+		A3DF08F9BC73158BE5ED0750 /* ClipboardCollection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipboardCollection.swift; sourceTree = "<group>"; };
+		AD5724C49DCD7BD44390DBF4 /* ThumbnailStorage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThumbnailStorage.swift; sourceTree = "<group>"; };
+		AE4EEC9648235BB2B408C9DC /* Clipmory.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Clipmory.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		B2AC4AA108FD1A117EDBA77E /* SearchViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchViewModel.swift; sourceTree = "<group>"; };
+		BCAABFCD842DDB8B139FF75E /* ClipboardType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipboardType.swift; sourceTree = "<group>"; };
+		C04410CBBB28BCFAD396E819 /* ClipmoryTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ClipmoryTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		C9AFF0364F18BDB940844E45 /* EncryptionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EncryptionService.swift; sourceTree = "<group>"; };
+		CD410689C4377AB00C52ECEA /* ContentDetectionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentDetectionService.swift; sourceTree = "<group>"; };
+		CD527195D075EA69641E22C2 /* DatabaseManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatabaseManager.swift; sourceTree = "<group>"; };
+		CE270A4C7377C8AD89B5A80F /* GifLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GifLoader.swift; sourceTree = "<group>"; };
+		D662BD42922592BB70F168E0 /* PermissionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionManager.swift; sourceTree = "<group>"; };
+		D87E8EE94716CF46344470AB /* AppEnvironment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppEnvironment.swift; sourceTree = "<group>"; };
+		D8FD6DCF8AFC2AAD4D57198E /* FileStorage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileStorage.swift; sourceTree = "<group>"; };
+		DB7CDC00C0B6BC4C2878620E /* QuickClipboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickClipboardView.swift; sourceTree = "<group>"; };
+		DBC28A19096D7ED76E854B1B /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		DF5A85ACD7A131F44663D5AD /* OnboardingViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingViewModel.swift; sourceTree = "<group>"; };
+		E0DF297B9DACE3D7FCC4955C /* ClipboardHistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipboardHistoryView.swift; sourceTree = "<group>"; };
+		E3AB54F7F683A41F904E6B6F /* SettingsRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsRepository.swift; sourceTree = "<group>"; };
+		E6192EB186F71598B6147A31 /* ClipmoryApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipmoryApp.swift; sourceTree = "<group>"; };
+		E90D6858B122079381F438D9 /* Info-AppStore.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "Info-AppStore.plist"; sourceTree = "<group>"; };
+		E98E779B56CDC05D15E18C9A /* ShortcutRecorderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortcutRecorderView.swift; sourceTree = "<group>"; };
+		F2680521491396EB6B15DA0F /* ImagesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImagesView.swift; sourceTree = "<group>"; };
+		FAA2F032887711574935A760 /* StorageManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StorageManager.swift; sourceTree = "<group>"; };
+		FD06FA7B362FCC19BBCC6569 /* ClipboardStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipboardStore.swift; sourceTree = "<group>"; };
+		FDC6F5A663CA87895CA2B7AC /* UpgradeBannerCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpgradeBannerCard.swift; sourceTree = "<group>"; };
+		FF177F89828FC5711248149C /* PrivacyManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrivacyManager.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		28E28B45985DFB53D28A3B01 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D20024FE211261B10717B2B3 /* Sparkle in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		010F20E78FCDD761E4A106DD /* Images */ = {
+			isa = PBXGroup;
+			children = (
+				F2680521491396EB6B15DA0F /* ImagesView.swift */,
+			);
+			path = Images;
+			sourceTree = "<group>";
+		};
+		1421625BD7BF7111F17F9DDD /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				70503B66B09053D170EC0685 /* Assets.xcassets */,
+				693FE45272867976863ECC54 /* Clipmory-AppStore.entitlements */,
+				7FABF0F777D256EEAAB83015 /* Clipmory.entitlements */,
+				E90D6858B122079381F438D9 /* Info-AppStore.plist */,
+				9EF843B6D890398572D87D6C /* Info.plist */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		168302607061291F1248C496 /* Database */ = {
+			isa = PBXGroup;
+			children = (
+				1BC693E03B99FD269BE5C39E /* DatabaseError.swift */,
+				CD527195D075EA69641E22C2 /* DatabaseManager.swift */,
+				2D699602F2BD52AAAD861430 /* DatabaseMigration.swift */,
+			);
+			path = Database;
+			sourceTree = "<group>";
+		};
+		2DE5571DA2E83CC5F52EC84B /* Clipmory */ = {
+			isa = PBXGroup;
+			children = (
+				9ED31924DA67073DD2317784 /* App */,
+				D6828979CA68048872375B34 /* Core */,
+				9B76E29175A9D4E43DE08C9E /* Features */,
+				98D98FB9B4F62573B8EFCFF6 /* Models */,
+				BFC6DD7912DBEFC8B6E62D7D /* Repositories */,
+				1421625BD7BF7111F17F9DDD /* Resources */,
+				82FE91DC9F1EE9247A39CD0B /* Services */,
+			);
+			path = Clipmory;
+			sourceTree = "<group>";
+		};
+		2F5C3C8939FC00544E7D1E3C /* Hotkeys */ = {
+			isa = PBXGroup;
+			children = (
+				5C302C5581BECD82DBAD271E /* GlobalHotkeyManager.swift */,
+				8C6B87210B6C555B2CAF30BA /* HotkeyConfiguration.swift */,
+				98569488D2AB28FE6E57F190 /* HotkeyError.swift */,
+			);
+			path = Hotkeys;
+			sourceTree = "<group>";
+		};
+		3285A8B560954B175A3F6479 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				52E761C9B1F34E21D263B5E1 /* Clipmory-AppStore.app */,
+				AE4EEC9648235BB2B408C9DC /* Clipmory.app */,
+				C04410CBBB28BCFAD396E819 /* ClipmoryTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		33603D6895FB58E0AB0BBD57 /* QuickClipboard */ = {
+			isa = PBXGroup;
+			children = (
+				DB7CDC00C0B6BC4C2878620E /* QuickClipboardView.swift */,
+				3298B25AA2D8E9E915CF6875 /* QuickClipboardViewModel.swift */,
+				76C4E7B931EA1F785C4DA7F7 /* QuickClipboardWindowController.swift */,
+			);
+			path = QuickClipboard;
+			sourceTree = "<group>";
+		};
+		3B4788F5F1DFBF62BCC29E88 /* Onboarding */ = {
+			isa = PBXGroup;
+			children = (
+				2D94DDEFD0AE40334D601123 /* OnboardingView.swift */,
+				DF5A85ACD7A131F44663D5AD /* OnboardingViewModel.swift */,
+			);
+			path = Onboarding;
+			sourceTree = "<group>";
+		};
+		524C97C52ADF7823CD4A0A38 /* Favorites */ = {
+			isa = PBXGroup;
+			children = (
+				8975B8B63DB4E8DF7DCB72B2 /* FavoritesView.swift */,
+			);
+			path = Favorites;
+			sourceTree = "<group>";
+		};
+		56EF1D76AB8A63E54CA11823 /* ClipmoryTests */ = {
+			isa = PBXGroup;
+			children = (
+				592E22C29FF2ADA83C2535B4 /* ClipmoryTests.swift */,
+			);
+			path = ClipmoryTests;
+			sourceTree = "<group>";
+		};
+		5A8EB5579B472F47133B474D /* Symbols */ = {
+			isa = PBXGroup;
+			children = (
+				8DA5A81A2083144A398F825A /* SymbolsData.swift */,
+				268F4DA702CD1536EF132028 /* SymbolsPickerView.swift */,
+			);
+			path = Symbols;
+			sourceTree = "<group>";
+		};
+		5B8782C106F8C38469B976F7 /* Kaomoji */ = {
+			isa = PBXGroup;
+			children = (
+				62401E5C3AF681E136FBC6D5 /* KaomojiData.swift */,
+				2DC0413AF1978F84B9F5F499 /* KaomojiPickerView.swift */,
+			);
+			path = Kaomoji;
+			sourceTree = "<group>";
+		};
+		60FA5E9ADF4DD1F2C47993A8 /* Pro */ = {
+			isa = PBXGroup;
+			children = (
+				2F3B982FC7226AB380DCA6D3 /* LemonSqueezyService.swift */,
+				5E0548FA7B2C0F1A605A2BA0 /* ProManager.swift */,
+				76E57EF860F639E5A808AC56 /* StoreKitManager.swift */,
+			);
+			path = Pro;
+			sourceTree = "<group>";
+		};
+		61EDBBD263331B34E122560F /* Emoji */ = {
+			isa = PBXGroup;
+			children = (
+				54032C968A081D6085F4240B /* EmojiData.swift */,
+				7594951C6787CB0B6D696FB4 /* EmojiPickerView.swift */,
+			);
+			path = Emoji;
+			sourceTree = "<group>";
+		};
+		6228E180B2ECA44ED5299F77 /* GIF */ = {
+			isa = PBXGroup;
+			children = (
+				CE270A4C7377C8AD89B5A80F /* GifLoader.swift */,
+				1B280556530E1B583F2BA2EE /* GifPickerView.swift */,
+				2EC7890DFE8DBB3EBDC2FBE6 /* GifPlayerComponents.swift */,
+			);
+			path = GIF;
+			sourceTree = "<group>";
+		};
+		66C638E8FCDDF3942E15DDEC /* Search */ = {
+			isa = PBXGroup;
+			children = (
+				0D18738838923E9B8FAFEDCE /* SearchView.swift */,
+				B2AC4AA108FD1A117EDBA77E /* SearchViewModel.swift */,
+			);
+			path = Search;
+			sourceTree = "<group>";
+		};
+		6E7CE5E43F51E35A58108EAC /* Permissions */ = {
+			isa = PBXGroup;
+			children = (
+				D662BD42922592BB70F168E0 /* PermissionManager.swift */,
+				174E5139941345808FB796FD /* PermissionStatus.swift */,
+			);
+			path = Permissions;
+			sourceTree = "<group>";
+		};
+		7FC767E51824AE82117513A1 /* Pro */ = {
+			isa = PBXGroup;
+			children = (
+				FDC6F5A663CA87895CA2B7AC /* UpgradeBannerCard.swift */,
+				8157D4C783456832CB0AD461 /* UpgradePaywallView.swift */,
+			);
+			path = Pro;
+			sourceTree = "<group>";
+		};
+		82FE91DC9F1EE9247A39CD0B /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				41C75D4D64C434F80982FBBD /* ApplicationService.swift */,
+				CD410689C4377AB00C52ECEA /* ContentDetectionService.swift */,
+				26EEF2AFAA73467EF69E9A36 /* ImageService.swift */,
+				3D760BCC8F073D20F87D0EF6 /* OCRService.swift */,
+				7A635796F4ABFC980415592D /* PasteService.swift */,
+				92B12CA9FE7925DE30D410D7 /* PreviewService.swift */,
+				49BC756E8BB9DFC50D156362 /* ScreenCaptureService.swift */,
+				124379B3CFAE235C6414C04A /* SearchService.swift */,
+				603C225AAF1D6F60DE5BD040 /* URLDetectionService.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		98D98FB9B4F62573B8EFCFF6 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				75DD1A8BE85B86D576BEB437 /* AppSettings.swift */,
+				A3DF08F9BC73158BE5ED0750 /* ClipboardCollection.swift */,
+				A23C10D14285BFC93564D5CA /* ClipboardItem.swift */,
+				395027B4EB7DFAB8C5E1E1BA /* ClipboardMetadata.swift */,
+				6286F780AA01DE35029F669C /* ClipboardSourceApp.swift */,
+				BCAABFCD842DDB8B139FF75E /* ClipboardType.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		9B76E29175A9D4E43DE08C9E /* Features */ = {
+			isa = PBXGroup;
+			children = (
+				BAAAB439E1C7DE65F2D2527E /* ClipboardHistory */,
+				61EDBBD263331B34E122560F /* Emoji */,
+				524C97C52ADF7823CD4A0A38 /* Favorites */,
+				6228E180B2ECA44ED5299F77 /* GIF */,
+				010F20E78FCDD761E4A106DD /* Images */,
+				5B8782C106F8C38469B976F7 /* Kaomoji */,
+				AE36CCCD91F43BB950FAE372 /* MenuBar */,
+				3B4788F5F1DFBF62BCC29E88 /* Onboarding */,
+				7FC767E51824AE82117513A1 /* Pro */,
+				33603D6895FB58E0AB0BBD57 /* QuickClipboard */,
+				C0488673B1FB1C665F915E1F /* ScreenCapture */,
+				66C638E8FCDDF3942E15DDEC /* Search */,
+				B8840185DDE0B722D0ADBFB2 /* Settings */,
+				5A8EB5579B472F47133B474D /* Symbols */,
+			);
+			path = Features;
+			sourceTree = "<group>";
+		};
+		9D8F2489BFAD82265D304983 /* Update */ = {
+			isa = PBXGroup;
+			children = (
+				696A3011629C38C1D64044A7 /* UpdateManager.swift */,
+			);
+			path = Update;
+			sourceTree = "<group>";
+		};
+		9ED31924DA67073DD2317784 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				DBC28A19096D7ED76E854B1B /* AppDelegate.swift */,
+				D87E8EE94716CF46344470AB /* AppEnvironment.swift */,
+				3470B73DD8AF3A7D009E9380 /* AppState.swift */,
+				E6192EB186F71598B6147A31 /* ClipmoryApp.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		A435F2EAF5F1889A37E40B69 = {
+			isa = PBXGroup;
+			children = (
+				2DE5571DA2E83CC5F52EC84B /* Clipmory */,
+				56EF1D76AB8A63E54CA11823 /* ClipmoryTests */,
+				3285A8B560954B175A3F6479 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		AE36CCCD91F43BB950FAE372 /* MenuBar */ = {
+			isa = PBXGroup;
+			children = (
+				30F8F5D73723A8AE84E579E6 /* MenuBarView.swift */,
+			);
+			path = MenuBar;
+			sourceTree = "<group>";
+		};
+		B8840185DDE0B722D0ADBFB2 /* Settings */ = {
+			isa = PBXGroup;
+			children = (
+				3515D03AFE671712C3F6BAFB /* GeneralSettingsView.swift */,
+				4421B7F6F95E0D78D8EEF980 /* SettingsView.swift */,
+				E98E779B56CDC05D15E18C9A /* ShortcutRecorderView.swift */,
+			);
+			path = Settings;
+			sourceTree = "<group>";
+		};
+		BAAAB439E1C7DE65F2D2527E /* ClipboardHistory */ = {
+			isa = PBXGroup;
+			children = (
+				E0DF297B9DACE3D7FCC4955C /* ClipboardHistoryView.swift */,
+				806D168A7BE44CBBE37E14CC /* ClipboardHistoryViewModel.swift */,
+				38CE61183438CFECA5471C39 /* ClipboardItemRow.swift */,
+				472ACE504E246BBD7168B01C /* ClipboardPreviewView.swift */,
+				22D7046A8C47AFBE3C738BA3 /* MainPanelView.swift */,
+				90BBEE0CE63C3F155CC5FE2E /* PanelTabBar.swift */,
+			);
+			path = ClipboardHistory;
+			sourceTree = "<group>";
+		};
+		BFC6DD7912DBEFC8B6E62D7D /* Repositories */ = {
+			isa = PBXGroup;
+			children = (
+				23E9B6631829BD718D74A143 /* ClipboardRepository.swift */,
+				E3AB54F7F683A41F904E6B6F /* SettingsRepository.swift */,
+			);
+			path = Repositories;
+			sourceTree = "<group>";
+		};
+		C0488673B1FB1C665F915E1F /* ScreenCapture */ = {
+			isa = PBXGroup;
+			children = (
+				889E18A5ABEA856170365FB2 /* ScreenCaptureOverlayView.swift */,
+				0B5B2BCA5E3038D9A5832828 /* ScreenCaptureOverlayWindow.swift */,
+			);
+			path = ScreenCapture;
+			sourceTree = "<group>";
+		};
+		CAA637A3A2B6E9DBCBCA6FB1 /* Security */ = {
+			isa = PBXGroup;
+			children = (
+				C9AFF0364F18BDB940844E45 /* EncryptionService.swift */,
+				FF177F89828FC5711248149C /* PrivacyManager.swift */,
+				7AEFBBD16E9968704418F4E8 /* SensitiveDataDetector.swift */,
+			);
+			path = Security;
+			sourceTree = "<group>";
+		};
+		D3491D833CF7F527A6E7B748 /* Storage */ = {
+			isa = PBXGroup;
+			children = (
+				D8FD6DCF8AFC2AAD4D57198E /* FileStorage.swift */,
+				FAA2F032887711574935A760 /* StorageManager.swift */,
+				AD5724C49DCD7BD44390DBF4 /* ThumbnailStorage.swift */,
+			);
+			path = Storage;
+			sourceTree = "<group>";
+		};
+		D6828979CA68048872375B34 /* Core */ = {
+			isa = PBXGroup;
+			children = (
+				5112BDDDE1344B63243D79FE /* DesignSystem.swift */,
+				FDE10B22A86F7B8DD19E3A08 /* Clipboard */,
+				168302607061291F1248C496 /* Database */,
+				2F5C3C8939FC00544E7D1E3C /* Hotkeys */,
+				6E7CE5E43F51E35A58108EAC /* Permissions */,
+				60FA5E9ADF4DD1F2C47993A8 /* Pro */,
+				CAA637A3A2B6E9DBCBCA6FB1 /* Security */,
+				D3491D833CF7F527A6E7B748 /* Storage */,
+				9D8F2489BFAD82265D304983 /* Update */,
+			);
+			path = Core;
+			sourceTree = "<group>";
+		};
+		FDE10B22A86F7B8DD19E3A08 /* Clipboard */ = {
+			isa = PBXGroup;
+			children = (
+				77D5E77596D53F8DA6D94C3C /* ClipboardClassifier.swift */,
+				2EC34A7D21749A675F94992B /* ClipboardMonitor.swift */,
+				3158559A5904C4C0FA27DEA2 /* ClipboardNormalizer.swift */,
+				6F02ECDF4F16C8831E3F9B10 /* ClipboardReader.swift */,
+				FD06FA7B362FCC19BBCC6569 /* ClipboardStore.swift */,
+				0565F5EB88E9A2E12DEA1978 /* ClipboardWriter.swift */,
+			);
+			path = Clipboard;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		0BBE91E7C0D92BFF5ED93442 /* ClipmoryTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 3BAF8E8112F0066115617B5D /* Build configuration list for PBXNativeTarget "ClipmoryTests" */;
+			buildPhases = (
+				618A3B7BDFD6F972C065A12B /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				EE6D51D81E976141887FB117 /* PBXTargetDependency */,
+			);
+			name = ClipmoryTests;
+			packageProductDependencies = (
+			);
+			productName = ClipmoryTests;
+			productReference = C04410CBBB28BCFAD396E819 /* ClipmoryTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		3CDF1A872B190A077E277CA7 /* Clipmory */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 97ED6C9A4725DA0337DC6BB3 /* Build configuration list for PBXNativeTarget "Clipmory" */;
+			buildPhases = (
+				658E6EB32A4FAD07F65CD3A6 /* Sources */,
+				3D5450B3067072B4AE1E531D /* Resources */,
+				28E28B45985DFB53D28A3B01 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Clipmory;
+			packageProductDependencies = (
+				9CD8C6B9C3AF7132591D8B7B /* Sparkle */,
+			);
+			productName = Clipmory;
+			productReference = AE4EEC9648235BB2B408C9DC /* Clipmory.app */;
+			productType = "com.apple.product-type.application";
+		};
+		9535205E9BED666A5465AFD5 /* Clipmory-AppStore */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = CE7233AEAF739AACBD22AFFA /* Build configuration list for PBXNativeTarget "Clipmory-AppStore" */;
+			buildPhases = (
+				4BB9DA606FD42D05FE9212FD /* Sources */,
+				1303D35F858425482370CABE /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "Clipmory-AppStore";
+			packageProductDependencies = (
+			);
+			productName = "Clipmory-AppStore";
+			productReference = 52E761C9B1F34E21D263B5E1 /* Clipmory-AppStore.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		E16B5B6027A647B9D232467D /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1500;
+				TargetAttributes = {
+					0BBE91E7C0D92BFF5ED93442 = {
+						ProvisioningStyle = Automatic;
+					};
+					3CDF1A872B190A077E277CA7 = {
+						ProvisioningStyle = Automatic;
+					};
+					9535205E9BED666A5465AFD5 = {
+						ProvisioningStyle = Automatic;
+					};
+				};
+			};
+			buildConfigurationList = CFE388065C2EBAC204739959 /* Build configuration list for PBXProject "Clipmory" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = A435F2EAF5F1889A37E40B69;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				098716B86852B06CC339F307 /* XCRemoteSwiftPackageReference "Sparkle" */,
+			);
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 3285A8B560954B175A3F6479 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				3CDF1A872B190A077E277CA7 /* Clipmory */,
+				9535205E9BED666A5465AFD5 /* Clipmory-AppStore */,
+				0BBE91E7C0D92BFF5ED93442 /* ClipmoryTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		1303D35F858425482370CABE /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E5CDD9DAED3B669126AD89DA /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		3D5450B3067072B4AE1E531D /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				6F0E6BB6E825D0F72241680C /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		4BB9DA606FD42D05FE9212FD /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				CA190F3BC4D0A426AEE1E90D /* AppDelegate.swift in Sources */,
+				9CE16BD846A6F3A006D0CD73 /* AppEnvironment.swift in Sources */,
+				E4D3D76111F712C27ACD4873 /* AppSettings.swift in Sources */,
+				C4628D6766C78EF1CC6DFE1D /* AppState.swift in Sources */,
+				69C24471DFF7FC2A306E09AB /* ApplicationService.swift in Sources */,
+				020DEA85FD79EC065F16F4F6 /* ClipboardClassifier.swift in Sources */,
+				194CFF425684268FB1ED0C8D /* ClipboardCollection.swift in Sources */,
+				A627353E1A87686FA1DB512F /* ClipboardHistoryView.swift in Sources */,
+				914B1A41074AB764E6CFEB77 /* ClipboardHistoryViewModel.swift in Sources */,
+				CFF10296FC07D78DB2E78D10 /* ClipboardItem.swift in Sources */,
+				9705D0BAB50B6E4FC229A2B6 /* ClipboardItemRow.swift in Sources */,
+				8F4C250E986D66ECEAA2F694 /* ClipboardMetadata.swift in Sources */,
+				328324EAEC5DB97477D9088D /* ClipboardMonitor.swift in Sources */,
+				364FF9F5479F4808354B0AE6 /* ClipboardNormalizer.swift in Sources */,
+				126A0F98F941C58554505EC2 /* ClipboardPreviewView.swift in Sources */,
+				AC1ED747DCB872482933B5AF /* ClipboardReader.swift in Sources */,
+				CDA79F630A61E2BA613F139F /* ClipboardRepository.swift in Sources */,
+				A7BEE446C6615A298E4E56DB /* ClipboardSourceApp.swift in Sources */,
+				4A14E08E5CA820EDEDB5EAC1 /* ClipboardStore.swift in Sources */,
+				8BFF7A4317102AB739D35FE3 /* ClipboardType.swift in Sources */,
+				05E5B6DDAF886C90ED5F0893 /* ClipboardWriter.swift in Sources */,
+				2A8BCB0CB37303F1CC68430B /* ClipmoryApp.swift in Sources */,
+				06F95447FABA9F6F233AB782 /* ContentDetectionService.swift in Sources */,
+				014011FD85D00669FB904E63 /* DatabaseError.swift in Sources */,
+				A3B63E2A2F2B9124533B0FD6 /* DatabaseManager.swift in Sources */,
+				685790CB40320C17159E1ECF /* DatabaseMigration.swift in Sources */,
+				AD01A998FFB4CE9A7AEBA697 /* DesignSystem.swift in Sources */,
+				CA5C66749523EC8AFFC26563 /* EmojiData.swift in Sources */,
+				D94788A8DDDD9460A62CA6B8 /* EmojiPickerView.swift in Sources */,
+				21EAD5FFFD55F0627E960936 /* EncryptionService.swift in Sources */,
+				DABE2833FED4C28B6BB1DCDC /* FavoritesView.swift in Sources */,
+				233792F4F48DB35CA8D653B1 /* FileStorage.swift in Sources */,
+				214ACF328A0407B5421D1DAC /* GeneralSettingsView.swift in Sources */,
+				AFA5E88FAB974A4B1BBC5800 /* GifLoader.swift in Sources */,
+				44F8AFA828A24829B3A41B32 /* GifPickerView.swift in Sources */,
+				6CDB38015FFE2EB8EBDEEEA4 /* GifPlayerComponents.swift in Sources */,
+				76F32667D0F0703F923A57DB /* GlobalHotkeyManager.swift in Sources */,
+				D3AF4EC3B4920EACA880029F /* HotkeyConfiguration.swift in Sources */,
+				FC7357CDA2597D20F27C0206 /* HotkeyError.swift in Sources */,
+				544FA503835F6C0ABE7A8461 /* ImageService.swift in Sources */,
+				07B48A49A19DC46D6D30A880 /* ImagesView.swift in Sources */,
+				83F0082FF712355C20FF55CD /* KaomojiData.swift in Sources */,
+				27008C2F626E1FA4F06D8D8B /* KaomojiPickerView.swift in Sources */,
+				1B699C3E148F83B4A3640B54 /* LemonSqueezyService.swift in Sources */,
+				DCB52A125405794F188B4687 /* MainPanelView.swift in Sources */,
+				550194D11710567F57650B73 /* MenuBarView.swift in Sources */,
+				3483D50C49637BF789B98BA9 /* OCRService.swift in Sources */,
+				D777BAA6385CD870874E9D6C /* OnboardingView.swift in Sources */,
+				EF558C83B55B3FF10ADE0574 /* OnboardingViewModel.swift in Sources */,
+				670A441BCB9E3EE367CBEF31 /* PanelTabBar.swift in Sources */,
+				71056DE28045B249C33A396B /* PasteService.swift in Sources */,
+				0F87D61AE7B7BE9C309CE478 /* PermissionManager.swift in Sources */,
+				86EF31256E8E075F48B07DCE /* PermissionStatus.swift in Sources */,
+				CAEF401E0079173DA318668A /* PreviewService.swift in Sources */,
+				77DEEE7C864E1A5A6546AFBB /* PrivacyManager.swift in Sources */,
+				E2C1DB00C93A4CB77EA30CAE /* ProManager.swift in Sources */,
+				1B592A97B51180B91B3D4912 /* QuickClipboardView.swift in Sources */,
+				60469A33E7D92F9B3AFB5CC4 /* QuickClipboardViewModel.swift in Sources */,
+				290F61093F6ABE7E2ABCD5C7 /* QuickClipboardWindowController.swift in Sources */,
+				71414E51EF7C4C537250E9AA /* ScreenCaptureOverlayView.swift in Sources */,
+				9C3710A3D88743021C84BEDF /* ScreenCaptureOverlayWindow.swift in Sources */,
+				049889069715755ADA63B29B /* ScreenCaptureService.swift in Sources */,
+				BE56EA8AE8D64C91A061665C /* SearchService.swift in Sources */,
+				E55A476C902D4C9AC2BDE642 /* SearchView.swift in Sources */,
+				881DCEE68C5F21F00576B44B /* SearchViewModel.swift in Sources */,
+				889CF7DEC39BB3A887146DC4 /* SensitiveDataDetector.swift in Sources */,
+				7F6DA477DA9C5400EAEE8820 /* SettingsRepository.swift in Sources */,
+				0D3830885C8D9DA02729BEE3 /* SettingsView.swift in Sources */,
+				6C469E56FF36EA08458C5E24 /* ShortcutRecorderView.swift in Sources */,
+				68EF3298043E1514E00A0AAB /* StorageManager.swift in Sources */,
+				D5CB4BE5DB46C38641087A6C /* StoreKitManager.swift in Sources */,
+				83820E00D6BF9D15D8E882BD /* SymbolsData.swift in Sources */,
+				9A67E21D3EF47EBA2C6A0C10 /* SymbolsPickerView.swift in Sources */,
+				9645438E94E4171B8EE5CE57 /* ThumbnailStorage.swift in Sources */,
+				DF4D73AE7D68B12AAB8DF8BC /* URLDetectionService.swift in Sources */,
+				9880111946D745FEFA0644EE /* UpdateManager.swift in Sources */,
+				273F2FB21DC3F8B5EAEF504B /* UpgradeBannerCard.swift in Sources */,
+				8C1BCA9093B263E3266CF95D /* UpgradePaywallView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		618A3B7BDFD6F972C065A12B /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				0F49981EFE7E93D827CF65D5 /* ClipmoryTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		658E6EB32A4FAD07F65CD3A6 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2CAD44F7F5BD6299CDBE5A52 /* AppDelegate.swift in Sources */,
+				885F6E7054017C3BD739E2E0 /* AppEnvironment.swift in Sources */,
+				C6E00ECCE7D0F06F9EAFDA25 /* AppSettings.swift in Sources */,
+				3B588D38121E632B1C32069F /* AppState.swift in Sources */,
+				010C83CECB0BA1D2B2E32A80 /* ApplicationService.swift in Sources */,
+				E4D3B874E672455359C2E67D /* ClipboardClassifier.swift in Sources */,
+				98DB75D3ACA413C2AE8C8D46 /* ClipboardCollection.swift in Sources */,
+				D31030954EFA12200B908CC0 /* ClipboardHistoryView.swift in Sources */,
+				1BEE0ED35E3E38B957CF92DE /* ClipboardHistoryViewModel.swift in Sources */,
+				42C6FB55654B3DAB6DF4D128 /* ClipboardItem.swift in Sources */,
+				2718A55281460ADCABC19B0B /* ClipboardItemRow.swift in Sources */,
+				B74367825888276446A441F6 /* ClipboardMetadata.swift in Sources */,
+				06C6D80817E6B51E4E21B0D6 /* ClipboardMonitor.swift in Sources */,
+				8A7E650CC68BC92182D98B4D /* ClipboardNormalizer.swift in Sources */,
+				1804242479719291595B7A22 /* ClipboardPreviewView.swift in Sources */,
+				35FE76E724BED5284B0F91FE /* ClipboardReader.swift in Sources */,
+				9C95099339163A4080A466A1 /* ClipboardRepository.swift in Sources */,
+				F5ED1E865F392CA29A7C4154 /* ClipboardSourceApp.swift in Sources */,
+				B5016B2AAD70350A42F7061F /* ClipboardStore.swift in Sources */,
+				30C6454998302CCF78593B0D /* ClipboardType.swift in Sources */,
+				62FA63665E5C6BF028006DC0 /* ClipboardWriter.swift in Sources */,
+				1A0B71018E2BB804992D8677 /* ClipmoryApp.swift in Sources */,
+				E34929069658D2BCEC0CA07E /* ContentDetectionService.swift in Sources */,
+				CF7FD60F048F38F55555324C /* DatabaseError.swift in Sources */,
+				F2614736D22851476FDFFA47 /* DatabaseManager.swift in Sources */,
+				050BF043D2A4E12BD1241996 /* DatabaseMigration.swift in Sources */,
+				397C0E7A49F86E9EA3794B64 /* DesignSystem.swift in Sources */,
+				2C7FF9450613E6767EAE0C95 /* EmojiData.swift in Sources */,
+				9B8F5D4D2E11BB2B70F66726 /* EmojiPickerView.swift in Sources */,
+				D9E832EC1F6DF110566E09D7 /* EncryptionService.swift in Sources */,
+				9DC566AF52BECB572A39CF9A /* FavoritesView.swift in Sources */,
+				C0E1D2B3984566015F4527C2 /* FileStorage.swift in Sources */,
+				AD5381F8483E2E73EC8417A7 /* GeneralSettingsView.swift in Sources */,
+				D904F0740F9D1A7BF4CB7556 /* GifLoader.swift in Sources */,
+				DB8EE25AD7BB278662BBE10C /* GifPickerView.swift in Sources */,
+				BB5323ED0AB9E1325A5873F3 /* GifPlayerComponents.swift in Sources */,
+				D572633FB1A8C4EF37F8E105 /* GlobalHotkeyManager.swift in Sources */,
+				4581088AE713DA394B000078 /* HotkeyConfiguration.swift in Sources */,
+				BCF10994B70A1BADE2437484 /* HotkeyError.swift in Sources */,
+				43B1B9295CA3384ADBC942D4 /* ImageService.swift in Sources */,
+				BBC992DF8D6D390C498C3E92 /* ImagesView.swift in Sources */,
+				6B99C5C44BBC1486CF12EA9D /* KaomojiData.swift in Sources */,
+				3D9E69664F01A1A4AEF27559 /* KaomojiPickerView.swift in Sources */,
+				1585E874582546FD5FCFBFAF /* LemonSqueezyService.swift in Sources */,
+				E025E40753B4432748AC291A /* MainPanelView.swift in Sources */,
+				7E6F25889F0FD492FF2912F7 /* MenuBarView.swift in Sources */,
+				D4F3E558B0E115B56D680CC0 /* OCRService.swift in Sources */,
+				98F4A0B3F9F0D1E6571DD551 /* OnboardingView.swift in Sources */,
+				B127A2480F9FF7780A49736B /* OnboardingViewModel.swift in Sources */,
+				A81D7307E83A92399A53E215 /* PanelTabBar.swift in Sources */,
+				F59F24631E618292A2A480E0 /* PasteService.swift in Sources */,
+				24B824E274E4F8FC69C7231A /* PermissionManager.swift in Sources */,
+				4C66F4A4C48E1CC3ABD77A42 /* PermissionStatus.swift in Sources */,
+				779A233E355A8D3F4429292B /* PreviewService.swift in Sources */,
+				6D467E5BDE3DF354232869E9 /* PrivacyManager.swift in Sources */,
+				4BC102123F84F42C1B6126CB /* ProManager.swift in Sources */,
+				E351B9C16E6133B8AD283EA8 /* QuickClipboardView.swift in Sources */,
+				40D94F0EDA45FF4B0B66CB0C /* QuickClipboardViewModel.swift in Sources */,
+				C9B1DCEC07B19826264FE8FD /* QuickClipboardWindowController.swift in Sources */,
+				13F44CC1F9989DABE49E0990 /* ScreenCaptureOverlayView.swift in Sources */,
+				0DF7369B074E063529B0477F /* ScreenCaptureOverlayWindow.swift in Sources */,
+				2BDE183CFE11C8298D0E3D83 /* ScreenCaptureService.swift in Sources */,
+				38D061BCEE5AA52312AEB91A /* SearchService.swift in Sources */,
+				130E8EE70F296F9A68A8560E /* SearchView.swift in Sources */,
+				ABC69219F37DA261D584B161 /* SearchViewModel.swift in Sources */,
+				282F9493BA5C9999BE42A418 /* SensitiveDataDetector.swift in Sources */,
+				72CAF560B584F8DF9CA3ECFE /* SettingsRepository.swift in Sources */,
+				DCCD53124E907DC2070B4445 /* SettingsView.swift in Sources */,
+				6AAC1580D1650A34F34C0B93 /* ShortcutRecorderView.swift in Sources */,
+				68875A262C4C1D99B3D2FF22 /* StorageManager.swift in Sources */,
+				39E599E8B239E8B4B8046670 /* StoreKitManager.swift in Sources */,
+				C06C52230581649BF542604D /* SymbolsData.swift in Sources */,
+				F967978EF62F289EBF6CE992 /* SymbolsPickerView.swift in Sources */,
+				799FF549F51E833FBBE2AE45 /* ThumbnailStorage.swift in Sources */,
+				0D24872C57E41B7D34393B5B /* URLDetectionService.swift in Sources */,
+				FB2EDC8E1A492AE928D3C34C /* UpdateManager.swift in Sources */,
+				D409C5587E3152595B206AC3 /* UpgradeBannerCard.swift in Sources */,
+				5C87717C5B3CD1BE5FAC1BF9 /* UpgradePaywallView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		EE6D51D81E976141887FB117 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 3CDF1A872B190A077E277CA7 /* Clipmory */;
+			targetProxy = E09668CFE8B43ACA3F142F39 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		3E9AB3CE8FE925B60A529DC5 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = "$(ARCHS_STANDARD)";
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 2;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MARKETING_VERSION = 1.0.1;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = NO;
+				PRODUCT_BUNDLE_IDENTIFIER = com.clipmory.app;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_VERSION = 5.9;
+			};
+			name = Debug;
+		};
+		5928FDC352463089250B1C57 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Clipmory/Resources/Clipmory.entitlements;
+				COMBINE_HIDPI_IMAGES = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				INFOPLIST_FILE = Clipmory/Resources/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				PRODUCT_NAME = Clipmory;
+				SDKROOT = macosx;
+				SWIFT_STRICT_CONCURRENCY = complete;
+			};
+			name = Release;
+		};
+		989D7AA6189C16B6C2857060 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				SDKROOT = macosx;
+				SWIFT_VERSION = 5.9;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Clipmory.app/Contents/MacOS/Clipmory";
+			};
+			name = Release;
+		};
+		A1EA393B3EF6D639EED5EE7E /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Clipmory/Resources/Clipmory.entitlements;
+				COMBINE_HIDPI_IMAGES = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				INFOPLIST_FILE = Clipmory/Resources/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				PRODUCT_NAME = Clipmory;
+				SDKROOT = macosx;
+				SWIFT_STRICT_CONCURRENCY = complete;
+			};
+			name = Debug;
+		};
+		D656483B162E1B2529E236D8 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = "Clipmory/Resources/Clipmory-AppStore.entitlements";
+				COMBINE_HIDPI_IMAGES = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				INFOPLIST_FILE = "Clipmory/Resources/Info-AppStore.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				PRODUCT_NAME = Clipmory;
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) APP_STORE";
+				SWIFT_STRICT_CONCURRENCY = complete;
+			};
+			name = Debug;
+		};
+		D7673DD6EFF257FA8644F247 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = "Clipmory/Resources/Clipmory-AppStore.entitlements";
+				COMBINE_HIDPI_IMAGES = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				INFOPLIST_FILE = "Clipmory/Resources/Info-AppStore.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				PRODUCT_NAME = Clipmory;
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) APP_STORE";
+				SWIFT_STRICT_CONCURRENCY = complete;
+			};
+			name = Release;
+		};
+		F1F4EEDC2C651B06D165B2C2 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				SDKROOT = macosx;
+				SWIFT_VERSION = 5.9;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Clipmory.app/Contents/MacOS/Clipmory";
+			};
+			name = Debug;
+		};
+		F463CF20EFA7AC5950D1520D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = "$(ARCHS_STANDARD)";
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 2;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MARKETING_VERSION = 1.0.1;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = NO;
+				PRODUCT_BUNDLE_IDENTIFIER = com.clipmory.app;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_VERSION = 5.9;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		3BAF8E8112F0066115617B5D /* Build configuration list for PBXNativeTarget "ClipmoryTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F1F4EEDC2C651B06D165B2C2 /* Debug */,
+				989D7AA6189C16B6C2857060 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		97ED6C9A4725DA0337DC6BB3 /* Build configuration list for PBXNativeTarget "Clipmory" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A1EA393B3EF6D639EED5EE7E /* Debug */,
+				5928FDC352463089250B1C57 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		CE7233AEAF739AACBD22AFFA /* Build configuration list for PBXNativeTarget "Clipmory-AppStore" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D656483B162E1B2529E236D8 /* Debug */,
+				D7673DD6EFF257FA8644F247 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		CFE388065C2EBAC204739959 /* Build configuration list for PBXProject "Clipmory" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				3E9AB3CE8FE925B60A529DC5 /* Debug */,
+				F463CF20EFA7AC5950D1520D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		098716B86852B06CC339F307 /* XCRemoteSwiftPackageReference "Sparkle" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/sparkle-project/Sparkle";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.6.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		9CD8C6B9C3AF7132591D8B7B /* Sparkle */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 098716B86852B06CC339F307 /* XCRemoteSwiftPackageReference "Sparkle" */;
+			productName = Sparkle;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = E16B5B6027A647B9D232467D /* Project object */;
+}
