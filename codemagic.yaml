@@ -59,11 +59,25 @@ workflows:
         script: |
           if [ -f /tmp/mac_cert_key ]; then
             export CERTIFICATE_PRIVATE_KEY=$(cat /tmp/mac_cert_key)
+            CERT_KEY_ARG="--certificate-key=@file:/tmp/mac_cert_key"
+          else
+            CERT_KEY_ARG=""
           fi
-          app-store-connect certificates list --type MAC_INSTALLER_DISTRIBUTION --save || \
-          app-store-connect certificates create --type MAC_INSTALLER_DISTRIBUTION --save || true
+          echo "=== Setting up Mac Installer Distribution Certificate ==="
+          app-store-connect certificates create \
+            --type MAC_INSTALLER_DISTRIBUTION \
+            $CERT_KEY_ARG \
+            --save || {
+              echo "Create returned non-zero (certificate may already exist). Trying list..."
+              app-store-connect certificates list --type MAC_INSTALLER_DISTRIBUTION --save || true
+            }
       - name: Add certificates to keychain
-        script: keychain add-certificates
+        script: |
+          echo "=== Saved Certificates on Disk ==="
+          find "$HOME/Library/Developer/Xcode/UserData/Certificates" -type f 2>/dev/null || true
+          keychain add-certificates
+          echo "=== Keychain Identities After Import ==="
+          security find-identity -v
       - name: Apply provisioning profile to Xcode project
         script: xcode-project use-profiles
       - name: Build Mac App Store target
