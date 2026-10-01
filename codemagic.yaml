@@ -91,14 +91,29 @@ workflows:
           /usr/libexec/PlistBuddy -c "Delete :SUPublicEDKey" "$DIST_DIR/Clipmory.app/Contents/Info.plist" 2>/dev/null || true
 
           # 2. Discover and embed latest provisioning profile
-          PROFILES=$(find "$HOME/Library/MobileDevice/Provisioning Profiles" -name "*.provisionprofile" 2>/dev/null || true)
-          if [ -z "$PROFILES" ]; then
-            echo "❌ ERROR: No provisioning profile found!"
+          SEARCH_DIRS=(
+            "$HOME/Library/Developer/Xcode/UserData/Provisioning Profiles"
+            "$HOME/Library/MobileDevice/Provisioning Profiles"
+            "$HOME/Library"
+          )
+          LATEST_PROFILE=""
+          for dir in "${SEARCH_DIRS[@]}"; do
+            if [ -d "$dir" ]; then
+              FOUND=$(find "$dir" -type f \( -name "*.provisionprofile" -o -name "*.mobileprovision" \) 2>/dev/null | head -n 1)
+              if [ -n "$FOUND" ]; then
+                LATEST_PROFILE="$FOUND"
+                break
+              fi
+            fi
+          done
+
+          if [ -z "$LATEST_PROFILE" ]; then
+            echo "❌ ERROR: No provisioning profile found! Listing searched locations..."
+            find "$HOME" -maxdepth 5 -type f \( -name "*.provisionprofile" -o -name "*.mobileprovision" \) 2>/dev/null || true
             exit 1
           fi
 
-          LATEST_PROFILE=$(ls -t "$HOME/Library/MobileDevice/Provisioning Profiles/"*.provisionprofile | head -n 1)
-          echo "Embedding provisioning profile: $LATEST_PROFILE"
+          echo "Found provisioning profile: $LATEST_PROFILE"
           cp "$LATEST_PROFILE" "$DIST_DIR/Clipmory.app/Contents/embedded.provisionprofile"
 
           # 3. Decode provisioning profile to extract certificate fingerprint, Team ID, and App ID
