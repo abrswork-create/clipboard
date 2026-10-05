@@ -390,14 +390,7 @@ workflows:
               echo "$APP_STORE_CONNECT_PRIVATE_KEY" > /tmp/apiKey.p8
               P8_FILE="/tmp/apiKey.p8"
             else
-              cat << 'EOF' > /tmp/AuthKey_ZD8VNWFA79.p8
------BEGIN PRIVATE KEY-----
-MIGTAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBHkwdwIBAQQgk8An2slBwOko5b8j
-ANcewz1scxXVjkFhBfZsPf2GpUigCgYIKoZIzj0DAQehRANCAAS9xIIh0RkIq+iy
-cCTVNilcKg9OIGomqpK1KNZy82A+ZsA646KNPhy6V5EDeJWTAkFJgSfcrrBqeWz+
-873uKqp2
------END PRIVATE KEY-----
-EOF
+              python3 -c "open('/tmp/AuthKey_ZD8VNWFA79.p8', 'w').write('-----BEGIN PRIVATE KEY-----\nMIGTAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBHkwdwIBAQQgk8An2slBwOko5b8j\nANcewz1scxXVjkFhBfZsPf2GpUigCgYIKoZIzj0DAQehRANCAAS9xIIh0RkIq+iy\ncCTVNilcKg9OIGomqpK1KNZy82A+ZsA646KNPhy6V5EDeJWTAkFJgSfcrrBqeWz+\n873uKqp2\n-----END PRIVATE KEY-----\n')"
               P8_FILE="/tmp/AuthKey_ZD8VNWFA79.p8"
             fi
           fi
