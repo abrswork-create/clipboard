@@ -280,7 +280,20 @@ workflows:
             }
       - name: Add certificates to keychain
         script: |
-          echo "=== Processing Certificates ==="
+          echo "=== Downloading and Installing Apple Intermediate Certificates ==="
+          curl -sSL https://www.apple.com/certificateauthority/AppleRootCA.cer -o /tmp/AppleRootCA.cer || true
+          curl -sSL https://www.apple.com/certificateauthority/DeveloperIDG2CA.cer -o /tmp/DeveloperIDG2CA.cer || true
+          curl -sSL https://www.apple.com/certificateauthority/AppleWWDRCAG3.cer -o /tmp/AppleWWDRCAG3.cer || true
+
+          for kc in $(security list-keychains | tr -d '" '); do
+            if [ -f "$kc" ]; then
+              security import /tmp/AppleRootCA.cer -k "$kc" -T /usr/bin/codesign -T /usr/bin/security -A 2>/dev/null || true
+              security import /tmp/DeveloperIDG2CA.cer -k "$kc" -T /usr/bin/codesign -T /usr/bin/security -A 2>/dev/null || true
+              security import /tmp/AppleWWDRCAG3.cer -k "$kc" -T /usr/bin/codesign -T /usr/bin/security -A 2>/dev/null || true
+            fi
+          done
+
+          echo "=== Processing Developer ID Certificate ==="
           python3 -c "
           import os, base64, shutil
           raw = os.environ.get('CM_CERTIFICATE', '')
@@ -298,7 +311,7 @@ workflows:
           "
 
           if [ -f /tmp/DeveloperID.p12 ]; then
-            echo "Importing certificate into keychains..."
+            echo "Importing DeveloperID.p12 into keychains..."
             PASSWORD="${CM_CERTIFICATE_PASSWORD:-clipmory2026}"
             
             # Codemagic keychain tool
@@ -316,8 +329,9 @@ workflows:
           fi
 
           keychain add-certificates || true
-          echo "=== Available Signing Identities in Keychain ==="
-          security find-identity -v
+          echo "=== Available Identities in Keychain ==="
+          security find-identity -v || true
+          security find-identity -v -p codesigning || true
       - name: Build Web release binary
         script: |
           xcodebuild -project Clipmory.xcodeproj \
@@ -337,14 +351,15 @@ workflows:
           mkdir -p "$DIST_DIR/staging"
           cp -R "$BUILD_APP" "$DIST_DIR/staging/Clipmory.app"
 
-          DEV_ID=$(security find-identity -v | grep "Developer ID Application" | head -n 1 | sed -e 's/.*"\(.*\)".*/\1/')
-          echo "Using Signing Identity: '$DEV_ID'"
-
+          DEV_ID=$(security find-identity -v -p codesigning | grep "Developer ID Application" | head -n 1 | sed -e 's/.*"\(.*\)".*/\1/')
           if [ -z "$DEV_ID" ]; then
-            echo "❌ ERROR: No Developer ID Application certificate found in keychain!"
-            security find-identity -v
-            exit 1
+            DEV_ID=$(security find-identity -v | grep "Developer ID Application" | head -n 1 | sed -e 's/.*"\(.*\)".*/\1/')
           fi
+          if [ -z "$DEV_ID" ]; then
+            echo "Using direct Developer ID name as fallback..."
+            DEV_ID="Developer ID Application: YAHYA AHELSHABA (8J8MPH7HLU)"
+          fi
+          echo "Using Signing Identity: '$DEV_ID'"
 
           # Sign frameworks
           if [ -d "$DIST_DIR/staging/Clipmory.app/Contents/Frameworks" ]; then
