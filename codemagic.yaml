@@ -384,13 +384,36 @@ workflows:
 
           # Apple Notarization via App Store Connect API Key
           echo "=== Submitting DMG to Apple Notary Service ==="
-          echo "$APP_STORE_CONNECT_PRIVATE_KEY" > /tmp/apiKey.p8
+          P8_FILE=$(find "$HOME" -name "AuthKey_*.p8" 2>/dev/null | head -n 1)
+          if [ -z "$P8_FILE" ] || [ ! -s "$P8_FILE" ]; then
+            if [ -n "$APP_STORE_CONNECT_PRIVATE_KEY" ]; then
+              echo "$APP_STORE_CONNECT_PRIVATE_KEY" > /tmp/apiKey.p8
+              P8_FILE="/tmp/apiKey.p8"
+            else
+              cat << 'EOF' > /tmp/AuthKey_ZD8VNWFA79.p8
+-----BEGIN PRIVATE KEY-----
+MIGTAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBHkwdwIBAQQgk8An2slBwOko5b8j
+ANcewz1scxXVjkFhBfZsPf2GpUigCgYIKoZIzj0DAQehRANCAAS9xIIh0RkIq+iy
+cCTVNilcKg9OIGomqpK1KNZy82A+ZsA646KNPhy6V5EDeJWTAkFJgSfcrrBqeWz+
+873uKqp2
+-----END PRIVATE KEY-----
+EOF
+              P8_FILE="/tmp/AuthKey_ZD8VNWFA79.p8"
+            fi
+          fi
+
+          KEY_ID="${APP_STORE_CONNECT_KEY_IDENTIFIER:-ZD8VNWFA79}"
+          ISSUER_ID="${APP_STORE_CONNECT_ISSUER_ID:-34d10e66-437b-419b-b35e-d569bd703772}"
+
+          echo "Using API Key file: '$P8_FILE'"
+          echo "Using Key ID: '$KEY_ID'"
+          echo "Using Issuer ID: '$ISSUER_ID'"
+
           xcrun notarytool submit "$DIST_DIR/Clipmory.dmg" \
-            --key "/tmp/apiKey.p8" \
-            --key-id "$APP_STORE_CONNECT_KEY_IDENTIFIER" \
-            --issuer "$APP_STORE_CONNECT_ISSUER_ID" \
+            --key "$P8_FILE" \
+            --key-id "$KEY_ID" \
+            --issuer "$ISSUER_ID" \
             --wait
-          rm -f /tmp/api_key.p8
 
           echo "=== Stapling Notarization Ticket to DMG ==="
           xcrun stapler staple "$DIST_DIR/Clipmory.dmg"
