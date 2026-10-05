@@ -1,13 +1,13 @@
 import Foundation
 import Security
 
-// MARK: - LemonSqueezyService
-// Handles communication with Lemon Squeezy's License API:
-// https://docs.lemonsqueezy.com/api/licenses
+// MARK: - CreemService
+// Handles communication with Creem.io's License Key API:
+// https://docs.creem.io/features/addons/licenses
 //
 // Features:
 // 1. Anonymous App Instance ID: Avoids linking any physical Mac hardware UUID or computer name.
-// 2. Offline persistence: Securely saves verified activation tokens in macOS Keychain.
+// 2. Offline persistence: Securely saves verified activation tokens in macOS Keychain / local encrypted storage.
 // 3. Fallback support: Can operate completely offline once activated.
 
 public enum LicenseError: LocalizedError {
@@ -29,72 +29,97 @@ public enum LicenseError: LocalizedError {
         case .serverError(let msg):
             return msg
         case .expired:
-            return "This license key has expired or has been refunded."
+            return "This license key has expired or has been revoked."
         case .unknown:
             return "An unexpected error occurred while validating your license."
         }
     }
 }
 
-public struct LemonActivationResponse: Codable {
-    public let activated: Bool?
-    public let error: String?
-    public let licenseKey: LemonLicenseKeyDetail?
-    public let instance: LemonInstanceDetail?
-    public let meta: LemonMeta?
-
-    enum CodingKeys: String, CodingKey {
-        case activated
-        case error
-        case licenseKey = "license_key"
-        case instance
-        case meta
-    }
-}
-
-public struct LemonLicenseKeyDetail: Codable {
-    public let id: Int?
+public struct CreemLicenseResponse: Codable {
+    public let id: String?
+    public let mode: String?
     public let status: String?
     public let key: String?
+    public let activation: Int?
     public let activationLimit: Int?
-    public let activationUsage: Int?
     public let expiresAt: String?
+    public let instance: CreemInstanceEntity?
 
     enum CodingKeys: String, CodingKey {
-        case id
-        case status
-        case key
+        case id, mode, status, key, activation
         case activationLimit = "activation_limit"
-        case activationUsage = "activation_usage"
         case expiresAt = "expires_at"
+        case instance
+    }
+
+    public init(id: String? = nil, mode: String? = nil, status: String? = "active", key: String? = nil, activation: Int? = 1, activationLimit: Int? = nil, expiresAt: String? = nil, instance: CreemInstanceEntity? = nil) {
+        self.id = id
+        self.mode = mode
+        self.status = status
+        self.key = key
+        self.activation = activation
+        self.activationLimit = activationLimit
+        self.expiresAt = expiresAt
+        self.instance = instance
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.id = try? container.decodeIfPresent(String.self, forKey: .id)
+        self.mode = try? container.decodeIfPresent(String.self, forKey: .mode)
+        self.status = try? container.decodeIfPresent(String.self, forKey: .status)
+        self.key = try? container.decodeIfPresent(String.self, forKey: .key)
+        self.activation = try? container.decodeIfPresent(Int.self, forKey: .activation)
+        self.activationLimit = try? container.decodeIfPresent(Int.self, forKey: .activationLimit)
+        self.expiresAt = try? container.decodeIfPresent(String.self, forKey: .expiresAt)
+
+        // Handle both dictionary {"id": "..."} and array [{"id": "..."}] representations safely
+        if let single = try? container.decodeIfPresent(CreemInstanceEntity.self, forKey: .instance) {
+            self.instance = single
+        } else if let array = try? container.decodeIfPresent([CreemInstanceEntity].self, forKey: .instance) {
+            self.instance = array.first
+        } else {
+            self.instance = nil
+        }
     }
 }
 
-public struct LemonInstanceDetail: Codable {
+public struct CreemInstanceEntity: Codable {
     public let id: String?
     public let name: String?
-}
-
-public struct LemonMeta: Codable {
-    public let storeId: Int?
-    public let orderId: Int?
-    public let customerName: String?
-    public let customerEmail: String?
+    public let status: String?
+    public let mode: String?
 
     enum CodingKeys: String, CodingKey {
-        case storeId = "store_id"
-        case orderId = "order_id"
-        case customerName = "customer_name"
-        case customerEmail = "customer_email"
+        case id, name, status, mode
     }
 }
 
-// MARK: - LemonSqueezyService Actor
+public struct CreemErrorResponse: Codable {
+    public let status: Int?
+    public let error: String?
+    public let message: [String]?
+}
 
-public final class LemonSqueezyService: Sendable {
-    public static let shared = LemonSqueezyService()
+// MARK: - CreemService Actor
 
-    private let endpoint = URL(string: "https://api.lemonsqueezy.com/v1/licenses/activate")!
+public final class CreemService: Sendable {
+    public static let shared = CreemService()
+
+    /// Creem API Key for license activation/validation.
+    public var apiKey: String {
+        return "creem_3FfXK8rrR5Rr1aOVyvzjK1"
+    }
+
+    /// Automatically select sandbox or production endpoint based on API key prefix.
+    private var endpoint: URL {
+        if apiKey.contains("_test_") {
+            return URL(string: "https://test-api.creem.io/v1/licenses/activate")!
+        } else {
+            return URL(string: "https://api.creem.io/v1/licenses/activate")!
+        }
+    }
 
     private init() {}
 
@@ -114,8 +139,8 @@ public final class LemonSqueezyService: Sendable {
 
     // MARK: - Activation API Call
 
-    /// Activates a license key with Lemon Squeezy using an anonymous instance identifier.
-    public func activateLicense(key: String) async -> Result<LemonActivationResponse, LicenseError> {
+    /// Activates a license key with Creem using an anonymous instance identifier.
+    public func activateLicense(key: String) async -> Result<CreemLicenseResponse, LicenseError> {
         let trimmedKey = key.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmedKey.isEmpty else {
             return .failure(.invalidKey)
@@ -124,21 +149,20 @@ public final class LemonSqueezyService: Sendable {
         var request = URLRequest(url: endpoint)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Accept")
-        request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue(apiKey, forHTTPHeaderField: "x-api-key")
 
         let instanceName = "Mac (\(getAppInstanceID().prefix(8)))"
-        let bodyParameters: [String: String] = [
-            "license_key": trimmedKey,
+        let payload: [String: String] = [
+            "key": trimmedKey,
             "instance_name": instanceName
         ]
 
-        // Strict form url encoding protecting against HTTP Parameter Pollution (HPP)
-        let formAllowed = CharacterSet(charactersIn: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_.~")
-        let bodyString = bodyParameters
-            .map { "\($0.key.addingPercentEncoding(withAllowedCharacters: formAllowed) ?? "")=\($0.value.addingPercentEncoding(withAllowedCharacters: formAllowed) ?? "")" }
-            .joined(separator: "&")
-
-        request.httpBody = bodyString.data(using: .utf8)
+        do {
+            request.httpBody = try JSONSerialization.data(withJSONObject: payload)
+        } catch {
+            return .failure(.unknown)
+        }
         request.timeoutInterval = 15
 
         do {
@@ -148,23 +172,33 @@ public final class LemonSqueezyService: Sendable {
                 return .failure(.networkError("Invalid server response"))
             }
 
-            let decoded = try JSONDecoder().decode(LemonActivationResponse.self, from: data)
+            if httpResponse.statusCode == 200 {
+                let decoded = try? JSONDecoder().decode(CreemLicenseResponse.self, from: data)
+                let status = decoded?.status?.lowercased() ?? "active"
 
-            if httpResponse.statusCode == 200 && decoded.activated == true {
-                // Securely persist into macOS Keychain
-                let token = decoded.instance?.id ?? UUID().uuidString
-                saveToKeychain(key: trimmedKey, token: token)
-                return .success(decoded)
-            } else {
-                let errText = decoded.error?.lowercased() ?? ""
-                if errText.contains("limit") {
-                    return .failure(.activationLimitReached)
-                } else if errText.contains("not found") || errText.contains("invalid") {
-                    return .failure(.invalidKey)
-                } else if errText.contains("expired") {
+                if status == "active" {
+                    let token = decoded?.instance?.id ?? decoded?.id ?? UUID().uuidString
+                    saveToKeychain(key: trimmedKey, token: token)
+                    let responseObj = decoded ?? CreemLicenseResponse(key: trimmedKey)
+                    return .success(responseObj)
+                } else if status == "expired" {
                     return .failure(.expired)
                 } else {
-                    return .failure(.serverError(decoded.error ?? "Failed to activate license."))
+                    return .failure(.serverError("License status: \(status)"))
+                }
+            } else {
+                let errorObj = try? JSONDecoder().decode(CreemErrorResponse.self, from: data)
+                let errorMsg = errorObj?.message?.first ?? errorObj?.error ?? ""
+                let lower = errorMsg.lowercased()
+
+                if httpResponse.statusCode == 403 || lower.contains("limit") {
+                    return .failure(.activationLimitReached)
+                } else if httpResponse.statusCode == 404 || lower.contains("not found") || lower.contains("invalid") {
+                    return .failure(.invalidKey)
+                } else if httpResponse.statusCode == 410 || lower.contains("expired") || lower.contains("revoked") {
+                    return .failure(.expired)
+                } else {
+                    return .failure(.serverError(errorMsg.isEmpty ? "Failed to activate license (Code \(httpResponse.statusCode))." : errorMsg))
                 }
             }
         } catch let urlError as URLError {

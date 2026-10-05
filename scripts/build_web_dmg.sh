@@ -30,6 +30,10 @@ if [ -d "../../website" ]; then
     cp "$DIST_DIR/Clipmory.zip" "../../website/Clipmory.zip"
 fi
 
+# Automatically update /Applications so local testing always runs the latest build
+rm -rf /Applications/Clipmory.app 2>/dev/null || true
+cp -R "$DIST_DIR/staging/Clipmory.app" /Applications/Clipmory.app 2>/dev/null || true
+
 echo "✅ Web build complete! DMG and ZIP available at:"
 echo "   - $DIST_DIR/Clipmory.dmg"
 echo "   - ../../website/Clipmory.dmg"

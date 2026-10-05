@@ -26,7 +26,7 @@ final class EncryptionService {
             return key
         }
 
-        let instanceID = LemonSqueezyService.shared.getAppInstanceID()
+        let instanceID = CreemService.shared.getAppInstanceID()
         let salt = "ClipFlowMasterSalt_2026_x89a".data(using: .utf8)!
         let inputKeyMaterial = SymmetricKey(data: instanceID.data(using: .utf8)!)
 

@@ -24,13 +24,12 @@
 		126A0F98F941C58554505EC2 /* ClipboardPreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 472ACE504E246BBD7168B01C /* ClipboardPreviewView.swift */; };
 		130E8EE70F296F9A68A8560E /* SearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D18738838923E9B8FAFEDCE /* SearchView.swift */; };
 		13F44CC1F9989DABE49E0990 /* ScreenCaptureOverlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 889E18A5ABEA856170365FB2 /* ScreenCaptureOverlayView.swift */; };
-		1585E874582546FD5FCFBFAF /* LemonSqueezyService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F3B982FC7226AB380DCA6D3 /* LemonSqueezyService.swift */; };
 		1804242479719291595B7A22 /* ClipboardPreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 472ACE504E246BBD7168B01C /* ClipboardPreviewView.swift */; };
 		194CFF425684268FB1ED0C8D /* ClipboardCollection.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3DF08F9BC73158BE5ED0750 /* ClipboardCollection.swift */; };
 		1A0B71018E2BB804992D8677 /* ClipmoryApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = E6192EB186F71598B6147A31 /* ClipmoryApp.swift */; };
 		1B592A97B51180B91B3D4912 /* QuickClipboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB7CDC00C0B6BC4C2878620E /* QuickClipboardView.swift */; };
-		1B699C3E148F83B4A3640B54 /* LemonSqueezyService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F3B982FC7226AB380DCA6D3 /* LemonSqueezyService.swift */; };
 		1BEE0ED35E3E38B957CF92DE /* ClipboardHistoryViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 806D168A7BE44CBBE37E14CC /* ClipboardHistoryViewModel.swift */; };
+		2019243B110F1BA5AE5A8F45 /* CreemService.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF44170AB6C438136C9A4562 /* CreemService.swift */; };
 		214ACF328A0407B5421D1DAC /* GeneralSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3515D03AFE671712C3F6BAFB /* GeneralSettingsView.swift */; };
 		21EAD5FFFD55F0627E960936 /* EncryptionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9AFF0364F18BDB940844E45 /* EncryptionService.swift */; };
 		233792F4F48DB35CA8D653B1 /* FileStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8FD6DCF8AFC2AAD4D57198E /* FileStorage.swift */; };
@@ -63,6 +62,7 @@
 		4BC102123F84F42C1B6126CB /* ProManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E0548FA7B2C0F1A605A2BA0 /* ProManager.swift */; };
 		4C66F4A4C48E1CC3ABD77A42 /* PermissionStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = 174E5139941345808FB796FD /* PermissionStatus.swift */; };
 		544FA503835F6C0ABE7A8461 /* ImageService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26EEF2AFAA73467EF69E9A36 /* ImageService.swift */; };
+		54A592F97C9E9B30DBF31BCE /* CreemService.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF44170AB6C438136C9A4562 /* CreemService.swift */; };
 		550194D11710567F57650B73 /* MenuBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30F8F5D73723A8AE84E579E6 /* MenuBarView.swift */; };
 		5C87717C5B3CD1BE5FAC1BF9 /* UpgradePaywallView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8157D4C783456832CB0AD461 /* UpgradePaywallView.swift */; };
 		60469A33E7D92F9B3AFB5CC4 /* QuickClipboardViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3298B25AA2D8E9E915CF6875 /* QuickClipboardViewModel.swift */; };
@@ -196,7 +196,6 @@
 		2DC0413AF1978F84B9F5F499 /* KaomojiPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KaomojiPickerView.swift; sourceTree = "<group>"; };
 		2EC34A7D21749A675F94992B /* ClipboardMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipboardMonitor.swift; sourceTree = "<group>"; };
 		2EC7890DFE8DBB3EBDC2FBE6 /* GifPlayerComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GifPlayerComponents.swift; sourceTree = "<group>"; };
-		2F3B982FC7226AB380DCA6D3 /* LemonSqueezyService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LemonSqueezyService.swift; sourceTree = "<group>"; };
 		30F8F5D73723A8AE84E579E6 /* MenuBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarView.swift; sourceTree = "<group>"; };
 		3158559A5904C4C0FA27DEA2 /* ClipboardNormalizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipboardNormalizer.swift; sourceTree = "<group>"; };
 		3298B25AA2D8E9E915CF6875 /* QuickClipboardViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickClipboardViewModel.swift; sourceTree = "<group>"; };
@@ -267,6 +266,7 @@
 		FD06FA7B362FCC19BBCC6569 /* ClipboardStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipboardStore.swift; sourceTree = "<group>"; };
 		FDC6F5A663CA87895CA2B7AC /* UpgradeBannerCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpgradeBannerCard.swift; sourceTree = "<group>"; };
 		FF177F89828FC5711248149C /* PrivacyManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrivacyManager.swift; sourceTree = "<group>"; };
+		FF44170AB6C438136C9A4562 /* CreemService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreemService.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -401,7 +401,7 @@
 		60FA5E9ADF4DD1F2C47993A8 /* Pro */ = {
 			isa = PBXGroup;
 			children = (
-				2F3B982FC7226AB380DCA6D3 /* LemonSqueezyService.swift */,
+				FF44170AB6C438136C9A4562 /* CreemService.swift */,
 				5E0548FA7B2C0F1A605A2BA0 /* ProManager.swift */,
 				76E57EF860F639E5A808AC56 /* StoreKitManager.swift */,
 			);
@@ -780,6 +780,7 @@
 				05E5B6DDAF886C90ED5F0893 /* ClipboardWriter.swift in Sources */,
 				2A8BCB0CB37303F1CC68430B /* ClipmoryApp.swift in Sources */,
 				06F95447FABA9F6F233AB782 /* ContentDetectionService.swift in Sources */,
+				2019243B110F1BA5AE5A8F45 /* CreemService.swift in Sources */,
 				014011FD85D00669FB904E63 /* DatabaseError.swift in Sources */,
 				A3B63E2A2F2B9124533B0FD6 /* DatabaseManager.swift in Sources */,
 				685790CB40320C17159E1ECF /* DatabaseMigration.swift in Sources */,
@@ -800,7 +801,6 @@
 				07B48A49A19DC46D6D30A880 /* ImagesView.swift in Sources */,
 				83F0082FF712355C20FF55CD /* KaomojiData.swift in Sources */,
 				27008C2F626E1FA4F06D8D8B /* KaomojiPickerView.swift in Sources */,
-				1B699C3E148F83B4A3640B54 /* LemonSqueezyService.swift in Sources */,
 				DCB52A125405794F188B4687 /* MainPanelView.swift in Sources */,
 				550194D11710567F57650B73 /* MenuBarView.swift in Sources */,
 				3483D50C49637BF789B98BA9 /* OCRService.swift in Sources */,
@@ -873,6 +873,7 @@
 				62FA63665E5C6BF028006DC0 /* ClipboardWriter.swift in Sources */,
 				1A0B71018E2BB804992D8677 /* ClipmoryApp.swift in Sources */,
 				E34929069658D2BCEC0CA07E /* ContentDetectionService.swift in Sources */,
+				54A592F97C9E9B30DBF31BCE /* CreemService.swift in Sources */,
 				CF7FD60F048F38F55555324C /* DatabaseError.swift in Sources */,
 				F2614736D22851476FDFFA47 /* DatabaseManager.swift in Sources */,
 				050BF043D2A4E12BD1241996 /* DatabaseMigration.swift in Sources */,
@@ -893,7 +894,6 @@
 				BBC992DF8D6D390C498C3E92 /* ImagesView.swift in Sources */,
 				6B99C5C44BBC1486CF12EA9D /* KaomojiData.swift in Sources */,
 				3D9E69664F01A1A4AEF27559 /* KaomojiPickerView.swift in Sources */,
-				1585E874582546FD5FCFBFAF /* LemonSqueezyService.swift in Sources */,
 				E025E40753B4432748AC291A /* MainPanelView.swift in Sources */,
 				7E6F25889F0FD492FF2912F7 /* MenuBarView.swift in Sources */,
 				D4F3E558B0E115B56D680CC0 /* OCRService.swift in Sources */,

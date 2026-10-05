@@ -58,6 +58,11 @@ targets:
         SUFeedURL: "https://clipmory.app/appcast.xml"
         SUEnableAutomaticChecks: true
         SUScheduledCheckInterval: 86400
+        CFBundleURLTypes:
+          - CFBundleTypeRole: Editor
+            CFBundleURLName: com.clipmory.app
+            CFBundleURLSchemes:
+              - clipmory
     settings:
       base:
         PRODUCT_NAME: Clipmory
@@ -80,7 +85,7 @@ targets:
           - "Resources/Clipmory.entitlements"
     resources:
       - path: Clipmory/Resources/Assets.xcassets
-        - path: Clipmory/Resources/Info-AppStore.plist
+      - path: Clipmory/Resources/Info-AppStore.plist
     info:
       path: Clipmory/Resources/Info-AppStore.plist
       properties:

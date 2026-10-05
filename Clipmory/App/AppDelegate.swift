@@ -116,39 +116,58 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
     private func handleIncomingURL(_ url: URL) {
         guard url.scheme?.lowercased() == "clipmory" else { return }
         
-        // Handle clipmory://activate?key=XXXX-XXXX-XXXX-XXXX
-        if url.host == "activate" || url.path.contains("activate") {
+        var extractedKey: String? = nil
+        let host = url.host?.lowercased() ?? ""
+        let path = url.path.lowercased()
+        
+        if host == "activate" || host == "license" || host == "pro" || path.contains("activate") || path.contains("license") {
             let components = URLComponents(url: url, resolvingAgainstBaseURL: false)
-            if let keyItem = components?.queryItems?.first(where: { $0.name.lowercased() == "key" }),
+            if let keyItem = components?.queryItems?.first(where: { $0.name.lowercased() == "key" || $0.name.lowercased() == "license" }),
                let rawKey = keyItem.value {
-                
-                let key = rawKey.trimmingCharacters(in: .whitespacesAndNewlines)
-                
-                // Security Sanitization:
-                // Enforce length limit (10 - 64 characters) and strict alphanumeric/dash/underscore charset
-                guard key.count >= 10 && key.count <= 64 else {
-                    NSLog("Security Warning: Rejected invalid activation key length from URL: \(key.count) characters")
-                    return
+                extractedKey = rawKey
+            } else {
+                let last = url.lastPathComponent
+                if !last.isEmpty && last != "/" && last != "activate" && last != "license" {
+                    extractedKey = last
                 }
-                
+            }
+        }
+        
+        // 1. Always bring app to front and open window
+        NSApp.activate(ignoringOtherApps: true)
+        openMainWindow()
+
+        // 2. If key was not in URL, try reading license key from system clipboard
+        if extractedKey == nil {
+            if let clipText = NSPasteboard.general.string(forType: .string)?.trimmingCharacters(in: .whitespacesAndNewlines),
+               clipText.count >= 10 && clipText.count <= 64 {
                 let safeCharset = CharacterSet(charactersIn: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_")
-                guard key.unicodeScalars.allSatisfy({ safeCharset.contains($0) }) else {
-                    NSLog("Security Warning: Rejected activation key containing unsafe characters from URL")
-                    return
+                if clipText.unicodeScalars.allSatisfy({ safeCharset.contains($0) }) {
+                    extractedKey = clipText
                 }
-                
-                // 1. Bring app to front
-                NSApp.activate(ignoringOtherApps: true)
-                openMainWindow()
-                
-                // 2. Activate asynchronously with Lemon Squeezy
-                Task { @MainActor in
-                    let success = await ProManager.shared.activateLicenseAsync(key: key)
-                    if success {
-                        // Immediately close any paywall modals and trigger a brief banner/haptic
-                        ProManager.shared.showPaywall = false
-                    }
-                }
+            }
+        }
+        
+        guard let rawKey = extractedKey else { return }
+        let key = rawKey.trimmingCharacters(in: .whitespacesAndNewlines)
+        
+        // Security Sanitization:
+        guard key.count >= 10 && key.count <= 64 else {
+            NSLog("Security Warning: Rejected invalid activation key length: \(key.count) characters")
+            return
+        }
+        
+        let safeCharset = CharacterSet(charactersIn: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_")
+        guard key.unicodeScalars.allSatisfy({ safeCharset.contains($0) }) else {
+            NSLog("Security Warning: Rejected activation key containing unsafe characters")
+            return
+        }
+        
+        // 2. Activate asynchronously with Creem
+        Task { @MainActor in
+            let success = await ProManager.shared.activateLicenseAsync(key: key)
+            if success {
+                ProManager.shared.showPaywall = false
             }
         }
     }

@@ -41,8 +41,8 @@ final class ProManager: ObservableObject {
         self.trialDaysRemaining = 0
         self.activatedKey = nil
 #else
-        // 1. Check local hardware-bound Pro license token (Web/Lemon Squeezy)
-        if let stored = LemonSqueezyService.shared.readLicenseFromKeychain(), !stored.key.isEmpty {
+        // 1. Check local hardware-bound Pro license token (Web/Creem)
+        if let stored = CreemService.shared.readLicenseFromKeychain(), !stored.key.isEmpty {
             self.isPro = true
             self.activatedKey = stored.key
         } else {
@@ -81,7 +81,7 @@ final class ProManager: ObservableObject {
         self.isTrialExpired = false
         self.trialDaysRemaining = 0
 #else
-        let instanceID = LemonSqueezyService.shared.getAppInstanceID()
+        let instanceID = CreemService.shared.getAppInstanceID()
         let trialStartDate = getOrCreateTrialRecord(uuid: instanceID)
         
         let elapsed = Date().timeIntervalSince(trialStartDate)
@@ -147,7 +147,7 @@ final class ProManager: ObservableObject {
     func unlockPro(key: String = "") {
         let validKey = key.isEmpty ? "OFFLINE-PRO" : key
         let token = UUID().uuidString
-        LemonSqueezyService.shared.saveToKeychain(key: validKey, token: token)
+        CreemService.shared.saveToKeychain(key: validKey, token: token)
         
         self.isPro = true
         self.activatedKey = validKey
@@ -185,7 +185,7 @@ final class ProManager: ObservableObject {
         self.activatedKey = nil
         UserDefaults.standard.removeObject(forKey: "clipmory_is_pro_user")
         UserDefaults.standard.removeObject(forKey: "clipmory_activated_license_key")
-        LemonSqueezyService.shared.clearKeychainLicense()
+        CreemService.shared.clearKeychainLicense()
         refreshTrialStatus()
     }
     
@@ -203,7 +203,7 @@ final class ProManager: ObservableObject {
         self.isActivating = true
         self.activationError = nil
         
-        let result = await LemonSqueezyService.shared.activateLicense(key: trimmed)
+        let result = await CreemService.shared.activateLicense(key: trimmed)
         self.isActivating = false
         
         switch result {

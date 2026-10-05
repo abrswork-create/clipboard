@@ -34,5 +34,18 @@
 	<string>https://clipmory.app/appcast.xml</string>
 	<key>SUScheduledCheckInterval</key>
 	<integer>86400</integer>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLName</key>
+			<string>com.clipmory.app</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>clipmory</string>
+			</array>
+		</dict>
+	</array>
 </dict>
 </plist>

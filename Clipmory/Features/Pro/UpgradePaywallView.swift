@@ -312,8 +312,8 @@ struct UpgradePaywallView: View {
     
 #if !APP_STORE
     private func upgradeNow() {
-        // Open Lemon Squeezy checkout directly in default browser
-        if let url = URL(string: "https://clipmory.lemonsqueezy.com/checkout/buy/e20a9d58-b852-4fae-8a37-d860e88dae66") {
+        // Open Creem checkout directly in default browser
+        if let url = URL(string: "https://www.creem.io/payment/prod_4KtpuOsducR63ezDIDSDbF") {
             NSWorkspace.shared.open(url)
         }
         withAnimation { showLicenseField = true }

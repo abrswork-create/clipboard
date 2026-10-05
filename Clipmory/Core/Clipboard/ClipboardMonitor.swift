@@ -110,6 +110,22 @@ final class ClipboardMonitor {
         // Store the item
         store.add(item)
         
+        #if !APP_STORE
+        // Auto-Activation: If the user is not yet Pro and copies their Creem license key,
+        // automatically activate Clipmory Pro in the background.
+        if !ProManager.shared.isPro, let text = item.text?.trimmingCharacters(in: .whitespacesAndNewlines), text.count == 29 {
+            let keyRegex = #"^[A-Za-z0-9]{5}-[A-Za-z0-9]{5}-[A-Za-z0-9]{5}-[A-Za-z0-9]{5}-[A-Za-z0-9]{5}$"#
+            if text.range(of: keyRegex, options: .regularExpression) != nil {
+                Task { @MainActor in
+                    let success = await ProManager.shared.activateLicenseAsync(key: text)
+                    if success {
+                        ProManager.shared.showPaywall = false
+                    }
+                }
+            }
+        }
+        #endif
+        
         // 3. Enforce Capacity Limits
         if settings.historyLimit > 0 {
             store.enforceLimit(settings.historyLimit)
