@@ -263,17 +263,25 @@ workflows:
             CERT_KEY_ARG=""
           fi
           echo "=== Setting up Developer ID Application Certificate ==="
+          
+          # Try official fetch-signing-files first
+          app-store-connect fetch-signing-files "$BUNDLE_ID" \
+            --platform MAC_OS \
+            --type DEVELOPER_ID_APPLICATION \
+            --create || echo "fetch-signing-files returned non-zero, trying direct create/list..."
+
+          # Direct create with the generated private key
           app-store-connect certificates create \
             --type DEVELOPER_ID_APPLICATION \
             $CERT_KEY_ARG \
             --save || {
-              echo "Certificate may already exist, fetching from Apple..."
+              echo "Certificate may already exist in Apple Developer portal, listing..."
               app-store-connect certificates list --type DEVELOPER_ID_APPLICATION --save || true
             }
       - name: Add certificates to keychain
         script: |
           keychain add-certificates
-          echo "=== Available Signing Identities ==="
+          echo "=== Available Signing Identities in Keychain ==="
           security find-identity -v -p codesigning
       - name: Build Web release binary
         script: |
