@@ -13,14 +13,32 @@ mkdir -p "$DIST_DIR/staging"
 echo "📦 [2/4] Packaging Clipmory.app..."
 cp -R "$BUILD_APP" "$DIST_DIR/staging/Clipmory.app"
 
-# Sign with hardened runtime & entitlements
-codesign -o runtime --entitlements "Clipmory/Resources/Clipmory.entitlements" --force --deep --sign - "$DIST_DIR/staging/Clipmory.app"
+# Detect Developer ID Application certificate in Keychain (fallback to local ad-hoc)
+DEV_ID=$(security find-identity -v -p codesigning | grep "Developer ID Application" | head -n 1 | sed -n 's/.*"\(.*\)".*/\1/p')
+
+if [ -n "$DEV_ID" ]; then
+    echo "🔐 Signing with Developer ID: $DEV_ID"
+    # Sign embedded frameworks first
+    if [ -d "$DIST_DIR/staging/Clipmory.app/Contents/Frameworks" ]; then
+        find "$DIST_DIR/staging/Clipmory.app/Contents/Frameworks" -name "*.framework" -o -name "*.dylib" | while read -r item; do
+            codesign --force --timestamp --options runtime --sign "$DEV_ID" "$item" 2>/dev/null || true
+        done
+    fi
+    codesign -o runtime --timestamp --entitlements "Clipmory/Resources/Clipmory.entitlements" --force --deep --sign "$DEV_ID" "$DIST_DIR/staging/Clipmory.app"
+else
+    echo "ℹ️  Developer ID Application not in Keychain yet; signing locally with ad-hoc signature (-)"
+    codesign -o runtime --entitlements "Clipmory/Resources/Clipmory.entitlements" --force --deep --sign - "$DIST_DIR/staging/Clipmory.app"
+fi
 
 # Create Applications symlink for drag-and-drop
 ln -s /Applications "$DIST_DIR/staging/Applications"
 
 echo "💿 [3/4] Creating Clipmory.dmg..."
 hdiutil create -volname "Clipmory" -srcfolder "$DIST_DIR/staging" -ov -format UDZO "$DIST_DIR/Clipmory.dmg" > /dev/null
+
+if [ -n "$DEV_ID" ]; then
+    codesign --force --timestamp --sign "$DEV_ID" "$DIST_DIR/Clipmory.dmg" 2>/dev/null || true
+fi
 
 ditto -c -k --sequesterRsrc --keepParent "$DIST_DIR/staging/Clipmory.app" "$DIST_DIR/Clipmory.zip"
 

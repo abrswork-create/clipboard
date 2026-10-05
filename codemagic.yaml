@@ -219,16 +219,126 @@ workflows:
         submit_to_testflight: false
 
   macos-web-dmg:
-    name: Clipmory Web DMG Release
-    max_build_duration: 30
+    name: Clipmory Web DMG Release (Signed & Notarized)
+    max_build_duration: 35
     instance_type: mac_mini_m2
+    integrations:
+      app_store_connect: publisher
     environment:
       xcode: latest
+      groups:
+        - appstore_credentials
+      vars:
+        BUNDLE_ID: "com.clipmory.app"
     scripts:
       - name: Make build scripts executable
         script: chmod +x ./scripts/*.sh
-      - name: Build Direct Web DMG
-        script: ./scripts/build_web_dmg.sh
+      - name: Initialize keychain
+        script: keychain initialize
+      - name: Set up signing private key
+        script: |
+          if [ -n "$CERTIFICATE_PRIVATE_KEY" ]; then
+            echo "Formatting existing CERTIFICATE_PRIVATE_KEY to standard RSA PEM..."
+            echo "$CERTIFICATE_PRIVATE_KEY" > /tmp/raw_key.txt
+            if ! grep -q "BEGIN" /tmp/raw_key.txt; then
+              (echo "-----BEGIN PRIVATE KEY-----"; cat /tmp/raw_key.txt; echo "-----END PRIVATE KEY-----") > /tmp/wrapped_key.txt
+            else
+              cp /tmp/raw_key.txt /tmp/wrapped_key.txt
+            fi
+            openssl rsa -in /tmp/wrapped_key.txt -traditional -out /tmp/mac_cert_key 2>/dev/null || cp /tmp/wrapped_key.txt /tmp/mac_cert_key
+          else
+            echo "Generating RSA 2048 key..."
+            ssh-keygen -t rsa -b 2048 -m PEM -f /tmp/mac_cert_key -q -N ""
+          fi
+          echo "CERTIFICATE_PRIVATE_KEY<<EOF" >> $CM_ENV
+          cat /tmp/mac_cert_key >> $CM_ENV
+          echo "EOF" >> $CM_ENV
+          export CERTIFICATE_PRIVATE_KEY=$(cat /tmp/mac_cert_key)
+      - name: Fetch or create Developer ID Application certificate
+        script: |
+          if [ -f /tmp/mac_cert_key ]; then
+            export CERTIFICATE_PRIVATE_KEY=$(cat /tmp/mac_cert_key)
+            CERT_KEY_ARG="--certificate-key=@file:/tmp/mac_cert_key"
+          else
+            CERT_KEY_ARG=""
+          fi
+          echo "=== Setting up Developer ID Application Certificate ==="
+          app-store-connect certificates create \
+            --type DEVELOPER_ID_APPLICATION \
+            $CERT_KEY_ARG \
+            --save || {
+              echo "Certificate may already exist, fetching from Apple..."
+              app-store-connect certificates list --type DEVELOPER_ID_APPLICATION --save || true
+            }
+      - name: Add certificates to keychain
+        script: |
+          keychain add-certificates
+          echo "=== Available Signing Identities ==="
+          security find-identity -v -p codesigning
+      - name: Build Web release binary
+        script: |
+          xcodebuild -project Clipmory.xcodeproj \
+            -scheme Clipmory \
+            -configuration Release \
+            -destination 'generic/platform=macOS' \
+            ARCHS="arm64 x86_64" \
+            ONLY_ACTIVE_ARCH=NO \
+            -derivedDataPath "./build/DerivedData-Web" \
+            build
+      - name: Sign, package DMG, and Notarize with Apple
+        script: |
+          set -e
+          BUILD_APP=$(find ./build/DerivedData-Web/Build/Products/Release -maxdepth 1 -name "*.app" | head -n 1)
+          DIST_DIR="./dist/web"
+          rm -rf "$DIST_DIR"
+          mkdir -p "$DIST_DIR/staging"
+          cp -R "$BUILD_APP" "$DIST_DIR/staging/Clipmory.app"
+
+          DEV_ID=$(security find-identity -v -p codesigning | grep "Developer ID Application" | head -n 1 | sed -e 's/.*"\(.*\)".*/\1/')
+          echo "Using Signing Identity: '$DEV_ID'"
+
+          if [ -z "$DEV_ID" ]; then
+            echo "❌ ERROR: No Developer ID Application certificate found in keychain!"
+            exit 1
+          fi
+
+          # Sign frameworks
+          if [ -d "$DIST_DIR/staging/Clipmory.app/Contents/Frameworks" ]; then
+            find "$DIST_DIR/staging/Clipmory.app/Contents/Frameworks" -name "*.framework" -o -name "*.dylib" | while read -r item; do
+              codesign --force --timestamp --options runtime --sign "$DEV_ID" "$item"
+            done
+          fi
+
+          # Sign application bundle with Hardened Runtime & entitlements
+          codesign --force --deep --timestamp \
+            --options runtime \
+            --entitlements "Clipmory/Resources/Clipmory.entitlements" \
+            --sign "$DEV_ID" \
+            "$DIST_DIR/staging/Clipmory.app"
+
+          codesign --verify --deep --strict --verbose=2 "$DIST_DIR/staging/Clipmory.app"
+
+          # Create DMG
+          ln -s /Applications "$DIST_DIR/staging/Applications"
+          hdiutil create -volname "Clipmory" -srcfolder "$DIST_DIR/staging" -ov -format UDZO "$DIST_DIR/Clipmory.dmg"
+          codesign --force --timestamp --sign "$DEV_ID" "$DIST_DIR/Clipmory.dmg"
+
+          # Apple Notarization via App Store Connect API Key
+          echo "=== Submitting DMG to Apple Notary Service ==="
+          echo "$APP_STORE_CONNECT_PRIVATE_KEY" > /tmp/apiKey.p8
+          xcrun notarytool submit "$DIST_DIR/Clipmory.dmg" \
+            --key "/tmp/apiKey.p8" \
+            --key-id "$APP_STORE_CONNECT_KEY_IDENTIFIER" \
+            --issuer "$APP_STORE_CONNECT_ISSUER_ID" \
+            --wait
+          rm -f /tmp/api_key.p8
+
+          echo "=== Stapling Notarization Ticket to DMG ==="
+          xcrun stapler staple "$DIST_DIR/Clipmory.dmg"
+          spctl --assess --type open --context context:primary-signature --verbose "$DIST_DIR/Clipmory.dmg"
+
+          ditto -c -k --sequesterRsrc --keepParent "$DIST_DIR/staging/Clipmory.app" "$DIST_DIR/Clipmory.zip"
+          echo "✅ Notarized DMG successfully created: $DIST_DIR/Clipmory.dmg"
     artifacts:
       - dist/web/*.dmg
       - dist/web/*.zip
