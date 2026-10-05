@@ -280,7 +280,16 @@ workflows:
             }
       - name: Add certificates to keychain
         script: |
-          keychain add-certificates
+          if [ -n "$CM_CERTIFICATE" ]; then
+            echo "Importing CM_CERTIFICATE into keychain..."
+            if [ -f "$CM_CERTIFICATE" ]; then
+              keychain add-certificates --certificate "$CM_CERTIFICATE" --certificate-password "$CM_CERTIFICATE_PASSWORD" || true
+            else
+              echo "$CM_CERTIFICATE" | base64 --decode > /tmp/cert.p12 2>/dev/null || echo "$CM_CERTIFICATE" > /tmp/cert.p12
+              keychain add-certificates --certificate /tmp/cert.p12 --certificate-password "$CM_CERTIFICATE_PASSWORD" || true
+            fi
+          fi
+          keychain add-certificates || true
           echo "=== Available Signing Identities in Keychain ==="
           security find-identity -v -p codesigning
       - name: Build Web release binary
