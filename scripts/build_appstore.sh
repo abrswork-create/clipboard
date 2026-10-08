@@ -32,7 +32,7 @@ codesign -d --entitlements :- "$DIST_DIR/Clipmory.app"
 ditto -c -k --sequesterRsrc --keepParent "$DIST_DIR/Clipmory.app" "$DIST_DIR/Clipmory-AppStore.zip"
 
 rm -rf /Applications/Clipmory.app 2>/dev/null || true
-cp -R "$DIST_DIR/Clipmory.app" /Applications/ 2>/dev/null || true
+cp -R "$DIST_DIR/Clipmory.app" /Applications/Clipmory.app 2>/dev/null || true
 
 echo "✅ [3/3] App Store build ready at:"
 echo "   - $DIST_DIR/Clipmory.app"
