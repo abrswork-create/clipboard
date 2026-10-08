@@ -64,6 +64,7 @@ struct SymbolsPickerView: View {
                     TextField("Search symbols (e.g. arrow, check, euro, infinity)...", text: $searchQuery)
                         .textFieldStyle(.plain)
                         .font(.system(size: 13))
+                        .accessibilityLabel("Search symbols")
                     
                     if !searchQuery.isEmpty {
                         Button {
@@ -73,6 +74,8 @@ struct SymbolsPickerView: View {
                                 .foregroundStyle(CFColor.secondaryText)
                         }
                         .buttonStyle(.plain)
+                        .accessibilityLabel("Clear search")
+                        .accessibilityAddTraits(.isButton)
                     }
                 }
                 .padding(.vertical, 6)
@@ -147,6 +150,8 @@ struct SymbolsPickerView: View {
             .cfShadow(isSelected ? CFShadow.card : CFShadow(color: .clear, radius: 0, x: 0, y: 0))
         }
         .buttonStyle(.plain)
+        .accessibilityLabel("\(category.rawValue) symbols category")
+        .accessibilityAddTraits(isSelected ? [.isButton, .isSelected] : .isButton)
     }
     
     // MARK: - Symbol Cell
@@ -175,6 +180,9 @@ struct SymbolsPickerView: View {
         }
         .buttonStyle(.plain)
         .help(item.name)
+        .accessibilityLabel("\(item.name) symbol, \(item.char)")
+        .accessibilityHint("Double-tap to copy symbol")
+        .accessibilityAddTraits(.isButton)
         .onHover { hovered in
             hoveredSymbol = hovered ? item.char : nil
         }

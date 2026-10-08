@@ -62,7 +62,7 @@ enum AutoDeleteHistory: Int, Codable, CaseIterable {
 struct AppSettings: Codable {
 
     // General
-    var launchAtLogin: Bool = true
+    var launchAtLogin: Bool = false
     var enableHistory: Bool = true // New
     var showInMenuBar: Bool = true // New
 
@@ -84,6 +84,9 @@ struct AppSettings: Codable {
     var sensitiveContentAction: SensitiveContentAction = .hide
     var requireAuthForSensitiveContent: Bool = true
     
+    // Accessibility & Assistive
+    var assistiveAutoInsert: Bool = false
+
     // Auto-Delete
     var autoDeleteHistory: AutoDeleteHistory = .sevenDays // New
 
@@ -110,7 +113,7 @@ struct AppSettings: Codable {
 
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        launchAtLogin = try container.decodeIfPresent(Bool.self, forKey: .launchAtLogin) ?? true
+        launchAtLogin = try container.decodeIfPresent(Bool.self, forKey: .launchAtLogin) ?? false
         enableHistory = try container.decodeIfPresent(Bool.self, forKey: .enableHistory) ?? true
         showInMenuBar = try container.decodeIfPresent(Bool.self, forKey: .showInMenuBar) ?? true
         historyLimit = try container.decodeIfPresent(Int.self, forKey: .historyLimit) ?? 500
@@ -125,6 +128,7 @@ struct AppSettings: Codable {
         sensitiveContentDetection = try container.decodeIfPresent(Bool.self, forKey: .sensitiveContentDetection) ?? true
         sensitiveContentAction = try container.decodeIfPresent(SensitiveContentAction.self, forKey: .sensitiveContentAction) ?? .hide
         requireAuthForSensitiveContent = try container.decodeIfPresent(Bool.self, forKey: .requireAuthForSensitiveContent) ?? true
+        assistiveAutoInsert = try container.decodeIfPresent(Bool.self, forKey: .assistiveAutoInsert) ?? false
         autoDeleteHistory = try container.decodeIfPresent(AutoDeleteHistory.self, forKey: .autoDeleteHistory) ?? .sevenDays
         quickClipboardShortcut = try container.decodeIfPresent(AppShortcut.self, forKey: .quickClipboardShortcut) ?? AppShortcut(keyCode: 0x09, modifiers: UInt32(optionKey | cmdKey), displayString: "⌥⌘V")
         screenCaptureShortcut = try container.decodeIfPresent(AppShortcut.self, forKey: .screenCaptureShortcut) ?? AppShortcut(keyCode: 0x08, modifiers: UInt32(optionKey | cmdKey), displayString: "⌥⌘C")

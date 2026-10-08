@@ -35,6 +35,8 @@ struct SettingsView: View {
                         ShortcutsSettingsView()
                     case .privacy:
                         PrivacySettingsView(store: store)
+                    case .accessibility:
+                        AccessibilitySettingsView()
                     case .advanced:
                         AdvancedSettingsView()
                     case .about:
@@ -663,6 +665,7 @@ enum SettingsTab: String, CaseIterable, Identifiable {
     case appearance = "Appearance"
     case shortcuts = "Shortcuts"
     case privacy = "Privacy"
+    case accessibility = "Accessibility"
     case advanced = "Advanced"
     case about = "About"
     
@@ -675,6 +678,7 @@ enum SettingsTab: String, CaseIterable, Identifiable {
         case .appearance: return "paintpalette.fill"
         case .shortcuts: return "keyboard.fill"
         case .privacy: return "lock.shield.fill"
+        case .accessibility: return "figure.roll"
         case .advanced: return "slider.horizontal.3"
         case .about: return "info.circle.fill"
         }
@@ -687,6 +691,7 @@ enum SettingsTab: String, CaseIterable, Identifiable {
         case .appearance: return .orange
         case .shortcuts: return .green
         case .privacy: return .purple
+        case .accessibility: return .teal
         case .advanced: return .indigo
         case .about: return .gray
         }
@@ -822,5 +827,90 @@ struct SettingsToggleRow: View {
     }
 }
 
-// MARK: - Shortcut Recorder
+// MARK: - Accessibility Settings View
+
+struct AccessibilitySettingsView: View {
+    @State private var settings = SettingsRepository.shared.load()
+    @ObservedObject private var permissionManager = PermissionManager.shared
+    
+    var body: some View {
+        VStack(spacing: 24) {
+            SettingsSection {
+                SettingsToggleRow(
+                    title: "Assistive Auto-Insert",
+                    subtitle: "Automatically inserts (Command+V) selected content into the active app with a single click. Designed for users with motor impairments, tremors, arthritis, or repetitive strain injuries (RSI) who find pressing two-key combinations physically challenging.",
+                    showDivider: true,
+                    isOn: Binding(
+                        get: { settings.assistiveAutoInsert },
+                        set: { newValue in
+                            settings.assistiveAutoInsert = newValue
+                            SettingsRepository.shared.save(settings)
+                            if newValue && !permissionManager.isAccessibilityGranted {
+                                permissionManager.requestAccessibility()
+                            }
+                        }
+                    )
+                )
+                
+                SettingsRow(
+                    title: "Accessibility Permission",
+                    subtitle: permissionManager.isAccessibilityGranted
+                        ? "macOS Accessibility authorization is granted. Assistive single-action insertion is active."
+                        : "Required to enable assistive single-action insertion for users with physical or motor difficulty.",
+                    showDivider: false
+                ) {
+                    if permissionManager.isAccessibilityGranted {
+                        HStack(spacing: 6) {
+                            Image(systemName: "checkmark.circle.fill")
+                                .foregroundColor(.green)
+                            Text("Authorized")
+                                .font(.system(size: 12, weight: .medium))
+                                .foregroundColor(.green)
+                        }
+                    } else {
+                        Button("Grant Permission") {
+                            permissionManager.requestAccessibility()
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .tint(.accentColor)
+                    }
+                }
+            }
+            
+            SettingsSection {
+                SettingsRow(
+                    title: "VoiceOver & Screen Reader",
+                    subtitle: "Clipmory includes full VoiceOver descriptions, element traits, and accessibility labels across clipboard history.",
+                    showDivider: true
+                ) {
+                    Text("Supported")
+                        .font(.system(size: 11, weight: .semibold))
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 3)
+                        .background(Color.green.opacity(0.15))
+                        .foregroundColor(.green)
+                        .clipShape(Capsule())
+                }
+                
+                SettingsRow(
+                    title: "Reduce Motion",
+                    subtitle: "Respects macOS system preferences for reduced animations and transitions.",
+                    showDivider: false
+                ) {
+                    Text("System-Linked")
+                        .font(.system(size: 11, weight: .semibold))
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 3)
+                        .background(Color.blue.opacity(0.15))
+                        .foregroundColor(.blue)
+                        .clipShape(Capsule())
+                }
+            }
+        }
+        .onAppear {
+            permissionManager.checkPermissions()
+        }
+    }
+}
+
 

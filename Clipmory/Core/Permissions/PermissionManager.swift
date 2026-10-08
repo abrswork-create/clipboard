@@ -21,11 +21,10 @@ final class PermissionManager: ObservableObject {
     
     func checkPermissions() {
         let ax = AXIsProcessTrusted()
-        let sr = CGPreflightScreenCaptureAccess()
-        
         if isAccessibilityGranted != ax {
             isAccessibilityGranted = ax
         }
+        let sr = CGPreflightScreenCaptureAccess()
         if isScreenRecordingGranted != sr {
             isScreenRecordingGranted = sr
         }

@@ -57,10 +57,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         setupClipboardPipeline()
         
         // Only present the onboarding window on first launch.
-        // For normal launches (including system restart / launch-at-login),
-        // run silently in the background and only show when invoked by the user.
+        // If onboarding is already completed, show the main window on direct launch so the user sees the app is running.
         if !UserDefaults.standard.bool(forKey: "hasCompletedOnboarding") {
             openOnboardingWindow()
+        } else {
+            openMainWindow()
         }
         
         setupHotkey()
@@ -235,8 +236,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         let settings = SettingsRepository.shared.load()
         updateMenuBarIcon(show: settings.showInMenuBar)
         
-        // Enforce system start at login preference
-        LaunchAtLoginManager.shared.setLaunchAtLogin(settings.launchAtLogin)
+        // Enforce system start at login preference only if explicitly enabled by user
+        if settings.launchAtLogin {
+            LaunchAtLoginManager.shared.setLaunchAtLogin(true)
+        }
         
         NotificationCenter.default.addObserver(forName: NSNotification.Name("clipmoryShowInMenuBarChanged"), object: nil, queue: .main) { @MainActor [weak self] _ in
             let show = SettingsRepository.shared.load().showInMenuBar
@@ -382,11 +385,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
             openMainWindow()
         }
     }
-    
+
     private func openOnboardingWindow() {
         NSApp.setActivationPolicy(.regular)
         if let existing = onboardingWindow {
+            existing.center()
             existing.makeKeyAndOrderFront(nil)
+            existing.orderFrontRegardless()
             NSApp.activate(ignoringOtherApps: true)
             return
         }
@@ -412,17 +417,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         win.isMovableByWindowBackground = true
         win.contentViewController = hostingController
         win.hidesOnDeactivate = false
-        win.level = .normal
-        
-        // Ensure it always spawns in the exact center of the main screen
-        if let screen = NSScreen.main {
-            let screenRect = screen.visibleFrame
-            let newX = screenRect.midX - 450 // 900 / 2
-            let newY = screenRect.midY - 450 // 900 / 2
-            win.setFrameOrigin(NSPoint(x: newX, y: newY))
-        } else {
-            win.center()
-        }
+        win.level = .floating
+        win.center()
         
         win.isReleasedWhenClosed = false
         win.backgroundColor = .clear
@@ -435,6 +431,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         
         onboardingWindow = win
         win.makeKeyAndOrderFront(nil)
+        win.orderFrontRegardless()
         NSApp.activate(ignoringOtherApps: true)
     }
 

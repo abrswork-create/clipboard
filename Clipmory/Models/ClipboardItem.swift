@@ -1,4 +1,5 @@
 import Foundation
+import AppKit
 
 // MARK: - ClipboardItem
 // Core data model representing a single clipboard history entry.
@@ -75,6 +76,86 @@ extension ClipboardItem {
             return text
         }
         return nil
+    }
+}
+
+// MARK: - Drag and Drop Support
+
+extension ClipboardItem {
+    func makeItemProvider() -> NSItemProvider {
+        // 1. Files or local images on disk
+        if let path = self.filePath ?? self.imagePath, FileManager.default.fileExists(atPath: path) {
+            let fileURL = URL(fileURLWithPath: path)
+            let provider = NSItemProvider(contentsOf: fileURL) ?? NSItemProvider()
+            
+            // Also register NSImage for drop targets that accept image objects directly
+            if let image = FileStorage.loadImage(at: path) ?? NSImage(contentsOfFile: path) {
+                provider.registerObject(image, visibility: .all)
+            }
+            
+            // Register text fallback
+            if let text = self.text, !text.isEmpty {
+                provider.registerObject(text as NSString, visibility: .all)
+            }
+            
+            return provider
+        }
+        
+        // 2. Web URLs or remote GIFs
+        if (self.type == .url || self.isGif), let text = self.text, let url = URL(string: text), url.scheme != nil {
+            let provider = NSItemProvider(object: url as NSURL)
+            provider.registerObject(text as NSString, visibility: .all)
+            return provider
+        }
+        
+        // 3. Plain Text / Code / General strings
+        if let text = self.text {
+            return NSItemProvider(object: text as NSString)
+        }
+        
+        return NSItemProvider()
+    }
+    
+    static func makeItemProvider(for items: [ClipboardItem]) -> NSItemProvider {
+        guard !items.isEmpty else { return NSItemProvider() }
+        if items.count == 1 {
+            return items[0].makeItemProvider()
+        }
+        
+        // 1. Files / Local Images on disk
+        let fileURLs: [URL] = items.compactMap { item in
+            if let path = item.filePath ?? item.imagePath, FileManager.default.fileExists(atPath: path) {
+                return URL(fileURLWithPath: path)
+            }
+            return nil
+        }
+        
+        // 2. Texts / URLs
+        let texts: [String] = items.compactMap { item in
+            if let text = item.text, !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                return text
+            }
+            return nil
+        }
+        
+        // Pure text collection: provide direct plain text provider so all target apps paste all items
+        if fileURLs.isEmpty && !texts.isEmpty {
+            let combined = texts.joined(separator: "\n")
+            return NSItemProvider(object: combined as NSString)
+        }
+        
+        // Mixed or file collection
+        let provider = NSItemProvider()
+        for url in fileURLs {
+            provider.registerObject(url as NSURL, visibility: .all)
+        }
+        
+        if !texts.isEmpty {
+            let combined = texts.joined(separator: "\n")
+            provider.registerObject(combined as NSString, visibility: .all)
+        }
+        
+        return provider
     }
 }
 

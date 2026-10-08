@@ -4,7 +4,11 @@ import SwiftUI
 // Custom animated monochrome first-launch experience.
 
 struct OnboardingView: View {
-    @StateObject var viewModel = OnboardingViewModel()
+    @ObservedObject var viewModel: OnboardingViewModel
+    
+    init(viewModel: OnboardingViewModel = OnboardingViewModel()) {
+        self.viewModel = viewModel
+    }
     
     let pageWidth: CGFloat = 900
     let pageHeight: CGFloat = 900
@@ -977,6 +981,7 @@ struct OnboardingPermissionsSlide: View {
     
     @State private var isAccessibilityTrusted = AXIsProcessTrusted()
     @State private var isScreenRecordingTrusted = CGPreflightScreenCaptureAccess()
+    @State private var isLaunchAtLogin: Bool = SettingsRepository.shared.load().launchAtLogin
     
     @State private var isHoveringContinue = false
     @State private var isPressingContinue = false
@@ -984,11 +989,11 @@ struct OnboardingPermissionsSlide: View {
     let timer = Timer.publish(every: 0.4, on: .main, in: .common).autoconnect()
     
     var hasGrantedPermission: Bool {
-        isAccessibilityTrusted || isScreenRecordingTrusted
+        return isScreenRecordingTrusted || isAccessibilityTrusted || isLaunchAtLogin
     }
     
     var allGranted: Bool {
-        isAccessibilityTrusted && isScreenRecordingTrusted
+        return isScreenRecordingTrusted
     }
     
     var body: some View {
@@ -1003,24 +1008,27 @@ struct OnboardingPermissionsSlide: View {
                     .opacity(titleOpacity)
                     .offset(y: titleOffset)
                 
-                Text("Allow these permissions to unlock Clipmory's full experience.")
+                Text("Configure your preferences and permissions for the best experience.")
                     .font(.system(size: 15, weight: .regular, design: .monospaced))
                     .foregroundColor(.black.opacity(0.6))
                     .opacity(subtitleOpacity)
                     .offset(y: subtitleOffset)
             }
             
-            Spacer().frame(height: 40)
+            Spacer().frame(height: 36)
             
-            VStack(spacing: 16) {
+            VStack(spacing: 14) {
                 PermissionRow(
-                    icon: "keyboard",
-                    title: "Accessibility",
-                    description: "Lets Clipmory paste your selected item instantly with ⌘V.",
+                    icon: "figure.roll",
+                    title: "Assistive Tools (Optional)",
+                    description: "Enables single-action insertion for users with motor difficulty or who cannot press keyboard shortcuts.",
                     isGranted: isAccessibilityTrusted,
                     action: {
                         PermissionManager.shared.requestAccessibility()
                         schedulePermissionChecks()
+                        var current = SettingsRepository.shared.load()
+                        current.assistiveAutoInsert = true
+                        SettingsRepository.shared.save(current)
                     }
                 )
                 
@@ -1033,6 +1041,10 @@ struct OnboardingPermissionsSlide: View {
                         PermissionManager.shared.requestScreenRecording()
                         schedulePermissionChecks()
                     }
+                )
+                
+                LaunchAtLoginRow(
+                    isLaunchAtLogin: $isLaunchAtLogin
                 )
                 
                 VStack(spacing: 6) {
@@ -1156,12 +1168,9 @@ struct OnboardingPermissionsSlide: View {
     }
     
     private func refreshPermissions() {
+        #if !APP_STORE
         let newAx = AXIsProcessTrusted()
-        let newSr = CGPreflightScreenCaptureAccess()
-        
         PermissionManager.shared.isAccessibilityGranted = newAx
-        PermissionManager.shared.isScreenRecordingGranted = newSr
-        
         if isAccessibilityTrusted != newAx {
             withAnimation(.easeInOut(duration: 0.2)) {
                 isAccessibilityTrusted = newAx
@@ -1170,6 +1179,11 @@ struct OnboardingPermissionsSlide: View {
                 NSApp.activate(ignoringOtherApps: true)
             }
         }
+        #endif
+        let newSr = CGPreflightScreenCaptureAccess()
+        
+        PermissionManager.shared.isScreenRecordingGranted = newSr
+        
         if isScreenRecordingTrusted != newSr {
             withAnimation(.easeInOut(duration: 0.2)) {
                 isScreenRecordingTrusted = newSr
@@ -1281,6 +1295,76 @@ struct PermissionRow: View {
         .scaleEffect(isHovering ? 1.01 : 1.0)
         .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isHovering)
         .animation(.spring(response: 0.4, dampingFraction: 0.8), value: isGranted)
+        .onHover { hovering in
+            isHovering = hovering
+        }
+    }
+}
+
+// MARK: - Launch At Login Row
+
+struct LaunchAtLoginRow: View {
+    @Binding var isLaunchAtLogin: Bool
+    @State private var isHovering = false
+    
+    var body: some View {
+        HStack(spacing: 16) {
+            Image(systemName: "macbook.and.iphone")
+                .font(.system(size: 24, weight: .light))
+                .foregroundColor(.black.opacity(0.8))
+                .frame(width: 32)
+            
+            VStack(alignment: .leading, spacing: 4) {
+                HStack(spacing: 8) {
+                    Text("Launch at Login")
+                        .font(.system(size: 15, weight: .bold, design: .monospaced))
+                        .foregroundColor(.black)
+                    
+                    Text("RECOMMENDED")
+                        .font(.system(size: 9, weight: .bold, design: .monospaced))
+                        .foregroundColor(.black)
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 2)
+                        .background(Color.black.opacity(0.08))
+                        .cornerRadius(4)
+                }
+                
+                Text("Start Clipmory automatically when you log in to keep your clipboard history ready.")
+                    .font(.system(size: 12, weight: .regular, design: .monospaced))
+                    .foregroundColor(.black.opacity(0.6))
+                    .fixedSize(horizontal: false, vertical: true)
+                    .lineSpacing(2)
+            }
+            
+            Spacer(minLength: 20)
+            
+            Toggle("", isOn: $isLaunchAtLogin)
+                .toggleStyle(.switch)
+                .labelsHidden()
+                .tint(.black)
+                .onChange(of: isLaunchAtLogin) { newValue in
+                    let success = LaunchAtLoginManager.shared.setLaunchAtLogin(newValue)
+                    var settings = SettingsRepository.shared.load()
+                    if success {
+                        settings.launchAtLogin = newValue
+                    } else {
+                        isLaunchAtLogin = LaunchAtLoginManager.shared.isEnabled
+                        settings.launchAtLogin = isLaunchAtLogin
+                    }
+                    SettingsRepository.shared.save(settings)
+                }
+        }
+        .padding(16)
+        .background(Color.white)
+        .cornerRadius(12)
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(isLaunchAtLogin ? Color.black.opacity(0.3) : Color.black.opacity(0.08), lineWidth: 1)
+        )
+        .shadow(color: isHovering ? Color.black.opacity(0.06) : Color.black.opacity(0.02), radius: isHovering ? 8 : 4, x: 0, y: isHovering ? 4 : 2)
+        .scaleEffect(isHovering ? 1.01 : 1.0)
+        .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isHovering)
+        .animation(.spring(response: 0.4, dampingFraction: 0.8), value: isLaunchAtLogin)
         .onHover { hovering in
             isHovering = hovering
         }

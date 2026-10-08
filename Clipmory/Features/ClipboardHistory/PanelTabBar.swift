@@ -65,7 +65,7 @@ struct PanelTabBar: View {
             Divider()
                 .foregroundStyle(CFColor.panelBorder)
         }
-        .background(Color.clear)
+        .background(WindowDragHandle())
         .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("clipmoryWindowWillOpen"))) { _ in
             triggerAnimation()
         }
@@ -116,6 +116,10 @@ struct PanelTabBar: View {
         }
         .pointingHandCursor()
         .help(tab.label)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(tab.label) tab")
+        .accessibilityHint(isSelected ? "Currently selected tab" : "Double-tap to switch to \(tab.label)")
+        .accessibilityAddTraits(isSelected ? [.isButton, .isSelected] : .isButton)
     }
 
     private var closeButton: some View {
@@ -133,5 +137,23 @@ struct PanelTabBar: View {
         .padding(.bottom, 4)
         .padding(.trailing, 4)
         .help("Close")
+        .accessibilityLabel("Close window")
+        .accessibilityHint("Closes Clipmory window")
+        .accessibilityAddTraits(.isButton)
+    }
+}
+
+// MARK: - WindowDragHandle
+struct WindowDragHandle: NSViewRepresentable {
+    func makeNSView(context: Context) -> WindowDragNSView {
+        WindowDragNSView()
+    }
+    
+    func updateNSView(_ nsView: WindowDragNSView, context: Context) {}
+}
+
+final class WindowDragNSView: NSView {
+    override func mouseDown(with event: NSEvent) {
+        window?.performDrag(with: event)
     }
 }

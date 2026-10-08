@@ -127,6 +127,9 @@ struct FavoritesView: View {
                 .onHover { isSelectHovered = $0 }
                 .pointingHandCursor()
                 .help(isSelectionMode ? "Exit selection mode" : "Select multiple items to paste or copy")
+                .accessibilityLabel(isSelectionMode ? "Done, exit selection mode" : "Select multiple items")
+                .accessibilityHint(isSelectionMode ? "Exits multi-selection mode" : "Allows choosing multiple favorite items to copy, delete, or paste")
+                .accessibilityAddTraits(.isButton)
                 .fixedSize()
             }
         }
@@ -239,6 +242,7 @@ struct FavoritesView: View {
     private func batchActionBar(_ favorites: [ClipboardItem]) -> some View {
         HStack(spacing: 8) {
             // Selected Count Badge
+            // Count badge
             HStack(spacing: 5) {
                 Image(systemName: "checkmark.circle.fill")
                     .font(.system(size: 11, weight: .semibold))
@@ -254,6 +258,8 @@ struct FavoritesView: View {
                     .fill(Color.primary.opacity(0.06))
             )
             .help("\(selectedItemIDs.count) items selected")
+            .accessibilityElement(children: .combine)
+            .accessibilityLabel("\(selectedItemIDs.count) items selected")
 
             Spacer()
 
@@ -283,6 +289,9 @@ struct FavoritesView: View {
             .buttonStyle(.plain)
             .pointingHandCursor()
             .help(selectedItemIDs.count == favorites.count ? "Deselect All" : "Select All")
+            .accessibilityLabel(selectedItemIDs.count == favorites.count ? "Deselect all items" : "Select all items")
+            .accessibilityHint("Toggles selection for all favorite items")
+            .accessibilityAddTraits(.isButton)
 
             // Copy button (Icon button)
             Button {
@@ -310,6 +319,9 @@ struct FavoritesView: View {
             .disabled(selectedItemIDs.isEmpty)
             .opacity(selectedItemIDs.isEmpty ? 0.4 : 1.0)
             .help("Copy selected items to clipboard")
+            .accessibilityLabel("Copy \(selectedItemIDs.count) selected items")
+            .accessibilityHint("Copies selected favorite items to clipboard")
+            .accessibilityAddTraits(.isButton)
 
             // Delete button (Icon button)
             Button {
@@ -338,6 +350,9 @@ struct FavoritesView: View {
             .disabled(selectedItemIDs.isEmpty)
             .opacity(selectedItemIDs.isEmpty ? 0.4 : 1.0)
             .help("Delete selected items")
+            .accessibilityLabel("Delete \(selectedItemIDs.count) selected items")
+            .accessibilityHint("Permanently deletes selected items from history")
+            .accessibilityAddTraits(.isButton)
 
             // Paste All Button (Primary Icon button with count)
             Button {
@@ -372,6 +387,9 @@ struct FavoritesView: View {
             .opacity(selectedItemIDs.isEmpty ? 0.4 : 1.0)
             .keyboardShortcut(.defaultAction)
             .help("Paste all selected items (Return)")
+            .accessibilityLabel("Paste \(selectedItemIDs.count) selected items")
+            .accessibilityHint("Inserts all selected favorite items into active application")
+            .accessibilityAddTraits(.isButton)
 
             // Done / Exit Selection Button (Icon button)
             Button {
@@ -394,6 +412,9 @@ struct FavoritesView: View {
             .buttonStyle(.plain)
             .pointingHandCursor()
             .help("Done / Exit Selection Mode (Esc)")
+            .accessibilityLabel("Done, exit selection mode")
+            .accessibilityHint("Clears selection and closes action bar")
+            .accessibilityAddTraits(.isButton)
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 8)

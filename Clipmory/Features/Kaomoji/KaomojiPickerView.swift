@@ -64,6 +64,7 @@ struct KaomojiPickerView: View {
                     TextField("Search kaomoji (e.g. shrug, flip, bear, love)...", text: $searchQuery)
                         .textFieldStyle(.plain)
                         .font(.system(size: 13))
+                        .accessibilityLabel("Search kaomoji")
                     
                     if !searchQuery.isEmpty {
                         Button {
@@ -73,6 +74,8 @@ struct KaomojiPickerView: View {
                                 .foregroundStyle(CFColor.secondaryText)
                         }
                         .buttonStyle(.plain)
+                        .accessibilityLabel("Clear search")
+                        .accessibilityAddTraits(.isButton)
                     }
                 }
                 .padding(.vertical, 6)
@@ -147,6 +150,8 @@ struct KaomojiPickerView: View {
             .cfShadow(isSelected ? CFShadow.card : CFShadow(color: .clear, radius: 0, x: 0, y: 0))
         }
         .buttonStyle(.plain)
+        .accessibilityLabel("\(category.rawValue) kaomoji category")
+        .accessibilityAddTraits(isSelected ? [.isButton, .isSelected] : .isButton)
     }
     
     // MARK: - Kaomoji Card
@@ -185,6 +190,9 @@ struct KaomojiPickerView: View {
             .animation(.spring(response: 0.2, dampingFraction: 0.7), value: isHovered)
         }
         .buttonStyle(.plain)
+        .accessibilityLabel("\(item.name) kaomoji, \(item.text)")
+        .accessibilityHint("Double-tap to copy kaomoji")
+        .accessibilityAddTraits(.isButton)
         .onHover { hovered in
             hoveredKaomoji = hovered ? item.text : nil
         }

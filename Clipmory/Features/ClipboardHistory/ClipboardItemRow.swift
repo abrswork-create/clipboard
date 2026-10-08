@@ -92,6 +92,9 @@ struct ClipboardItemRow: View {
                 .pointingHandCursor()
                 .padding(.leading, 10)
                 .transition(.scale.combined(with: .opacity))
+                .accessibilityLabel(isInMultiSelect ? "Selected item checkbox" : "Unselected item checkbox")
+                .accessibilityHint(isInMultiSelect ? "Double-tap to deselect" : "Double-tap to select")
+                .accessibilityAddTraits(isInMultiSelect ? [.isButton, .isSelected] : .isButton)
             }
 
             // LEFT SIDE: Text and badges
@@ -245,6 +248,31 @@ struct ClipboardItemRow: View {
                 )
         )
         .cfShadow(isInMultiSelect ? CFShadow.cardSelected : (isSelected ? CFShadow.cardSelected : CFShadow.card))
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel(rowAccessibilityLabel)
+        .accessibilityHint(rowAccessibilityHint)
+        .accessibilityAddTraits(isInMultiSelect ? [.isButton, .isSelected] : .isButton)
+    }
+
+    private var rowAccessibilityLabel: String {
+        var label = "\(item.sourceAppName ?? "Application"): \(displayText)"
+        if isSelectionMode || isInMultiSelect {
+            label += isInMultiSelect ? ", Selected" : ", Not selected"
+        }
+        if item.isPinned {
+            label += ", Pinned"
+        }
+        if item.isFavorite {
+            label += ", Favorite"
+        }
+        return label
+    }
+
+    private var rowAccessibilityHint: String {
+        if isSelectionMode {
+            return isInMultiSelect ? "Double-tap to deselect item" : "Double-tap to select item"
+        }
+        return "Double-tap to copy or insert clipboard content"
     }
 
 

@@ -64,6 +64,7 @@ struct EmojiPickerView: View {
                     TextField("Search emoji (e.g. fire, laugh, coffee)...", text: $searchQuery)
                         .textFieldStyle(.plain)
                         .font(.system(size: 13))
+                        .accessibilityLabel("Search emoji")
                     
                     if !searchQuery.isEmpty {
                         Button {
@@ -73,6 +74,8 @@ struct EmojiPickerView: View {
                                 .foregroundStyle(CFColor.secondaryText)
                         }
                         .buttonStyle(.plain)
+                        .accessibilityLabel("Clear search")
+                        .accessibilityAddTraits(.isButton)
                     }
                 }
                 .padding(.vertical, 6)
@@ -147,6 +150,8 @@ struct EmojiPickerView: View {
             .cfShadow(isSelected ? CFShadow.card : CFShadow(color: .clear, radius: 0, x: 0, y: 0))
         }
         .buttonStyle(.plain)
+        .accessibilityLabel("\(category.rawValue) emoji category")
+        .accessibilityAddTraits(isSelected ? [.isButton, .isSelected] : .isButton)
     }
     
     // MARK: - Emoji Cell
@@ -173,6 +178,9 @@ struct EmojiPickerView: View {
         }
         .buttonStyle(.plain)
         .help(item.name)
+        .accessibilityLabel("\(item.name) emoji, \(item.char)")
+        .accessibilityHint("Double-tap to copy emoji")
+        .accessibilityAddTraits(.isButton)
         .onHover { hovered in
             hoveredEmoji = hovered ? item.char : nil
         }

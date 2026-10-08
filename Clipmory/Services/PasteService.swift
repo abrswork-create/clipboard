@@ -41,24 +41,26 @@ enum PasteService {
         isPasting = true
         lastPasteTime = now
 
-        // 1. Check for Accessibility Permissions
-        let options = ["AXTrustedCheckOptionPrompt": true] as CFDictionary
-        let isTrusted = AXIsProcessTrustedWithOptions(options)
+        // 1. Check Assistive Auto-Insert preference
+        let shouldAutoInsert = settings.assistiveAutoInsert
         
-        guard isTrusted else {
-            isPasting = false
-            let alert = NSAlert()
-            alert.messageText = "Accessibility Permission Required"
-            alert.informativeText = "Clipmory needs Accessibility permissions to simulate the ⌘V keystroke for auto-pasting. Please enable it in System Settings > Privacy & Security > Accessibility."
-            alert.alertStyle = .warning
-            alert.addButton(withTitle: "Open System Settings")
-            alert.addButton(withTitle: "Cancel")
-            
-            let response = alert.runModal()
-            if response == .alertFirstButtonReturn {
-                PermissionManager.shared.openAccessibilitySettings()
+        if shouldAutoInsert {
+            let isTrusted = AXIsProcessTrusted()
+            if !isTrusted {
+                isPasting = false
+                let alert = NSAlert()
+                alert.messageText = "Assistive Tools Permission Required"
+                alert.informativeText = "Clipmory includes assistive single-action insertion for users with motor impairments, tremors, or physical difficulty performing keyboard shortcuts (⌘+V). To enable this assistive feature, please grant Accessibility permission in System Settings > Privacy & Security > Accessibility."
+                alert.alertStyle = .informational
+                alert.addButton(withTitle: "Open System Settings")
+                alert.addButton(withTitle: "Cancel")
+                
+                let response = alert.runModal()
+                if response == .alertFirstButtonReturn {
+                    PermissionManager.shared.openAccessibilitySettings()
+                }
+                return
             }
-            return
         }
 
         // 2. Tell monitor to ignore changes
@@ -82,11 +84,17 @@ enum PasteService {
         // 4. Dismiss panel and restore target application focus
         dismissAndRestoreFocus()
         
-        // 5. Fire Cmd+V
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.18) {
-            triggerCmdV()
-            
-            // 6. Re-enable monitor and release debounce lock after a slight delay
+        if shouldAutoInsert && AXIsProcessTrusted() {
+            // Fire Cmd+V for assistive insertion
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.18) {
+                triggerCmdV()
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+                    NotificationCenter.default.post(name: didWriteToPasteboard, object: nil)
+                    isPasting = false
+                }
+            }
+        } else {
+            // Standard sandbox mode: Item is copied to pasteboard and focus restored
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
                 NotificationCenter.default.post(name: didWriteToPasteboard, object: nil)
                 isPasting = false
@@ -133,76 +141,79 @@ enum PasteService {
         isPasting = true
         lastPasteTime = now
 
-        // 1. Check for Accessibility Permissions
-        let options = ["AXTrustedCheckOptionPrompt": true] as CFDictionary
-        let isTrusted = AXIsProcessTrustedWithOptions(options)
-        
-        guard isTrusted else {
-            isPasting = false
-            let alert = NSAlert()
-            alert.messageText = "Accessibility Permission Required"
-            alert.informativeText = "Clipmory needs Accessibility permissions to simulate the ⌘V keystroke for auto-pasting. Please enable it in System Settings > Privacy & Security > Accessibility."
-            alert.alertStyle = .warning
-            alert.addButton(withTitle: "Open System Settings")
-            alert.addButton(withTitle: "Cancel")
-            
-            let response = alert.runModal()
-            if response == .alertFirstButtonReturn {
-                PermissionManager.shared.openAccessibilitySettings()
-            }
-            return
-        }
+        let shouldAutoInsert = settings.assistiveAutoInsert
 
-        // 2. Pure text items: Join with separator and single Cmd+V
-        let isAllPureText = items.allSatisfy {
-            $0.type != .image && $0.type != .file && $0.imagePath == nil && $0.filePath == nil && $0.text != nil
-        }
-        
-        if isAllPureText {
-            NotificationCenter.default.post(name: willWriteToPasteboard, object: nil)
-            guard writeToPasteboard(items, textSeparator: textSeparator) else {
-                NotificationCenter.default.post(name: didWriteToPasteboard, object: nil)
+        if shouldAutoInsert {
+            let isTrusted = AXIsProcessTrusted()
+            if !isTrusted {
                 isPasting = false
+                let alert = NSAlert()
+                alert.messageText = "Assistive Tools Permission Required"
+                alert.informativeText = "Clipmory includes assistive single-action insertion for users with motor impairments or difficulty performing keyboard shortcuts (⌘+V). To enable this assistive feature, please grant Accessibility permission in System Settings > Privacy & Security > Accessibility."
+                alert.alertStyle = .informational
+                alert.addButton(withTitle: "Open System Settings")
+                alert.addButton(withTitle: "Cancel")
+                
+                let response = alert.runModal()
+                if response == .alertFirstButtonReturn {
+                    PermissionManager.shared.openAccessibilitySettings()
+                }
                 return
             }
 
+            // 2. Pure text items: Join with separator and single Cmd+V
+            let isAllPureText = items.allSatisfy {
+                $0.type != .image && $0.type != .file && $0.imagePath == nil && $0.filePath == nil && $0.text != nil
+            }
+            
+            if isAllPureText {
+                NotificationCenter.default.post(name: willWriteToPasteboard, object: nil)
+                guard writeToPasteboard(items, textSeparator: textSeparator) else {
+                    NotificationCenter.default.post(name: didWriteToPasteboard, object: nil)
+                    isPasting = false
+                    return
+                }
+
+                dismissAndRestoreFocus()
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.18) {
+                    triggerCmdV()
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+                        NotificationCenter.default.post(name: didWriteToPasteboard, object: nil)
+                        isPasting = false
+                    }
+                }
+                return
+            }
+
+            // 3. Multi-image, file, or media items
             dismissAndRestoreFocus()
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.18) {
-                triggerCmdV()
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+            let interval: Double = 0.35
+            let startDelay: Double = 0.35
+
+            for (index, item) in items.enumerated() {
+                let delay = startDelay + (Double(index) * interval)
+                DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
+                    NotificationCenter.default.post(name: willWriteToPasteboard, object: nil)
+                    writeSingleItemToPasteboard(item)
+                    triggerCmdV()
+                }
+            }
+
+            let finalDelay = startDelay + (Double(items.count) * interval) + 0.15
+            DispatchQueue.main.asyncAfter(deadline: .now() + finalDelay) {
+                NotificationCenter.default.post(name: willWriteToPasteboard, object: nil)
+                _ = writeToPasteboard(items, textSeparator: textSeparator)
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                     NotificationCenter.default.post(name: didWriteToPasteboard, object: nil)
                     isPasting = false
                 }
             }
-            return
-        }
-
-        // 3. Multi-image, file, or media items:
-        // Web applications (ChatGPT, Photopea, Canva, etc.) and many desktop apps only consume
-        // the first image per Cmd+V event from the system clipboard.
-        // Sequential pasting dispatches each image with a small interval so that every single image
-        // is cleanly received and attached by the target application.
-        dismissAndRestoreFocus()
-
-        let interval: Double = 0.35
-        let startDelay: Double = 0.35
-
-        for (index, item) in items.enumerated() {
-            let delay = startDelay + (Double(index) * interval)
-            DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
-                NotificationCenter.default.post(name: willWriteToPasteboard, object: nil)
-                writeSingleItemToPasteboard(item)
-                triggerCmdV()
-            }
-        }
-
-        // After all items are pasted, write the full multi-item collection back to pasteboard
-        // and re-enable ClipboardMonitor
-        let finalDelay = startDelay + (Double(items.count) * interval) + 0.15
-        DispatchQueue.main.asyncAfter(deadline: .now() + finalDelay) {
+        } else {
+            // Standard copy to pasteboard without keystroke injection
             NotificationCenter.default.post(name: willWriteToPasteboard, object: nil)
             _ = writeToPasteboard(items, textSeparator: textSeparator)
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            dismissAndRestoreFocus()
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
                 NotificationCenter.default.post(name: didWriteToPasteboard, object: nil)
                 isPasting = false
             }

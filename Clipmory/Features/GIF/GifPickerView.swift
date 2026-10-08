@@ -85,6 +85,7 @@ struct GifPickerView: View {
                 TextField("Search copied GIFs...", text: $searchQuery)
                     .textFieldStyle(.plain)
                     .font(.system(size: 13))
+                    .accessibilityLabel("Search GIFs")
                 
                 if !searchQuery.isEmpty {
                     Button {
@@ -94,6 +95,8 @@ struct GifPickerView: View {
                             .foregroundStyle(CFColor.secondaryText)
                     }
                     .buttonStyle(.plain)
+                    .accessibilityLabel("Clear search")
+                    .accessibilityAddTraits(.isButton)
                 }
             }
             .padding(.vertical, 6)
@@ -236,6 +239,10 @@ struct GifPickerView: View {
         .onHover { hovered in
             hoveredItemID = hovered ? item.id : nil
         }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(item.sourceAppName ?? "GIF"): Copied animated GIF" + (item.isFavorite ? ", Favorite" : ""))
+        .accessibilityHint("Double-tap to copy or insert GIF")
+        .accessibilityAddTraits(.isButton)
     }
     
     // MARK: - Empty States

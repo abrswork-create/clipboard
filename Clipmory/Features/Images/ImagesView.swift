@@ -143,6 +143,9 @@ struct ImagesView: View {
                     .onHover { isSelectHovered = $0 }
                     .pointingHandCursor()
                     .help(isSelectionMode ? "Exit selection mode" : "Select multiple images to paste or copy")
+                    .accessibilityLabel(isSelectionMode ? "Done, exit selection mode" : "Select multiple images")
+                    .accessibilityHint(isSelectionMode ? "Exits multi-selection mode" : "Allows choosing multiple images to copy, delete, or paste")
+                    .accessibilityAddTraits(.isButton)
                     .fixedSize()
                 }
             }
@@ -344,6 +347,10 @@ struct ImagesView: View {
         .onHover { hovered in
             hoveredItemID = hovered ? item.id : nil
         }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(item.sourceAppName ?? "Image"): " + (isSelectionMode || isInMultiSelect ? (isInMultiSelect ? "Selected" : "Not selected") : "Copied image"))
+        .accessibilityHint(isSelectionMode ? (isInMultiSelect ? "Double-tap to deselect image" : "Double-tap to select image") : "Double-tap to copy or insert image")
+        .accessibilityAddTraits(isInMultiSelect ? [.isButton, .isSelected] : .isButton)
     }
     
     // MARK: - States
@@ -446,6 +453,8 @@ struct ImagesView: View {
                     .fill(Color.primary.opacity(0.06))
             )
             .help("\(selectedItemIDs.count) images selected")
+            .accessibilityElement(children: .combine)
+            .accessibilityLabel("\(selectedItemIDs.count) images selected")
 
             Spacer()
 
@@ -475,6 +484,9 @@ struct ImagesView: View {
             .buttonStyle(.plain)
             .pointingHandCursor()
             .help(selectedItemIDs.count == filteredItems.count ? "Deselect All" : "Select All")
+            .accessibilityLabel(selectedItemIDs.count == filteredItems.count ? "Deselect all images" : "Select all images")
+            .accessibilityHint("Toggles selection for all images")
+            .accessibilityAddTraits(.isButton)
 
             // Copy button (Icon button)
             Button {
@@ -503,6 +515,9 @@ struct ImagesView: View {
             .disabled(selectedItemIDs.isEmpty)
             .opacity(selectedItemIDs.isEmpty ? 0.4 : 1.0)
             .help("Copy selected images to clipboard")
+            .accessibilityLabel("Copy \(selectedItemIDs.count) selected images")
+            .accessibilityHint("Copies selected images to clipboard")
+            .accessibilityAddTraits(.isButton)
 
             // Delete button (Icon button)
             Button {
@@ -531,6 +546,9 @@ struct ImagesView: View {
             .disabled(selectedItemIDs.isEmpty)
             .opacity(selectedItemIDs.isEmpty ? 0.4 : 1.0)
             .help("Delete selected images")
+            .accessibilityLabel("Delete \(selectedItemIDs.count) selected images")
+            .accessibilityHint("Permanently deletes selected images")
+            .accessibilityAddTraits(.isButton)
 
             // Paste All Button (Primary Icon button with count)
             Button {
@@ -566,6 +584,9 @@ struct ImagesView: View {
             .opacity(selectedItemIDs.isEmpty ? 0.4 : 1.0)
             .keyboardShortcut(.defaultAction)
             .help("Paste all selected images (Return)")
+            .accessibilityLabel("Paste \(selectedItemIDs.count) selected images")
+            .accessibilityHint("Inserts selected images into active app")
+            .accessibilityAddTraits(.isButton)
 
             // Done / Exit Selection Button (Icon button)
             Button {
@@ -588,6 +609,9 @@ struct ImagesView: View {
             .buttonStyle(.plain)
             .pointingHandCursor()
             .help("Done / Exit Selection Mode (Esc)")
+            .accessibilityLabel("Done, exit selection mode")
+            .accessibilityHint("Clears selection and closes action bar")
+            .accessibilityAddTraits(.isButton)
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 8)

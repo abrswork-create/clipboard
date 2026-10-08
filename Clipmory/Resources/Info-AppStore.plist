@@ -17,13 +17,15 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>1.0.1</string>
+	<string>1.0.2</string>
 	<key>CFBundleVersion</key>
-	<string>3</string>
+	<string>5</string>
 	<key>LSApplicationCategoryType</key>
 	<string>public.app-category.utilities</string>
 	<key>NSPasteboardUsageDescription</key>
 	<string>Clipmory stores your clipboard history locally on your Mac so you can access it anytime.</string>
+	<key>NSAccessibilityUsageDescription</key>
+	<string>Clipmory uses Accessibility features to provide assistive single-action insertion for users with motor impairments or difficulty performing keyboard shortcuts.</string>
 	<key>NSSupportsAutomaticTermination</key>
 	<false/>
 	<key>NSSupportsSuddenTermination</key>

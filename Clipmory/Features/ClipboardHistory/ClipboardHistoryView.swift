@@ -236,6 +236,9 @@ struct ClipboardHistoryView: View {
                     .onHover { isSelectHovered = $0 }
                     .pointingHandCursor()
                     .help(viewModel.isSelectionMode ? "Exit selection mode" : "Select multiple items to paste or copy")
+                    .accessibilityLabel(viewModel.isSelectionMode ? "Done, exit selection mode" : "Select multiple items")
+                    .accessibilityHint(viewModel.isSelectionMode ? "Exits multi-selection mode" : "Allows choosing multiple items to copy, delete, or paste")
+                    .accessibilityAddTraits(.isButton)
                     .fixedSize()
 
                     Button {
@@ -262,6 +265,9 @@ struct ClipboardHistoryView: View {
                     .onHover { isClearHovered = $0 }
                     .pointingHandCursor()
                     .help("Clear clipboard history")
+                    .accessibilityLabel("Clear all clipboard history")
+                    .accessibilityHint("Permanently deletes unpinned clipboard items")
+                    .accessibilityAddTraits(.isButton)
                     .fixedSize()
                 }
                 .fixedSize(horizontal: true, vertical: false)
@@ -275,6 +281,8 @@ struct ClipboardHistoryView: View {
                 TextField("Search your clipboard...", text: $viewModel.searchQuery)
                     .textFieldStyle(.plain)
                     .font(.system(size: 13))
+                    .accessibilityLabel("Search clipboard")
+                    .accessibilityHint("Type keywords to filter clipboard history")
                 
                 if !viewModel.searchQuery.isEmpty {
                     Button {
@@ -285,6 +293,8 @@ struct ClipboardHistoryView: View {
                     }
                     .buttonStyle(.plain)
                     .pointingHandCursor()
+                    .accessibilityLabel("Clear search text")
+                    .accessibilityAddTraits(.isButton)
                 }
             }
             .padding(.vertical, 6)
@@ -450,6 +460,8 @@ struct ClipboardHistoryView: View {
                     .fill(Color.primary.opacity(0.06))
             )
             .help("\(viewModel.selectedItemIDs.count) items selected")
+            .accessibilityElement(children: .combine)
+            .accessibilityLabel("\(viewModel.selectedItemIDs.count) items selected")
 
             Spacer()
 
@@ -469,6 +481,9 @@ struct ClipboardHistoryView: View {
             .buttonStyle(.plain)
             .pointingHandCursor()
             .help(viewModel.selectedItemIDs.count == displayItems.count ? "Deselect All" : "Select All")
+            .accessibilityLabel(viewModel.selectedItemIDs.count == displayItems.count ? "Deselect all items" : "Select all items")
+            .accessibilityHint("Toggles selection for all items in the list")
+            .accessibilityAddTraits(.isButton)
 
             // Copy button (Icon button)
             Button {
@@ -488,6 +503,9 @@ struct ClipboardHistoryView: View {
             .disabled(viewModel.selectedItemIDs.isEmpty)
             .opacity(viewModel.selectedItemIDs.isEmpty ? 0.4 : 1.0)
             .help("Copy selected items to clipboard")
+            .accessibilityLabel("Copy \(viewModel.selectedItemIDs.count) selected items")
+            .accessibilityHint("Copies all selected items to clipboard")
+            .accessibilityAddTraits(.isButton)
 
             // Delete button (Icon button)
             Button {
@@ -507,6 +525,9 @@ struct ClipboardHistoryView: View {
             .disabled(viewModel.selectedItemIDs.isEmpty)
             .opacity(viewModel.selectedItemIDs.isEmpty ? 0.4 : 1.0)
             .help("Delete selected items")
+            .accessibilityLabel("Delete \(viewModel.selectedItemIDs.count) selected items")
+            .accessibilityHint("Permanently deletes selected items from history")
+            .accessibilityAddTraits(.isButton)
 
             // Paste All Button (Primary Icon button with count)
             Button {
@@ -535,6 +556,9 @@ struct ClipboardHistoryView: View {
             .opacity(viewModel.selectedItemIDs.isEmpty ? 0.4 : 1.0)
             .keyboardShortcut(.defaultAction)
             .help("Paste all selected items (Return)")
+            .accessibilityLabel("Paste \(viewModel.selectedItemIDs.count) selected items")
+            .accessibilityHint("Inserts all selected items into active application")
+            .accessibilityAddTraits(.isButton)
 
             // Done / Exit Selection Button (Icon button)
             Button {
@@ -552,6 +576,9 @@ struct ClipboardHistoryView: View {
             .buttonStyle(.plain)
             .pointingHandCursor()
             .help("Done / Exit Selection Mode (Esc)")
+            .accessibilityLabel("Done, exit selection mode")
+            .accessibilityHint("Clears current selection and closes action bar")
+            .accessibilityAddTraits(.isButton)
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 8)
