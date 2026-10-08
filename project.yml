@@ -44,9 +44,11 @@ targets:
     resources:
       - path: Clipmory/Resources/Assets.xcassets
       - path: Clipmory/Resources/Info.plist
+      - path: Clipmory/Resources/AppIcon.icns
     info:
       path: Clipmory/Resources/Info.plist
       properties:
+        CFBundleIconFile: AppIcon
         CFBundleName: Clipmory
         CFBundleDisplayName: Clipmory
         CFBundleShortVersionString: "1.0.2"
@@ -86,9 +88,11 @@ targets:
     resources:
       - path: Clipmory/Resources/Assets.xcassets
       - path: Clipmory/Resources/Info-AppStore.plist
+      - path: Clipmory/Resources/AppIcon.icns
     info:
       path: Clipmory/Resources/Info-AppStore.plist
       properties:
+        CFBundleIconFile: AppIcon
         CFBundleName: Clipmory
         CFBundleDisplayName: Clipmory
         CFBundleShortVersionString: "1.0.2"

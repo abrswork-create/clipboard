@@ -110,9 +110,11 @@
 		9CE16BD846A6F3A006D0CD73 /* AppEnvironment.swift in Sources */ = {isa = PBXBuildFile; fileRef = D87E8EE94716CF46344470AB /* AppEnvironment.swift */; };
 		9DC566AF52BECB572A39CF9A /* FavoritesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8975B8B63DB4E8DF7DCB72B2 /* FavoritesView.swift */; };
 		A3B63E2A2F2B9124533B0FD6 /* DatabaseManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD527195D075EA69641E22C2 /* DatabaseManager.swift */; };
+		A49D8589141F09FB2C10BC31 /* AppIcon.icns in Resources */ = {isa = PBXBuildFile; fileRef = 5709EAD9EAE8E4A2741CF783 /* AppIcon.icns */; };
 		A627353E1A87686FA1DB512F /* ClipboardHistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0DF297B9DACE3D7FCC4955C /* ClipboardHistoryView.swift */; };
 		A7BEE446C6615A298E4E56DB /* ClipboardSourceApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6286F780AA01DE35029F669C /* ClipboardSourceApp.swift */; };
 		A81D7307E83A92399A53E215 /* PanelTabBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90BBEE0CE63C3F155CC5FE2E /* PanelTabBar.swift */; };
+		AAA4BFF5C294EEA04F5C8488 /* AppIcon.icns in Resources */ = {isa = PBXBuildFile; fileRef = 5709EAD9EAE8E4A2741CF783 /* AppIcon.icns */; };
 		ABC69219F37DA261D584B161 /* SearchViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2AC4AA108FD1A117EDBA77E /* SearchViewModel.swift */; };
 		AC1ED747DCB872482933B5AF /* ClipboardReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F02ECDF4F16C8831E3F9B10 /* ClipboardReader.swift */; };
 		AD01A998FFB4CE9A7AEBA697 /* DesignSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5112BDDDE1344B63243D79FE /* DesignSystem.swift */; };
@@ -211,6 +213,7 @@
 		5112BDDDE1344B63243D79FE /* DesignSystem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DesignSystem.swift; sourceTree = "<group>"; };
 		52E761C9B1F34E21D263B5E1 /* Clipmory-AppStore.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Clipmory-AppStore.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		54032C968A081D6085F4240B /* EmojiData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmojiData.swift; sourceTree = "<group>"; };
+		5709EAD9EAE8E4A2741CF783 /* AppIcon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = AppIcon.icns; sourceTree = "<group>"; };
 		592E22C29FF2ADA83C2535B4 /* ClipmoryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipmoryTests.swift; sourceTree = "<group>"; };
 		5C302C5581BECD82DBAD271E /* GlobalHotkeyManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlobalHotkeyManager.swift; sourceTree = "<group>"; };
 		5E0548FA7B2C0F1A605A2BA0 /* ProManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProManager.swift; sourceTree = "<group>"; };
@@ -292,6 +295,7 @@
 		1421625BD7BF7111F17F9DDD /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				5709EAD9EAE8E4A2741CF783 /* AppIcon.icns */,
 				70503B66B09053D170EC0685 /* Assets.xcassets */,
 				693FE45272867976863ECC54 /* Clipmory-AppStore.entitlements */,
 				7FABF0F777D256EEAAB83015 /* Clipmory.entitlements */,
@@ -738,6 +742,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				AAA4BFF5C294EEA04F5C8488 /* AppIcon.icns in Resources */,
 				E5CDD9DAED3B669126AD89DA /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -746,6 +751,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A49D8589141F09FB2C10BC31 /* AppIcon.icns in Resources */,
 				6F0E6BB6E825D0F72241680C /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

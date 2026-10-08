@@ -16,6 +16,7 @@ mkdir -p "$DIST_DIR"
 
 echo "🔒 [2/3] Preparing App Store build & stripping Sparkle updater..."
 cp -R "$BUILD_APP" "$DIST_DIR/Clipmory.app"
+cp "Clipmory/Resources/AppIcon.icns" "$DIST_DIR/Clipmory.app/Contents/Resources/AppIcon.icns"
 
 # Remove Sparkle (Prohibited in App Store; App Store handles all updates natively)
 rm -rf "$DIST_DIR/Clipmory.app/Contents/Frameworks/Sparkle.framework"

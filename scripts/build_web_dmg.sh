@@ -12,6 +12,7 @@ mkdir -p "$DIST_DIR/staging"
 
 echo "📦 [2/4] Packaging Clipmory.app..."
 cp -R "$BUILD_APP" "$DIST_DIR/staging/Clipmory.app"
+cp "Clipmory/Resources/AppIcon.icns" "$DIST_DIR/staging/Clipmory.app/Contents/Resources/AppIcon.icns"
 
 # Detect Developer ID Application certificate in Keychain (fallback to local ad-hoc)
 DEV_ID=$(security find-identity -v -p codesigning | grep "Developer ID Application" | head -n 1 | sed -n 's/.*"\(.*\)".*/\1/p')
