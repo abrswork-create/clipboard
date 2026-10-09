@@ -719,16 +719,6 @@ struct AboutSettingsView: View {
                     }
                 }
             }
-            
-            SettingsSection {
-                SettingsRow(title: "Welcome Guide", subtitle: "Revisit the first-launch introduction and shortcuts tour.", showDivider: false) {
-                    Button("Show Tour") {
-                        if let appDelegate = NSApp.delegate as? AppDelegate {
-                            appDelegate.openOnboardingWindow()
-                        }
-                    }
-                }
-            }
         }
         .frame(maxWidth: .infinity, alignment: .center)
         .padding(.top, 32)

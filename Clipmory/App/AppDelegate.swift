@@ -380,7 +380,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         let menu = NSMenu()
         menu.addItem(NSMenuItem(title: "Open Clipmory", action: #selector(openMainWindowAction), keyEquivalent: ""))
         menu.addItem(NSMenuItem.separator())
-        menu.addItem(NSMenuItem(title: "Welcome Guide...", action: #selector(openOnboardingAction), keyEquivalent: ""))
         menu.addItem(NSMenuItem(title: "Settings...", action: #selector(openSettings), keyEquivalent: ","))
 #if !APP_STORE
         menu.addItem(NSMenuItem(title: "Check for Updates...", action: #selector(checkForUpdates), keyEquivalent: "u"))
@@ -392,11 +391,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
 
     @objc private func openMainWindowAction() {
         openMainWindow()
-    }
-    
-    @objc private func openOnboardingAction() {
-        closeMainWindow()
-        openOnboardingWindow()
     }
     
     @objc private func checkForUpdates() {
