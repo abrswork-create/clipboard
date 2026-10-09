@@ -14,6 +14,27 @@ struct FavoritesView: View {
     @State private var isSelectHovered = false
     @State private var anchorItemID: UUID? = nil
     @State private var baseSelectedIDs: Set<UUID> = []
+    @State private var activeActionItemID: UUID? = nil
+    @State private var lastClosedActionItemID: UUID? = nil
+    @State private var lastClosedActionItemTime: Date = .distantPast
+
+    private func closeActionItem() {
+        guard let id = activeActionItemID else { return }
+        lastClosedActionItemID = id
+        lastClosedActionItemTime = Date()
+        withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+            activeActionItemID = nil
+        }
+    }
+
+    private func toggleActionItem(_ id: UUID) {
+        if lastClosedActionItemID == id && Date().timeIntervalSince(lastClosedActionItemTime) < 0.25 {
+            return
+        }
+        withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+            activeActionItemID = activeActionItemID == id ? nil : id
+        }
+    }
 
     private var favorites: [ClipboardItem] {
         store.items.filter { $0.isFavorite }
@@ -43,11 +64,20 @@ struct FavoritesView: View {
         .animation(.spring(response: 0.3, dampingFraction: 0.8), value: isSelectionMode)
         .animation(.spring(response: 0.3, dampingFraction: 0.8), value: selectedItemIDs.count)
         .onExitCommand {
-            selectedItemID = nil
-            selectedItemIDs.removeAll()
-            baseSelectedIDs.removeAll()
-            anchorItemID = nil
-            isSelectionMode = false
+            if activeActionItemID != nil {
+                withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                    activeActionItemID = nil
+                }
+            } else {
+                selectedItemID = nil
+                selectedItemIDs.removeAll()
+                baseSelectedIDs.removeAll()
+                anchorItemID = nil
+                isSelectionMode = false
+            }
+        }
+        .onDisappear {
+            activeActionItemID = nil
         }
         .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("clipmoryInterfaceStyleChanged"))) { _ in
             withAnimation(.easeInOut(duration: 0.15)) {
@@ -150,6 +180,11 @@ struct FavoritesView: View {
             .padding(.bottom, (isSelectionMode || !selectedItemIDs.isEmpty) ? 58 : 0)
             .animation(.easeInOut(duration: 0.2), value: favorites)
         }
+        .simultaneousGesture(
+            TapGesture().onEnded {
+                closeActionItem()
+            }
+        )
     }
 
     private func cardRow(_ item: ClipboardItem) -> some View {
@@ -157,6 +192,10 @@ struct FavoritesView: View {
             item: item,
             isSelected: selectedItemID == item.id,
             onSelect: {
+                if activeActionItemID != nil {
+                    closeActionItem()
+                    return
+                }
                 if isSelectionMode {
                     toggleMultiSelect(item.id)
                 } else {
@@ -193,7 +232,10 @@ struct FavoritesView: View {
             isInMultiSelect: selectedItemIDs.contains(item.id),
             onToggleMultiSelect: { toggleMultiSelect(item.id) },
             onShiftSelect: { selectRange(to: item.id) },
-            onCommandSelect: { toggleMultiSelect(item.id) }
+            onCommandSelect: { toggleMultiSelect(item.id) },
+            isActionsExpanded: activeActionItemID == item.id,
+            onToggleActions: { toggleActionItem(item.id) },
+            onCloseActions: { closeActionItem() }
         )
     }
 

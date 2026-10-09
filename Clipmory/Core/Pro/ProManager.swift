@@ -144,8 +144,9 @@ final class ProManager: ObservableObject {
     
     // MARK: - Licensing Actions
     
-    func unlockPro(key: String = "") {
-        let validKey = key.isEmpty ? "OFFLINE-PRO" : key
+    func unlockPro(key: String) {
+        let validKey = key.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !validKey.isEmpty else { return }
         let token = UUID().uuidString
         CreemService.shared.saveToKeychain(key: validKey, token: token)
         
@@ -189,10 +190,10 @@ final class ProManager: ObservableObject {
         refreshTrialStatus()
     }
     
-    // MARK: - Lemon Squeezy Activation
+    // MARK: - License Activation
     
-    /// Activates a license key asynchronously with Lemon Squeezy API
-    /// Binds to Mac UUID and persists to Keychain for 100% offline access.
+    /// Activates a license key asynchronously with Creem API
+    /// Binds to anonymous instance and persists encrypted token for offline access.
     func activateLicenseAsync(key: String) async -> Bool {
         let trimmed = key.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else {

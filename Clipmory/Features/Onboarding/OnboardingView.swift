@@ -10,8 +10,8 @@ struct OnboardingView: View {
         self.viewModel = viewModel
     }
     
-    let pageWidth: CGFloat = 900
-    let pageHeight: CGFloat = 900
+    let pageWidth: CGFloat = 740
+    let pageHeight: CGFloat = 640
     let lightBackground = Color(white: 0.98)
     
     var body: some View {
@@ -45,7 +45,7 @@ struct OnboardingView: View {
                     viewModel.currentPage = index
                 }
             }
-            .padding(.bottom, 32)
+            .padding(.bottom, 22)
             
             // Top-right close button for testing/dismissal
             VStack {
@@ -56,8 +56,8 @@ struct OnboardingView: View {
                     } label: {
                         Image(systemName: "xmark.circle.fill")
                             .font(.system(size: 22))
-                            .foregroundColor(.black.opacity(0.25))
-                            .padding(24)
+                            .foregroundColor(.black.opacity(0.22))
+                            .padding(22)
                     }
                     .buttonStyle(.plain)
                     .pointingHandCursor()
@@ -67,8 +67,12 @@ struct OnboardingView: View {
             }
         }
         .frame(width: pageWidth, height: pageHeight)
-        // No scaleEffect so it fits naturally on screen.
         .background(lightBackground)
+        .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 22, style: .continuous)
+                .stroke(Color.black.opacity(0.08), lineWidth: 1)
+        )
         .colorScheme(.light)
     }
 }
@@ -275,39 +279,41 @@ struct OnboardingFirstSlide: View {
                 cardsOpacity: cardsOpacity,
                 cardsOffset: cardsOffset
             )
+            .scaleEffect(0.85)
+            .frame(width: 340, height: 185)
             
-            Spacer().frame(height: 48)
+            Spacer().frame(height: 18)
             
             // Typography
             Text("Clipmory")
-                .font(.system(size: 48, weight: .bold, design: .monospaced))
+                .font(.system(size: 38, weight: .bold, design: .monospaced))
                 .foregroundColor(.black)
                 .opacity(titleOpacity)
                 .offset(y: titleOffset)
             
-            Spacer().frame(height: 24)
+            Spacer().frame(height: 14)
             
             Text("Your clipboard,\nalways within reach.")
-                .font(.system(size: 22, weight: .medium, design: .monospaced))
+                .font(.system(size: 18, weight: .medium, design: .monospaced))
                 .foregroundColor(.black)
                 .multilineTextAlignment(.center)
-                .lineSpacing(6)
+                .lineSpacing(4)
                 .fixedSize(horizontal: false, vertical: true)
                 .opacity(taglineOpacity)
                 .offset(y: taglineOffset)
             
-            Spacer().frame(height: 20)
+            Spacer().frame(height: 10)
             
             Text("Everything you copy.\nOne shortcut away.")
-                .font(.system(size: 15, weight: .regular, design: .monospaced))
+                .font(.system(size: 13, weight: .regular, design: .monospaced))
                 .foregroundColor(.black.opacity(0.6))
                 .multilineTextAlignment(.center)
-                .lineSpacing(6)
+                .lineSpacing(4)
                 .fixedSize(horizontal: false, vertical: true)
                 .opacity(subTaglineOpacity)
                 .offset(y: subTaglineOffset)
             
-            Spacer().frame(height: 48)
+            Spacer().frame(height: 24)
             
             // Button
             Button(action: {
@@ -322,15 +328,15 @@ struct OnboardingFirstSlide: View {
                 HStack(spacing: 8) {
                     Text("Get Started")
                     Image(systemName: "arrow.right")
-                        .font(.system(size: 15, weight: .bold))
+                        .font(.system(size: 14, weight: .bold))
                 }
-                .font(.system(size: 18, weight: .bold, design: .monospaced))
+                .font(.system(size: 15, weight: .bold, design: .monospaced))
                 .foregroundColor(.white)
-                .padding(.horizontal, 40)
-                .padding(.vertical, 14)
+                .padding(.horizontal, 34)
+                .padding(.vertical, 12)
                 .background(Color.black)
                 .cornerRadius(10)
-                .shadow(color: isHoveringButton ? Color.black.opacity(0.15) : Color.clear, radius: 10, x: 0, y: 6)
+                .shadow(color: isHoveringButton ? Color.black.opacity(0.15) : Color.clear, radius: 8, x: 0, y: 4)
             }
             .buttonStyle(.plain)
             .scaleEffect(isPressingButton ? 0.98 : (isHoveringButton ? 1.02 : buttonScale))
@@ -419,9 +425,6 @@ struct OnboardingSecondSlide: View {
     @State private var featuresOpacity: [Double] = [0, 0, 0, 0]
     @State private var featuresOffset: [CGFloat] = [10, 10, 10, 10]
     
-    @State private var privacyOpacity: Double = 0
-    @State private var privacyOffset: CGFloat = 10
-    
     @State private var buttonOpacity: Double = 0
     @State private var buttonScale: CGFloat = 0.96
     
@@ -434,18 +437,18 @@ struct OnboardingSecondSlide: View {
             
             // Heading
             Text("Everything you copy.\nOne place.")
-                .font(.system(size: 36, weight: .bold, design: .monospaced))
+                .font(.system(size: 34, weight: .bold, design: .monospaced))
                 .multilineTextAlignment(.center)
                 .foregroundColor(.black)
                 .fixedSize(horizontal: false, vertical: true)
                 .opacity(headingOpacity)
                 .offset(y: headingOffset)
             
-            Spacer().frame(height: 16)
+            Spacer().frame(height: 10)
             
             // Subheading
             Text("Clipmory keeps your clipboard history\nready to use — text, images, links, and more.")
-                .font(.system(size: 14, weight: .regular, design: .monospaced))
+                .font(.system(size: 13, weight: .regular, design: .monospaced))
                 .multilineTextAlignment(.center)
                 .foregroundColor(.black.opacity(0.6))
                 .lineSpacing(4)
@@ -453,12 +456,12 @@ struct OnboardingSecondSlide: View {
                 .opacity(headingOpacity)
                 .offset(y: headingOffset)
             
-            Spacer().frame(height: 50)
+            Spacer().frame(height: 24)
             
             // Main Hero Area
-            HStack(spacing: 48) {
-                // Left: App Preview
-                ClipmoryAppPreview()
+            HStack(spacing: 36) {
+                // Left: App Preview (Size * 2)
+                ClipmoryAppPreview(width: 275, height: 350)
                     .opacity(mockupOpacity)
                     .scaleEffect(mockupScale)
                 
@@ -468,53 +471,31 @@ struct OnboardingSecondSlide: View {
                         .opacity(featuresOpacity[0])
                         .offset(y: featuresOffset[0])
                     
-                    Divider().padding(.vertical, 10)
+                    Divider().padding(.vertical, 12)
                         .opacity(featuresOpacity[0])
                     
-                    FeatureCallout(icon: "photo", title: "Images", description: "Keep screenshots, visuals,\nand images.")
+                    FeatureCallout(icon: "photo", title: "Images", description: "Keep screenshots,\nvisuals,\nand images.")
                         .opacity(featuresOpacity[1])
                         .offset(y: featuresOffset[1])
                     
-                    Divider().padding(.vertical, 10)
+                    Divider().padding(.vertical, 12)
                         .opacity(featuresOpacity[1])
                     
                     FeatureCallout(icon: "link", title: "Links", description: "Store links and access\nthem instantly.")
                         .opacity(featuresOpacity[2])
                         .offset(y: featuresOffset[2])
                     
-                    Divider().padding(.vertical, 10)
+                    Divider().padding(.vertical, 12)
                         .opacity(featuresOpacity[2])
                     
                     FeatureCallout(icon: "doc.text", title: "Files", description: "Keep important files\nwithin reach.")
                         .opacity(featuresOpacity[3])
                         .offset(y: featuresOffset[3])
                 }
-                .frame(width: 220)
+                .frame(width: 260)
             }
             
-            Spacer().frame(height: 50)
-            
-            // Privacy Pill
-            HStack(spacing: 16) {
-                Image(systemName: "sparkles")
-                    .font(.system(size: 20))
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Everything stays on your device.")
-                        .font(.system(size: 12, weight: .bold, design: .monospaced))
-                    Text("Your data is private and never leaves your Mac.")
-                        .font(.system(size: 11, weight: .regular, design: .monospaced))
-                        .foregroundColor(.black.opacity(0.6))
-                }
-            }
-            .padding(.horizontal, 24)
-            .padding(.vertical, 16)
-            .background(Color.black.opacity(0.02))
-            .cornerRadius(12)
-            .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.black.opacity(0.05), lineWidth: 1))
-            .opacity(privacyOpacity)
-            .offset(y: privacyOffset)
-            
-            Spacer().frame(height: 40)
+            Spacer().frame(height: 26)
             
             // CTA Button
             Button(action: {
@@ -529,14 +510,13 @@ struct OnboardingSecondSlide: View {
                 HStack(spacing: 8) {
                     Text("Next")
                     Image(systemName: "arrow.right")
-                        .font(.system(size: 15, weight: .bold))
+                        .font(.system(size: 14, weight: .bold))
                 }
-                .font(.system(size: 16, weight: .bold, design: .monospaced))
+                .font(.system(size: 15, weight: .bold, design: .monospaced))
                 .foregroundColor(.white)
-                .frame(width: 220)
-                .padding(.vertical, 14)
+                .frame(width: 200, height: 46)
                 .background(Color.black)
-                .cornerRadius(10)
+                .cornerRadius(12)
                 .shadow(color: isHoveringButton ? Color.black.opacity(0.2) : Color.clear, radius: 8, x: 0, y: 4)
             }
             .buttonStyle(.plain)
@@ -570,7 +550,6 @@ struct OnboardingSecondSlide: View {
             headingOpacity = 1.0; headingOffset = 0
             mockupOpacity = 1.0; mockupScale = 1.0
             featuresOpacity = [1,1,1,1]; featuresOffset = [0,0,0,0]
-            privacyOpacity = 1.0; privacyOffset = 0
             buttonOpacity = 1.0; buttonScale = 1.0
             return
         }
@@ -590,11 +569,7 @@ struct OnboardingSecondSlide: View {
             }
         }
         
-        withAnimation(.easeOut(duration: 0.6).delay(0.9)) {
-            privacyOpacity = 1.0; privacyOffset = 0
-        }
-        
-        withAnimation(.spring(response: 0.6, dampingFraction: 0.7).delay(1.0)) {
+        withAnimation(.spring(response: 0.6, dampingFraction: 0.7).delay(0.9)) {
             buttonOpacity = 1.0; buttonScale = 1.0
         }
     }
@@ -644,50 +619,49 @@ struct OnboardingThirdSlide: View {
             
             // Headline
             Text("Your clipboard,\none shortcut away.")
-                .font(.system(size: 32, weight: .bold, design: .monospaced))
+                .font(.system(size: 26, weight: .bold, design: .monospaced))
                 .multilineTextAlignment(.center)
                 .foregroundColor(.black)
                 .fixedSize(horizontal: false, vertical: true)
                 .opacity(headingOpacity)
                 .offset(y: headingOffset)
             
-            Spacer().frame(height: 14)
+            Spacer().frame(height: 8)
             
             // Subtitle
             Text("Press ⌥⌘V to open Clipmory\nfrom anywhere, anytime.")
-                .font(.system(size: 15, weight: .regular, design: .monospaced))
+                .font(.system(size: 12, weight: .regular, design: .monospaced))
                 .multilineTextAlignment(.center)
                 .foregroundColor(.black.opacity(0.6))
                 .fixedSize(horizontal: false, vertical: true)
                 .opacity(subtitleOpacity)
                 .offset(y: subtitleOffset)
             
-            Spacer().frame(height: 22)
+            Spacer().frame(height: 14)
             
             // Keys
-            VStack(spacing: 8) {
-                HStack(spacing: 12) {
+            VStack(spacing: 6) {
+                HStack(spacing: 10) {
                     ShortcutKeyView(title: "⌥", opacity: optionOpacity, yOffset: optionY, scale: optionScale)
                     ShortcutKeyView(title: "⌘", opacity: cmdOpacity, yOffset: cmdY, scale: cmdScale)
                     ShortcutKeyView(title: "V", opacity: vOpacity, yOffset: vY, scale: vScale)
                 }
                 
                 Image(systemName: "arrow.down")
-                    .font(.system(size: 12, weight: .bold))
+                    .font(.system(size: 11, weight: .bold))
                     .foregroundColor(.black.opacity(0.4))
                     .opacity(arrowOpacity)
                     .offset(y: arrowOffset)
             }
             
-            Spacer().frame(height: 14)
+            Spacer().frame(height: 10)
             
             // App Preview
-            ClipmoryAppPreview()
-                .frame(width: 440)
-                .scaleEffect(mockupScale * 0.9)
+            ClipmoryAppPreview(maxHeight: 165)
                 .opacity(mockupOpacity)
+                .scaleEffect(mockupScale)
             
-            Spacer().frame(height: 30)
+            Spacer().frame(height: 18)
             
             // CTA Button
             Button(action: {
@@ -702,15 +676,15 @@ struct OnboardingThirdSlide: View {
                 HStack(spacing: 8) {
                     Text("Next")
                     Image(systemName: "arrow.right")
-                        .font(.system(size: 14, weight: .bold))
+                        .font(.system(size: 13, weight: .bold))
                 }
-                .font(.system(size: 15, weight: .bold, design: .monospaced))
+                .font(.system(size: 14, weight: .bold, design: .monospaced))
                 .foregroundColor(.white)
-                .frame(width: 220)
-                .padding(.vertical, 12)
+                .frame(width: 180)
+                .padding(.vertical, 11)
                 .background(Color.black)
                 .cornerRadius(10)
-                .shadow(color: isHoveringButton ? Color.black.opacity(0.2) : Color.clear, radius: 8, x: 0, y: 4)
+                .shadow(color: isHoveringButton ? Color.black.opacity(0.2) : Color.clear, radius: 6, x: 0, y: 3)
             }
             .buttonStyle(.plain)
             .scaleEffect(isPressingButton ? 0.98 : (isHoveringButton ? 1.02 : buttonScale))
@@ -815,19 +789,19 @@ struct ShortcutKeyView: View {
     
     var body: some View {
         ZStack {
-            RoundedRectangle(cornerRadius: 10)
+            RoundedRectangle(cornerRadius: 8)
                 .fill(Color.white)
                 .overlay(
-                    RoundedRectangle(cornerRadius: 10)
+                    RoundedRectangle(cornerRadius: 8)
                         .stroke(Color.black.opacity(0.15), lineWidth: 1)
                 )
-                .shadow(color: .black.opacity(0.06), radius: 3, x: 0, y: 3)
+                .shadow(color: .black.opacity(0.06), radius: 3, x: 0, y: 2)
             
             Text(title)
-                .font(.system(size: 22, weight: .medium, design: .default)) // Slightly smaller font
+                .font(.system(size: 19, weight: .medium, design: .default))
                 .foregroundColor(.black)
         }
-        .frame(width: 50, height: 50) // Smaller frame
+        .frame(width: 44, height: 44)
         .opacity(opacity)
         .offset(y: yOffset)
         .scaleEffect(scale)
@@ -981,7 +955,6 @@ struct OnboardingPermissionsSlide: View {
     
     @State private var isAccessibilityTrusted = AXIsProcessTrusted()
     @State private var isScreenRecordingTrusted = CGPreflightScreenCaptureAccess()
-    @State private var isLaunchAtLogin: Bool = SettingsRepository.shared.load().launchAtLogin
     
     @State private var isHoveringContinue = false
     @State private var isPressingContinue = false
@@ -989,11 +962,15 @@ struct OnboardingPermissionsSlide: View {
     let timer = Timer.publish(every: 0.4, on: .main, in: .common).autoconnect()
     
     var hasGrantedPermission: Bool {
-        return isScreenRecordingTrusted || isAccessibilityTrusted || isLaunchAtLogin
+        return isScreenRecordingTrusted || isAccessibilityTrusted
     }
     
     var allGranted: Bool {
+        #if !APP_STORE
+        return isScreenRecordingTrusted && isAccessibilityTrusted
+        #else
         return isScreenRecordingTrusted
+        #endif
     }
     
     var body: some View {
@@ -1001,23 +978,38 @@ struct OnboardingPermissionsSlide: View {
             Spacer()
             
             // Header
-            VStack(spacing: 12) {
+            VStack(spacing: 8) {
                 Text("Set up Clipmory")
-                    .font(.system(size: 32, weight: .bold, design: .monospaced))
+                    .font(.system(size: 26, weight: .bold, design: .monospaced))
                     .foregroundColor(.black)
                     .opacity(titleOpacity)
                     .offset(y: titleOffset)
                 
                 Text("Configure your preferences and permissions for the best experience.")
-                    .font(.system(size: 15, weight: .regular, design: .monospaced))
+                    .font(.system(size: 12, weight: .regular, design: .monospaced))
                     .foregroundColor(.black.opacity(0.6))
                     .opacity(subtitleOpacity)
                     .offset(y: subtitleOffset)
             }
             
-            Spacer().frame(height: 36)
+            Spacer().frame(height: 20)
             
-            VStack(spacing: 14) {
+            VStack(spacing: 12) {
+                #if !APP_STORE
+                PermissionRow(
+                    icon: "keyboard",
+                    title: "Auto-Paste",
+                    description: "Grant permission to use auto-paste to insert items directly into your active apps.",
+                    isGranted: isAccessibilityTrusted,
+                    action: {
+                        PermissionManager.shared.requestAccessibility()
+                        schedulePermissionChecks()
+                        var current = SettingsRepository.shared.load()
+                        current.assistiveAutoInsert = true
+                        SettingsRepository.shared.save(current)
+                    }
+                )
+                #else
                 PermissionRow(
                     icon: "figure.roll",
                     title: "Assistive Tools (Optional)",
@@ -1031,11 +1023,12 @@ struct OnboardingPermissionsSlide: View {
                         SettingsRepository.shared.save(current)
                     }
                 )
+                #endif
                 
                 PermissionRow(
                     icon: "camera.viewfinder",
                     title: "Screen Recording",
-                    description: "Lets Clipmory capture selected areas of your screen and extract text from them.",
+                    description: "Grant permission to extract text from images and capture screenshots directly to your clipboard.",
                     isGranted: isScreenRecordingTrusted,
                     action: {
                         PermissionManager.shared.requestScreenRecording()
@@ -1043,27 +1036,23 @@ struct OnboardingPermissionsSlide: View {
                     }
                 )
                 
-                LaunchAtLoginRow(
-                    isLaunchAtLogin: $isLaunchAtLogin
-                )
-                
-                VStack(spacing: 6) {
+                VStack(spacing: 4) {
                     Text("Click Grant to open System Settings, then turn on the switch for Clipmory.")
-                        .font(.system(size: 11, weight: .medium, design: .monospaced))
+                        .font(.system(size: 10, weight: .medium, design: .monospaced))
                         .foregroundColor(.black.opacity(0.6))
                     
                     Text("If Clipmory is not in the list, click the '+' button below and choose Clipmory from Applications.")
-                        .font(.system(size: 10, weight: .regular, design: .monospaced))
+                        .font(.system(size: 9, weight: .regular, design: .monospaced))
                         .foregroundColor(.black.opacity(0.4))
                 }
                 .multilineTextAlignment(.center)
                 .padding(.top, 6)
             }
-            .frame(width: 460)
+            .frame(width: 440)
             .opacity(itemsOpacity)
             .offset(y: itemsOffset)
             
-            Spacer().frame(height: 36)
+            Spacer().frame(height: 20)
             
             // Next / Continue Button
             Button(action: {
@@ -1079,12 +1068,12 @@ struct OnboardingPermissionsSlide: View {
                 HStack(spacing: 8) {
                     Text(allGranted ? "Next" : "Continue")
                     Image(systemName: "arrow.right")
-                        .font(.system(size: 14, weight: .bold))
+                        .font(.system(size: 13, weight: .bold))
                 }
-                .font(.system(size: 15, weight: .bold, design: .monospaced))
+                .font(.system(size: 14, weight: .bold, design: .monospaced))
                 .foregroundColor(hasGrantedPermission ? .white : .black)
-                .frame(width: 220)
-                .padding(.vertical, 12)
+                .frame(width: 180)
+                .padding(.vertical, 11)
                 .background(hasGrantedPermission ? Color.black : Color.black.opacity(0.08))
                 .overlay(
                     RoundedRectangle(cornerRadius: 10)
@@ -1092,7 +1081,7 @@ struct OnboardingPermissionsSlide: View {
                 )
                 .cornerRadius(10)
                 .contentShape(RoundedRectangle(cornerRadius: 10))
-                .shadow(color: (hasGrantedPermission && isHoveringContinue) ? Color.black.opacity(0.25) : Color.clear, radius: 8, x: 0, y: 4)
+                .shadow(color: (hasGrantedPermission && isHoveringContinue) ? Color.black.opacity(0.25) : Color.clear, radius: 6, x: 0, y: 3)
                 .scaleEffect(isPressingContinue ? 0.96 : (isHoveringContinue ? 1.02 : 1.0))
             }
             .buttonStyle(.plain)
@@ -1115,12 +1104,12 @@ struct OnboardingPermissionsSlide: View {
                     viewModel.nextPage()
                 }) {
                     Text(hasGrantedPermission ? "Skip remaining optional permissions" : "Skip for now (you can enable anytime in Settings)")
-                        .font(.system(size: 11, weight: .medium, design: .monospaced))
+                        .font(.system(size: 10, weight: .medium, design: .monospaced))
                         .foregroundColor(.black.opacity(0.5))
                         .underline()
                 }
                 .buttonStyle(.plain)
-                .padding(.top, 8)
+                .padding(.top, 6)
                 .onHover { hovering in
                     if hovering {
                         NSCursor.pointingHand.push()
@@ -1232,46 +1221,46 @@ struct PermissionRow: View {
     @State private var isHovering = false
     
     var body: some View {
-        HStack(spacing: 16) {
+        HStack(spacing: 12) {
             Image(systemName: icon)
-                .font(.system(size: 24, weight: .light))
+                .font(.system(size: 20, weight: .light))
                 .foregroundColor(.black.opacity(0.8))
-                .frame(width: 32)
+                .frame(width: 26)
             
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: 2) {
                 Text(title)
-                    .font(.system(size: 15, weight: .bold, design: .monospaced))
+                    .font(.system(size: 13, weight: .bold, design: .monospaced))
                     .foregroundColor(.black)
                 
                 Text(description)
-                    .font(.system(size: 12, weight: .regular, design: .monospaced))
+                    .font(.system(size: 11, weight: .regular, design: .monospaced))
                     .foregroundColor(.black.opacity(0.6))
                     .fixedSize(horizontal: false, vertical: true)
-                    .lineSpacing(2)
+                    .lineSpacing(1.5)
             }
             
-            Spacer(minLength: 20)
+            Spacer(minLength: 12)
             
             if isGranted {
-                HStack(spacing: 6) {
+                HStack(spacing: 5) {
                     Image(systemName: "checkmark")
-                        .font(.system(size: 11, weight: .bold))
+                        .font(.system(size: 10, weight: .bold))
                     Text("Enabled")
-                        .font(.system(size: 12, weight: .bold, design: .monospaced))
+                        .font(.system(size: 11, weight: .bold, design: .monospaced))
                 }
                 .foregroundColor(.black)
-                .padding(.horizontal, 14)
-                .padding(.vertical, 8)
+                .padding(.horizontal, 10)
+                .padding(.vertical, 6)
                 .background(Color.black.opacity(0.05))
                 .cornerRadius(6)
                 .transition(.opacity.combined(with: .scale(scale: 0.95)))
             } else {
                 Button(action: action) {
                     Text("Grant")
-                        .font(.system(size: 12, weight: .bold, design: .monospaced))
+                        .font(.system(size: 11, weight: .bold, design: .monospaced))
                         .foregroundColor(.white)
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 8)
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 6)
                         .background(Color.black)
                         .cornerRadius(6)
                         .contentShape(RoundedRectangle(cornerRadius: 6))
@@ -1284,14 +1273,14 @@ struct PermissionRow: View {
                 .transition(.opacity)
             }
         }
-        .padding(16)
+        .padding(12)
         .background(Color.white)
-        .cornerRadius(12)
+        .cornerRadius(10)
         .overlay(
-            RoundedRectangle(cornerRadius: 12)
+            RoundedRectangle(cornerRadius: 10)
                 .stroke(isGranted ? Color.black.opacity(0.3) : Color.black.opacity(0.08), lineWidth: 1)
         )
-        .shadow(color: isHovering ? Color.black.opacity(0.06) : Color.black.opacity(0.02), radius: isHovering ? 8 : 4, x: 0, y: isHovering ? 4 : 2)
+        .shadow(color: isHovering ? Color.black.opacity(0.05) : Color.black.opacity(0.02), radius: isHovering ? 6 : 3, x: 0, y: isHovering ? 3 : 1)
         .scaleEffect(isHovering ? 1.01 : 1.0)
         .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isHovering)
         .animation(.spring(response: 0.4, dampingFraction: 0.8), value: isGranted)
@@ -1308,35 +1297,35 @@ struct LaunchAtLoginRow: View {
     @State private var isHovering = false
     
     var body: some View {
-        HStack(spacing: 16) {
+        HStack(spacing: 12) {
             Image(systemName: "macbook.and.iphone")
-                .font(.system(size: 24, weight: .light))
+                .font(.system(size: 20, weight: .light))
                 .foregroundColor(.black.opacity(0.8))
-                .frame(width: 32)
+                .frame(width: 26)
             
-            VStack(alignment: .leading, spacing: 4) {
-                HStack(spacing: 8) {
+            VStack(alignment: .leading, spacing: 2) {
+                HStack(spacing: 6) {
                     Text("Launch at Login")
-                        .font(.system(size: 15, weight: .bold, design: .monospaced))
+                        .font(.system(size: 13, weight: .bold, design: .monospaced))
                         .foregroundColor(.black)
                     
                     Text("RECOMMENDED")
-                        .font(.system(size: 9, weight: .bold, design: .monospaced))
+                        .font(.system(size: 8, weight: .bold, design: .monospaced))
                         .foregroundColor(.black)
-                        .padding(.horizontal, 6)
+                        .padding(.horizontal, 5)
                         .padding(.vertical, 2)
                         .background(Color.black.opacity(0.08))
                         .cornerRadius(4)
                 }
                 
-                Text("Start Clipmory automatically when you log in to keep your clipboard history ready.")
-                    .font(.system(size: 12, weight: .regular, design: .monospaced))
+                Text("Start Clipmory automatically when you log in.")
+                    .font(.system(size: 11, weight: .regular, design: .monospaced))
                     .foregroundColor(.black.opacity(0.6))
                     .fixedSize(horizontal: false, vertical: true)
-                    .lineSpacing(2)
+                    .lineSpacing(1.5)
             }
             
-            Spacer(minLength: 20)
+            Spacer(minLength: 12)
             
             Toggle("", isOn: $isLaunchAtLogin)
                 .toggleStyle(.switch)
@@ -1354,14 +1343,14 @@ struct LaunchAtLoginRow: View {
                     SettingsRepository.shared.save(settings)
                 }
         }
-        .padding(16)
+        .padding(12)
         .background(Color.white)
-        .cornerRadius(12)
+        .cornerRadius(10)
         .overlay(
-            RoundedRectangle(cornerRadius: 12)
+            RoundedRectangle(cornerRadius: 10)
                 .stroke(isLaunchAtLogin ? Color.black.opacity(0.3) : Color.black.opacity(0.08), lineWidth: 1)
         )
-        .shadow(color: isHovering ? Color.black.opacity(0.06) : Color.black.opacity(0.02), radius: isHovering ? 8 : 4, x: 0, y: isHovering ? 4 : 2)
+        .shadow(color: isHovering ? Color.black.opacity(0.05) : Color.black.opacity(0.02), radius: isHovering ? 6 : 3, x: 0, y: isHovering ? 3 : 1)
         .scaleEffect(isHovering ? 1.01 : 1.0)
         .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isHovering)
         .animation(.spring(response: 0.4, dampingFraction: 0.8), value: isLaunchAtLogin)
@@ -1379,31 +1368,31 @@ struct FeatureRow: View {
     let shortcut: String
     
     var body: some View {
-        HStack(spacing: 16) {
+        HStack(spacing: 12) {
             Image(systemName: icon)
-                .font(.system(size: 16, weight: .semibold))
+                .font(.system(size: 14, weight: .semibold))
                 .foregroundColor(.black)
-                .frame(width: 24, height: 24)
+                .frame(width: 20, height: 20)
             
             Text(text)
-                .font(.system(size: 14, weight: .semibold))
+                .font(.system(size: 13, weight: .semibold))
                 .foregroundColor(.black.opacity(0.85))
             
             Spacer()
             
             Text(shortcut)
-                .font(.system(size: 13, weight: .bold, design: .monospaced))
+                .font(.system(size: 11, weight: .bold, design: .monospaced))
                 .foregroundColor(.black)
-                .padding(.horizontal, 10)
-                .padding(.vertical, 6)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 4)
                 .background(Color.black.opacity(0.06))
-                .cornerRadius(6)
+                .cornerRadius(5)
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 12)
+        .padding(.horizontal, 14)
+        .padding(.vertical, 10)
         .background(Color.white)
-        .cornerRadius(12)
-        .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.black.opacity(0.08), lineWidth: 1))
+        .cornerRadius(10)
+        .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.black.opacity(0.08), lineWidth: 1))
     }
 }
 
@@ -1452,40 +1441,40 @@ struct OnboardingFinalSlide: View {
                 
                 // Sparkles around mascot
                 Sparkle(scale: star1Scale, opacity: star1Opacity, color: .black)
-                    .offset(x: -60, y: -40)
+                    .offset(x: -45, y: -30)
                 
                 Sparkle(scale: star2Scale, opacity: star2Opacity, color: .black.opacity(0.6))
-                    .offset(x: 70, y: -10)
+                    .offset(x: 55, y: -8)
                 
                 Sparkle(scale: star3Scale, opacity: star3Opacity, color: .black.opacity(0.3))
-                    .offset(x: -50, y: 50)
+                    .offset(x: -40, y: 40)
             }
             .scaleEffect(mascotScale)
             .opacity(mascotOpacity)
             .offset(y: mascotY)
             
-            Spacer().frame(height: 32)
+            Spacer().frame(height: 18)
             
             // Headline
             Text("You’re all set.")
-                .font(.system(size: 36, weight: .semibold, design: .monospaced))
+                .font(.system(size: 28, weight: .semibold, design: .monospaced))
                 .foregroundColor(.black)
                 .opacity(headingOpacity)
                 .offset(y: headingY)
             
-            Spacer().frame(height: 24)
+            Spacer().frame(height: 14)
             
             // Features / Shortcuts
-            VStack(spacing: 12) {
+            VStack(spacing: 8) {
                 FeatureRow(icon: "doc.on.clipboard", text: "Open Clipboard History", shortcut: "⌥⌘V")
                 FeatureRow(icon: "text.viewfinder", text: "Extract Text from Screen", shortcut: "⌥⌘C")
                 FeatureRow(icon: "camera.on.rectangle", text: "Capture Image to Clipboard", shortcut: "⌃⌥⌘C")
             }
-            .frame(width: 380)
+            .frame(width: 350)
             .opacity(featuresOpacity)
             .offset(y: featuresY)
             
-            Spacer().frame(height: 36)
+            Spacer().frame(height: 22)
             
             // CTA Button
             Button(action: {
@@ -1497,16 +1486,16 @@ struct OnboardingFinalSlide: View {
                     finishAndTriggerPanel()
                 }
             }) {
-                HStack(spacing: 12) {
+                HStack(spacing: 8) {
                     Text("Open Clipmory")
                     Image(systemName: "arrow.right")
-                        .font(.system(size: 16, weight: .bold))
+                        .font(.system(size: 14, weight: .bold))
                 }
-                .font(.system(size: 17, weight: .bold, design: .monospaced))
+                .font(.system(size: 15, weight: .bold, design: .monospaced))
                 .foregroundColor(.white)
-                .frame(width: 300, height: 56)
+                .frame(width: 240, height: 46)
                 .background(Color.black)
-                .cornerRadius(12)
+                .cornerRadius(10)
                 .shadow(color: isHoveringButton ? Color.black.opacity(0.15) : Color.clear, radius: 6, x: 0, y: 3)
             }
             .buttonStyle(.plain)
@@ -1609,7 +1598,7 @@ struct MascotThumbView: View {
         Image("NewMascot")
             .resizable()
             .scaledToFit()
-            .frame(width: 120, height: 140)
+            .frame(width: 80, height: 95)
     }
 }
 
@@ -1622,7 +1611,7 @@ struct Sparkle: View {
     
     var body: some View {
         Image(systemName: "sparkles")
-            .font(.system(size: 16))
+            .font(.system(size: 14))
             .foregroundColor(color)
             .scaleEffect(scale)
             .opacity(opacity)
@@ -1636,10 +1625,10 @@ struct ChecklistItem: View {
     var body: some View {
         HStack(spacing: 8) {
             Image(systemName: "checkmark")
-                .font(.system(size: 14, weight: .bold))
+                .font(.system(size: 13, weight: .bold))
                 .foregroundColor(.black)
             Text(text)
-                .font(.system(size: 15, weight: .medium, design: .monospaced))
+                .font(.system(size: 13, weight: .medium, design: .monospaced))
                 .foregroundColor(.black)
         }
     }
@@ -1648,15 +1637,20 @@ struct ChecklistItem: View {
 // MARK: - Slide 2 & 3 App Preview
 
 struct ClipmoryAppPreview: View {
+    var width: CGFloat? = nil
+    var height: CGFloat? = nil
+    var maxHeight: CGFloat? = nil
+    
     var body: some View {
         Image("AppPreview")
             .resizable()
             .scaledToFit()
-            .frame(maxWidth: 360)
-            .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
-            .shadow(color: Color.black.opacity(0.16), radius: 20, x: 0, y: 10)
+            .frame(width: width, height: height)
+            .frame(maxHeight: maxHeight)
+            .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+            .shadow(color: Color.black.opacity(0.18), radius: 24, x: 0, y: 12)
             .overlay(
-                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
                     .stroke(Color.black.opacity(0.08), lineWidth: 1)
             )
     }
@@ -1674,9 +1668,9 @@ struct PreviewCard<Content: View>: View {
     }
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 6) {
             HStack {
-                Text(app).font(.system(size: 10, weight: .bold)).foregroundColor(.white.opacity(0.4))
+                Text(app).font(.system(size: 9, weight: .bold)).foregroundColor(.white.opacity(0.4))
                 Spacer()
                 Image(systemName: "ellipsis").foregroundColor(.white.opacity(0.4))
             }
@@ -1685,19 +1679,19 @@ struct PreviewCard<Content: View>: View {
             HStack {
                 if let badge = badge {
                     Text(badge.0)
-                        .font(.system(size: 9, weight: .bold))
+                        .font(.system(size: 8, weight: .bold))
                         .foregroundColor(.white)
-                        .padding(.horizontal, 6)
+                        .padding(.horizontal, 5)
                         .padding(.vertical, 2)
                         .background(badge.1.opacity(0.4))
-                        .cornerRadius(4)
+                        .cornerRadius(3)
                 }
                 Spacer()
                 Image(systemName: "star").foregroundColor(.white.opacity(0.4))
                 Image(systemName: "pin").foregroundColor(.white.opacity(0.4))
             }
         }
-        .padding(10)
+        .padding(8)
         .background(Color(white: 0.14))
     }
 }
@@ -1708,7 +1702,7 @@ struct FeatureCallout: View {
     let description: String
     
     var body: some View {
-        HStack(alignment: .top, spacing: 16) {
+        HStack(alignment: .center, spacing: 14) {
             ZStack {
                 RoundedRectangle(cornerRadius: 10)
                     .fill(Color.white)
@@ -1722,9 +1716,10 @@ struct FeatureCallout: View {
                 }
             }
             
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: 3) {
                 Text(title)
-                    .font(.system(size: 14, weight: .bold, design: .monospaced))
+                    .font(.system(size: 15, weight: .bold, design: .monospaced))
+                    .foregroundColor(.black)
                 Text(description)
                     .font(.system(size: 12, weight: .regular, design: .monospaced))
                     .foregroundColor(.black.opacity(0.6))

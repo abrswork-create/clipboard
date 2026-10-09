@@ -17,6 +17,51 @@ enum InterfaceStyle: String, Codable, CaseIterable {
     case spacious = "Spacious"
 }
 
+enum WindowShape: String, Codable, CaseIterable {
+    case tall = "Tall"
+    case broad = "Broad"
+    
+    var icon: String {
+        switch self {
+        case .tall: return "rectangle.portrait"
+        case .broad: return "rectangle"
+        }
+    }
+    
+    var label: String {
+        switch self {
+        case .tall: return "Tall"
+        case .broad: return "Broad"
+        }
+    }
+    
+    func dimensions(scale: Double) -> CGSize {
+        let s = max(0.8, min(1.35, scale))
+        switch self {
+        case .tall:
+            return CGSize(
+                width: round(max(360, min(750, 420 * s))),
+                height: round(max(460, min(900, 560 * s)))
+            )
+        case .broad:
+            return CGSize(
+                width: round(max(440, min(750, 560 * s))),
+                height: round(max(420, min(900, 470 * s)))
+            )
+        }
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        let raw = try? container.decode(String.self)
+        if raw == "Broad" {
+            self = .broad
+        } else {
+            self = .tall
+        }
+    }
+}
+
 enum FileStorageMode: String, Codable, CaseIterable {
     case referenceOnly = "Store file reference only"
     case copyContents = "Copy file contents"
@@ -62,7 +107,7 @@ enum AutoDeleteHistory: Int, Codable, CaseIterable {
 struct AppSettings: Codable {
 
     // General
-    var launchAtLogin: Bool = false
+    var launchAtLogin: Bool = true
     var enableHistory: Bool = true // New
     var showInMenuBar: Bool = true // New
 
@@ -77,6 +122,12 @@ struct AppSettings: Codable {
     // Appearance
     var theme: AppTheme = .system
     var interfaceStyle: InterfaceStyle = .comfortable // New
+    var windowShape: WindowShape = .tall
+    var windowScale: Double = 1.0
+    
+    var effectiveWindowSize: CGSize {
+        windowShape.dimensions(scale: windowScale)
+    }
 
     // Privacy
     var excludedBundleIdentifiers: [String] = []
@@ -85,7 +136,7 @@ struct AppSettings: Codable {
     var requireAuthForSensitiveContent: Bool = true
     
     // Accessibility & Assistive
-    var assistiveAutoInsert: Bool = false
+    var assistiveAutoInsert: Bool = true
 
     // Auto-Delete
     var autoDeleteHistory: AutoDeleteHistory = .sevenDays // New
@@ -113,7 +164,7 @@ struct AppSettings: Codable {
 
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        launchAtLogin = try container.decodeIfPresent(Bool.self, forKey: .launchAtLogin) ?? false
+        launchAtLogin = try container.decodeIfPresent(Bool.self, forKey: .launchAtLogin) ?? true
         enableHistory = try container.decodeIfPresent(Bool.self, forKey: .enableHistory) ?? true
         showInMenuBar = try container.decodeIfPresent(Bool.self, forKey: .showInMenuBar) ?? true
         historyLimit = try container.decodeIfPresent(Int.self, forKey: .historyLimit) ?? 500
@@ -124,6 +175,8 @@ struct AppSettings: Codable {
         deduplicateContent = try container.decodeIfPresent(Bool.self, forKey: .deduplicateContent) ?? true
         theme = try container.decodeIfPresent(AppTheme.self, forKey: .theme) ?? .system
         interfaceStyle = try container.decodeIfPresent(InterfaceStyle.self, forKey: .interfaceStyle) ?? .comfortable
+        windowShape = try container.decodeIfPresent(WindowShape.self, forKey: .windowShape) ?? .tall
+        windowScale = try container.decodeIfPresent(Double.self, forKey: .windowScale) ?? 1.0
         excludedBundleIdentifiers = try container.decodeIfPresent([String].self, forKey: .excludedBundleIdentifiers) ?? []
         sensitiveContentDetection = try container.decodeIfPresent(Bool.self, forKey: .sensitiveContentDetection) ?? true
         sensitiveContentAction = try container.decodeIfPresent(SensitiveContentAction.self, forKey: .sensitiveContentAction) ?? .hide

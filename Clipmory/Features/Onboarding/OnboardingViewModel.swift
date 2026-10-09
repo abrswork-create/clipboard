@@ -25,6 +25,12 @@ final class OnboardingViewModel: ObservableObject {
     
     func completeOnboarding() {
         UserDefaults.standard.set(true, forKey: "hasCompletedOnboarding")
+        var settings = SettingsRepository.shared.load()
+        if !settings.launchAtLogin {
+            settings.launchAtLogin = true
+            SettingsRepository.shared.save(settings)
+        }
+        _ = LaunchAtLoginManager.shared.setLaunchAtLogin(true)
         onComplete?()
     }
 }

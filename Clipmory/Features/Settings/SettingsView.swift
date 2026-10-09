@@ -121,6 +121,22 @@ struct GeneralSettingsView: View {
                     showDivider: true,
                     isOn: $settings.enableHistory
                 )
+
+                SettingsToggleRow(
+                    title: "Auto-Paste on Click",
+                    subtitle: "Automatically insert (⌘+V) into active application when an item is selected.",
+                    showDivider: true,
+                    isOn: Binding(
+                        get: { settings.assistiveAutoInsert },
+                        set: { newValue in
+                            settings.assistiveAutoInsert = newValue
+                            save()
+                            if newValue && !PermissionManager.shared.isAccessibilityGranted {
+                                PermissionManager.shared.requestAccessibility()
+                            }
+                        }
+                    )
+                )
                 
                 SettingsToggleRow(
                     title: "Launch at Login",
@@ -271,7 +287,7 @@ struct AppearanceSettingsView: View {
     var body: some View {
         VStack(spacing: 24) {
             SettingsSection {
-                SettingsRow(title: "Theme", subtitle: "Application color scheme.", showDivider: true) {
+                SettingsRow(title: "Theme", subtitle: "Application color scheme.", showDivider: false) {
                     Picker("", selection: $settings.theme) {
                         ForEach(AppTheme.allCases, id: \.self) { theme in
                             Text(theme.rawValue).tag(theme)
@@ -281,16 +297,56 @@ struct AppearanceSettingsView: View {
                     .labelsHidden()
                     .frame(width: 160)
                 }
-                
-                SettingsRow(title: "Interface Style", subtitle: "Density of the clipboard items.", showDivider: false) {
-                    Picker("", selection: $settings.interfaceStyle) {
-                        ForEach(InterfaceStyle.allCases, id: \.self) { style in
-                            Text(style.rawValue).tag(style)
+            }
+            
+            SettingsSection {
+                SettingsRow(
+                    title: "Window Shape",
+                    subtitle: "Choose panel proportion: Tall (vertical) or Broad (wide).",
+                    showDivider: true
+                ) {
+                    Picker("", selection: $settings.windowShape) {
+                        ForEach(WindowShape.allCases, id: \.self) { shape in
+                            Text(shape.label).tag(shape)
                         }
                     }
-                    .pickerStyle(.menu)
-                    .labelsHidden()
-                    .frame(width: 160)
+                    .pickerStyle(.segmented)
+                    .frame(width: 170)
+                }
+                
+                SettingsRow(
+                    title: "Window Size",
+                    subtitle: "\(Int(round(settings.windowScale * 100)))% • \(Int(settings.effectiveWindowSize.width)) × \(Int(settings.effectiveWindowSize.height)) pt",
+                    showDivider: false
+                ) {
+                    HStack(spacing: 10) {
+                        Button {
+                            let next = max(0.8, round((settings.windowScale - 0.05) * 100) / 100)
+                            if next != settings.windowScale {
+                                settings.windowScale = next
+                            }
+                        } label: {
+                            Image(systemName: "minus")
+                                .font(.system(size: 10, weight: .bold))
+                                .foregroundStyle(.secondary)
+                        }
+                        .buttonStyle(.plain)
+                        
+                        Slider(value: $settings.windowScale, in: 0.8...1.35, step: 0.05)
+                            .frame(width: 180)
+                        
+                        Button {
+                            let next = min(1.35, round((settings.windowScale + 0.05) * 100) / 100)
+                            if next != settings.windowScale {
+                                settings.windowScale = next
+                            }
+                        } label: {
+                            Image(systemName: "plus")
+                                .font(.system(size: 10, weight: .bold))
+                                .foregroundStyle(.secondary)
+                        }
+                        .buttonStyle(.plain)
+                    }
                 }
             }
         }
@@ -298,9 +354,22 @@ struct AppearanceSettingsView: View {
             save()
             NotificationCenter.default.post(name: NSNotification.Name("clipmoryThemeChanged"), object: nil)
         }
-        .onChange(of: settings.interfaceStyle) { _ in
+        .onChange(of: settings.windowShape) { _ in
             save()
-            NotificationCenter.default.post(name: NSNotification.Name("clipmoryInterfaceStyleChanged"), object: nil)
+            NotificationCenter.default.post(name: AppDelegate.windowSizeChangedNotification, object: nil)
+        }
+        .onChange(of: settings.windowScale) { _ in
+            save()
+            NotificationCenter.default.post(name: AppDelegate.windowSizeChangedNotification, object: nil)
+        }
+        .onReceive(NotificationCenter.default.publisher(for: AppDelegate.windowSizeChangedNotification)) { _ in
+            settings = SettingsRepository.shared.load()
+        }
+        .onAppear {
+            AppDelegate.shared?.showAppearancePreview()
+        }
+        .onDisappear {
+            AppDelegate.shared?.stopAppearancePreview()
         }
     }
     
@@ -646,6 +715,16 @@ struct AboutSettingsView: View {
                                let url = URL(string: "https://www.facebook.com/sharer/sharer.php?u=https://clipmory.app&quote=\(textEncoded)") {
                                 NSWorkspace.shared.open(url)
                             }
+                        }
+                    }
+                }
+            }
+            
+            SettingsSection {
+                SettingsRow(title: "Welcome Guide", subtitle: "Revisit the first-launch introduction and shortcuts tour.", showDivider: false) {
+                    Button("Show Tour") {
+                        if let appDelegate = NSApp.delegate as? AppDelegate {
+                            appDelegate.openOnboardingWindow()
                         }
                     }
                 }

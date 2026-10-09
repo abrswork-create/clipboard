@@ -53,7 +53,14 @@ struct ClipboardHistoryView: View {
         .animation(.spring(response: 0.3, dampingFraction: 0.8), value: viewModel.isSelectionMode)
         .animation(.spring(response: 0.3, dampingFraction: 0.8), value: viewModel.selectedItemIDs.count)
         .onExitCommand {
-            viewModel.clearSelection()
+            if viewModel.activeActionItemID != nil {
+                viewModel.closeActionItem()
+            } else {
+                viewModel.clearSelection()
+            }
+        }
+        .onDisappear {
+            viewModel.closeActionItem()
         }
         .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("clipmoryWindowWillOpen"))) { _ in
             viewModel.clearSelection()
@@ -202,6 +209,7 @@ struct ClipboardHistoryView: View {
                 HStack(spacing: 6) {
                     // Multi-select toggle button
                     Button {
+                        viewModel.closeActionItem()
                         withAnimation(.easeInOut(duration: 0.15)) {
                             if viewModel.isSelectionMode {
                                 viewModel.clearSelection()
@@ -242,6 +250,7 @@ struct ClipboardHistoryView: View {
                     .fixedSize()
 
                     Button {
+                        viewModel.closeActionItem()
                         viewModel.clearAll()
                     } label: {
                         Text("Clear all")
@@ -283,6 +292,9 @@ struct ClipboardHistoryView: View {
                     .font(.system(size: 13))
                     .accessibilityLabel("Search clipboard")
                     .accessibilityHint("Type keywords to filter clipboard history")
+                    .onChange(of: viewModel.searchQuery) { _ in
+                        viewModel.closeActionItem()
+                    }
                 
                 if !viewModel.searchQuery.isEmpty {
                     Button {
@@ -365,6 +377,11 @@ struct ClipboardHistoryView: View {
             .padding(.bottom, (viewModel.isSelectionMode || !viewModel.selectedItemIDs.isEmpty) ? 58 : 0)
             .animation(.easeInOut(duration: 0.2), value: displayItems)
         }
+        .simultaneousGesture(
+            TapGesture().onEnded {
+                viewModel.closeActionItem()
+            }
+        )
     }
 
     // MARK: - Card Row
@@ -373,7 +390,13 @@ struct ClipboardHistoryView: View {
         ClipboardItemRow(
             item: item,
             isSelected: viewModel.selectedItemID == item.id,
-            onSelect:      { viewModel.selectItem(item.id) },
+            onSelect: {
+                if viewModel.activeActionItemID != nil {
+                    viewModel.closeActionItem()
+                } else {
+                    viewModel.selectItem(item.id)
+                }
+            },
             onDelete:      { viewModel.deleteItem(item.id) },
             onPin:         { viewModel.togglePin(item.id) },
             onFavorite:    { viewModel.toggleFavorite(item.id) },
@@ -383,7 +406,10 @@ struct ClipboardHistoryView: View {
             isInMultiSelect: viewModel.selectedItemIDs.contains(item.id),
             onToggleMultiSelect: { viewModel.toggleSelection(for: item.id) },
             onShiftSelect: { viewModel.selectRange(to: item.id, in: displayItems) },
-            onCommandSelect: { viewModel.toggleSelection(for: item.id) }
+            onCommandSelect: { viewModel.toggleSelection(for: item.id) },
+            isActionsExpanded: viewModel.activeActionItemID == item.id,
+            onToggleActions: { viewModel.toggleActionItem(item.id) },
+            onCloseActions: { viewModel.closeActionItem() }
         )
     }
 

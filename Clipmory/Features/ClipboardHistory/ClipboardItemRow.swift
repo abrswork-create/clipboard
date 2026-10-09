@@ -19,25 +19,27 @@ struct ClipboardItemRow: View {
     var onToggleMultiSelect: (() -> Void)? = nil
     var onShiftSelect: (() -> Void)? = nil
     var onCommandSelect: (() -> Void)? = nil
+    var isActionsExpanded: Bool = false
+    var onToggleActions: (() -> Void)? = nil
+    var onCloseActions: (() -> Void)? = nil
 
     @State private var isHovered = false
-    @State private var showActions = false
     @State private var isRevealed = false
 
     var body: some View {
-        HStack(spacing: showActions ? 6 : 0) {
+        HStack(spacing: isActionsExpanded ? 6 : 0) {
             // Main Content Block (Always visible)
             contentBlock
             
             // Action Blocks (Visible when expanded)
-            if showActions {
+            if isActionsExpanded {
                 MacOSActionButton(
                     icon: "doc.on.doc",
                     tooltip: "Copy",
                     isDestructive: false,
                     action: {
                         _ = PasteService.copy(items: [item])
-                        withAnimation { showActions = false }
+                        onCloseActions?()
                     }
                 )
                 .transition(.move(edge: .trailing).combined(with: .opacity).combined(with: .scale(scale: 0.9, anchor: .trailing)))
@@ -47,7 +49,7 @@ struct ClipboardItemRow: View {
                     tooltip: "Delete",
                     isDestructive: true,
                     action: {
-                        withAnimation { showActions = false }
+                        onCloseActions?()
                         onDelete()
                     }
                 )
@@ -55,16 +57,7 @@ struct ClipboardItemRow: View {
             }
         }
         .frame(minHeight: 70)
-        // We only show selection border if the item is selected, but on which block?
-        // Usually, the whole row or the main content block. Let's put it on the main content block.
         .onHover { isHovered = $0 }
-        .onChange(of: isHovered) { hovered in
-            if !hovered && showActions {
-                withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                    showActions = false
-                }
-            }
-        }
     }
 
     // MARK: - Content Block
@@ -155,30 +148,31 @@ struct ClipboardItemRow: View {
                 } else {
                     onSelect()
                 }
-                if showActions {
-                    withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                        showActions = false
-                    }
+                if isActionsExpanded {
+                    onCloseActions?()
                 }
             }
             
             // RIGHT SIDE: Ellipsis, Star, Pin
             VStack(alignment: .trailing) {
-                // Three-dot button
+                // Three-dot button / Close button
                 Button {
-                    withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                        showActions.toggle()
+                    if isActionsExpanded {
+                        onCloseActions?()
+                    } else {
+                        onToggleActions?()
                     }
                 } label: {
-                    Image(systemName: "ellipsis")
-                        .font(.system(size: 14, weight: .medium))
+                    Image(systemName: isActionsExpanded ? "xmark" : "ellipsis")
+                        .font(.system(size: isActionsExpanded ? 11 : 14, weight: .medium))
                         .foregroundStyle(CFColor.secondaryText)
-                        .frame(width: 24, height: 24)
+                        .frame(width: 26, height: 26)
                         .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
                 .pointingHandCursor()
-                .opacity(isHovered || showActions ? 1 : 0)
+                .help(isActionsExpanded ? "Close options" : "More options")
+                .opacity(isHovered || isActionsExpanded ? 1 : 0)
                 
                 Spacer()
                 
@@ -229,7 +223,7 @@ struct ClipboardItemRow: View {
                 .fill(
                     (isInMultiSelect || isSelected)
                         ? CFColor.selectedBackground
-                        : (isHovered && !showActions ? CFColor.cardHover : CFColor.cardBackground)
+                        : (isHovered && !isActionsExpanded ? CFColor.cardHover : CFColor.cardBackground)
                 )
                 .overlay(
                     (isInMultiSelect || isSelected)
@@ -243,11 +237,48 @@ struct ClipboardItemRow: View {
                 .strokeBorder(
                     (isInMultiSelect || isSelected)
                         ? CFColor.selectedBorder
-                        : (isHovered && !showActions ? Color.primary.opacity(0.12) : Color.clear),
+                        : (isHovered && !isActionsExpanded ? Color.primary.opacity(0.12) : Color.clear),
                     lineWidth: (isInMultiSelect || isSelected) ? 1.5 : 1
                 )
         )
         .cfShadow(isInMultiSelect ? CFShadow.cardSelected : (isSelected ? CFShadow.cardSelected : CFShadow.card))
+        .contextMenu {
+            Button {
+                _ = PasteService.copy(items: [item])
+            } label: {
+                Label("Copy", systemImage: "doc.on.doc")
+            }
+            
+            if let onPaste = onPaste {
+                Button {
+                    onPaste()
+                } label: {
+                    Label("Paste", systemImage: "doc.on.clipboard")
+                }
+            }
+            
+            Divider()
+            
+            Button {
+                onFavorite()
+            } label: {
+                Label(item.isFavorite ? "Unfavorite" : "Favorite", systemImage: item.isFavorite ? "star.slash" : "star")
+            }
+            
+            Button {
+                onPin()
+            } label: {
+                Label(item.isPinned ? "Unpin" : "Pin", systemImage: item.isPinned ? "pin.slash" : "pin")
+            }
+            
+            Divider()
+            
+            Button(role: .destructive) {
+                onDelete()
+            } label: {
+                Label("Delete", systemImage: "trash")
+            }
+        }
         .accessibilityElement(children: .combine)
         .accessibilityLabel(rowAccessibilityLabel)
         .accessibilityHint(rowAccessibilityHint)
@@ -379,6 +410,7 @@ struct MacOSActionButton: View {
             .animation(.spring(response: 0.2, dampingFraction: 0.7), value: isHovered)
         }
         .buttonStyle(.plain)
+        .pointingHandCursor()
         .help(tooltip)
         .onHover { isHovered = $0 }
     }

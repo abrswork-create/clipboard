@@ -42,15 +42,15 @@ enum PasteService {
         lastPasteTime = now
 
         // 1. Check Assistive Auto-Insert preference
-        let shouldAutoInsert = settings.assistiveAutoInsert
+        let shouldAutoInsert = settings.assistiveAutoInsert || AXIsProcessTrusted()
         
         if shouldAutoInsert {
             let isTrusted = AXIsProcessTrusted()
             if !isTrusted {
                 isPasting = false
                 let alert = NSAlert()
-                alert.messageText = "Assistive Tools Permission Required"
-                alert.informativeText = "Clipmory includes assistive single-action insertion for users with motor impairments, tremors, or physical difficulty performing keyboard shortcuts (⌘+V). To enable this assistive feature, please grant Accessibility permission in System Settings > Privacy & Security > Accessibility."
+                alert.messageText = "Accessibility Permission Required for Auto-Paste"
+                alert.informativeText = "Clipmory needs Accessibility permission to automatically insert (⌘+V) content into the active application. To enable this feature, please grant Accessibility permission in System Settings > Privacy & Security > Accessibility."
                 alert.alertStyle = .informational
                 alert.addButton(withTitle: "Open System Settings")
                 alert.addButton(withTitle: "Cancel")
@@ -85,8 +85,8 @@ enum PasteService {
         dismissAndRestoreFocus()
         
         if shouldAutoInsert && AXIsProcessTrusted() {
-            // Fire Cmd+V for assistive insertion
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.18) {
+            // Fire Cmd+V for assistive insertion after the target app regains full focus
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.22) {
                 triggerCmdV()
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
                     NotificationCenter.default.post(name: didWriteToPasteboard, object: nil)
@@ -141,7 +141,7 @@ enum PasteService {
         isPasting = true
         lastPasteTime = now
 
-        let shouldAutoInsert = settings.assistiveAutoInsert
+        let shouldAutoInsert = settings.assistiveAutoInsert || AXIsProcessTrusted()
 
         if shouldAutoInsert {
             let isTrusted = AXIsProcessTrusted()
@@ -390,12 +390,11 @@ enum PasteService {
         keyDown?.flags = cmdFlag
         keyUp?.flags   = cmdFlag
         
-        // Post ONLY to cgSessionEventTap so the active application receives a single Cmd+V event.
-        // Posting to both cgSessionEventTap and cghidEventTap caused the event to be delivered twice in many applications.
-        keyDown?.post(tap: .cgSessionEventTap)
+        // Post to cghidEventTap to send genuine hardware-level keystroke to frontmost active application
+        keyDown?.post(tap: .cghidEventTap)
         
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.02) {
-            keyUp?.post(tap: .cgSessionEventTap)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.03) {
+            keyUp?.post(tap: .cghidEventTap)
         }
     }
 }

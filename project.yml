@@ -60,6 +60,7 @@ targets:
         SUFeedURL: "https://clipmory.app/appcast.xml"
         SUEnableAutomaticChecks: true
         SUScheduledCheckInterval: 86400
+        SUPublicEDKey: "3SHRVj9pgNTHywsT3TQkBNXTgdHwUkJe3u8qVTbvFNc="
         CFBundleURLTypes:
           - CFBundleTypeRole: Editor
             CFBundleURLName: com.clipmory.app

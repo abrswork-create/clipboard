@@ -25,6 +25,33 @@ final class ClipboardHistoryViewModel: ObservableObject {
     @Published var anchorItemID: UUID? = nil
     private var baseSelectedIDs: Set<UUID> = []
 
+    // MARK: - Expanded Actions Item
+    @Published var activeActionItemID: UUID? = nil
+    private var lastClosedActionItemID: UUID? = nil
+    private var lastClosedActionItemTime: Date = .distantPast
+
+    func toggleActionItem(_ id: UUID) {
+        if lastClosedActionItemID == id && Date().timeIntervalSince(lastClosedActionItemTime) < 0.25 {
+            return
+        }
+        withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+            if activeActionItemID == id {
+                activeActionItemID = nil
+            } else {
+                activeActionItemID = id
+            }
+        }
+    }
+
+    func closeActionItem() {
+        guard let id = activeActionItemID else { return }
+        lastClosedActionItemID = id
+        lastClosedActionItemTime = Date()
+        withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+            activeActionItemID = nil
+        }
+    }
+
     // MARK: Private
     private let store: ClipboardStore
 
@@ -46,6 +73,7 @@ final class ClipboardHistoryViewModel: ObservableObject {
             selectedItemID = nil
             anchorItemID = nil
             baseSelectedIDs.removeAll()
+            activeActionItemID = nil
         }
         
         if let item = store.items.first(where: { $0.id == id }) {
@@ -117,6 +145,7 @@ final class ClipboardHistoryViewModel: ObservableObject {
             baseSelectedIDs.removeAll()
             anchorItemID = nil
             isSelectionMode = false
+            activeActionItemID = nil
         }
     }
 

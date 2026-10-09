@@ -49,5 +49,7 @@
 	<string>https://clipmory.app/appcast.xml</string>
 	<key>SUScheduledCheckInterval</key>
 	<integer>86400</integer>
+	<key>SUPublicEDKey</key>
+	<string>3SHRVj9pgNTHywsT3TQkBNXTgdHwUkJe3u8qVTbvFNc=</string>
 </dict>
 </plist>

@@ -36,6 +36,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
 
     static let windowWillOpenNotification = Notification.Name("clipmoryWindowWillOpen")
     static let clipFlowWindowWillOpen = windowWillOpenNotification
+    static let windowSizeChangedNotification = Notification.Name("clipmoryWindowSizeChanged")
 
     private var window: NSWindow?
     private var settingsWindow: NSWindow?
@@ -47,6 +48,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
     // Core clipboard pipeline — owned here and injected downward
     private let clipboardStore   = ClipboardStore()
     private var clipboardMonitor: ClipboardMonitor?
+    private(set) var isSettingsPreviewActive = false
 
     // MARK: NSApplicationDelegate
 
@@ -82,6 +84,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
             queue: .main
         ) { [weak self] _ in
             self?.stopClickOutsideMonitor()
+        }
+
+        NotificationCenter.default.addObserver(
+            forName: AppDelegate.windowSizeChangedNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            self?.applyWindowSize()
         }
     }
 
@@ -186,20 +196,110 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
     }
 
     func windowDidResignKey(_ notification: Notification) {
+        guard !isSettingsPreviewActive else { return }
         if let win = notification.object as? NSWindow, win == self.window {
             closeMainWindow()
         }
     }
 
     func windowDidResignMain(_ notification: Notification) {
+        guard !isSettingsPreviewActive else { return }
         if let win = notification.object as? NSWindow, win == self.window {
             closeMainWindow()
         }
     }
 
+    func applyWindowSize() {
+        let win = ensureMainWindowCreated()
+        let settings = SettingsRepository.shared.load()
+        let targetSize = settings.effectiveWindowSize
+
+        // If settings window is currently visible and preview is not showing, show preview
+        if let sWin = settingsWindow, sWin.isVisible, !isSettingsPreviewActive {
+            showAppearancePreview()
+            return
+        }
+
+        guard win.frame.size != targetSize else { return }
+        
+        if isSettingsPreviewActive, let sWin = settingsWindow, sWin.isVisible {
+            var frame = win.frame
+            frame.size = targetSize
+            win.setFrame(frame, display: true, animate: false)
+            win.setContentSize(targetSize)
+            win.contentViewController?.view.setFrameSize(targetSize)
+            positionPreviewWindow(win, relativeTo: sWin)
+        } else {
+            var frame = win.frame
+            let oldHeight = frame.size.height
+            frame.size = targetSize
+            frame.origin.y += (oldHeight - targetSize.height)
+
+            if let screen = win.screen ?? NSScreen.main {
+                let visible = screen.visibleFrame
+                frame.origin.x = max(visible.minX, min(frame.origin.x, visible.maxX - frame.size.width))
+                frame.origin.y = max(visible.minY, min(frame.origin.y, visible.maxY - frame.size.height))
+            }
+
+            win.setFrame(frame, display: true, animate: false)
+            win.setContentSize(targetSize)
+            win.contentViewController?.view.setFrameSize(targetSize)
+        }
+    }
+
+    func showAppearancePreview() {
+        isSettingsPreviewActive = true
+        stopClickOutsideMonitor()
+        let win = ensureMainWindowCreated()
+        
+        let settings = SettingsRepository.shared.load()
+        let targetSize = settings.effectiveWindowSize
+        win.setContentSize(targetSize)
+        win.contentViewController?.view.setFrameSize(targetSize)
+        var frame = win.frame
+        frame.size = targetSize
+        win.setFrame(frame, display: false, animate: false)
+
+        if let sWin = settingsWindow, sWin.isVisible {
+            positionPreviewWindow(win, relativeTo: sWin)
+        }
+
+        NotificationCenter.default.post(name: AppDelegate.windowWillOpenNotification, object: nil)
+        win.orderFront(nil)
+    }
+
+    func stopAppearancePreview() {
+        guard isSettingsPreviewActive else { return }
+        isSettingsPreviewActive = false
+        window?.orderOut(nil)
+    }
+
+    private func positionPreviewWindow(_ win: NSWindow, relativeTo sWin: NSWindow) {
+        let sFrame = sWin.frame
+        let targetSize = win.frame.size
+        let screen = sWin.screen ?? NSScreen.main ?? NSScreen.screens.first ?? NSScreen()
+        let visible = screen.visibleFrame
+        let gap: CGFloat = 20
+
+        var x: CGFloat = 0
+        if sFrame.maxX + gap + targetSize.width <= visible.maxX {
+            x = sFrame.maxX + gap
+        } else if sFrame.minX - gap - targetSize.width >= visible.minX {
+            x = sFrame.minX - gap - targetSize.width
+        } else {
+            x = max(visible.minX + 10, visible.maxX - targetSize.width - 10)
+        }
+
+        var y = sFrame.maxY - targetSize.height
+        y = max(visible.minY + 10, min(y, visible.maxY - targetSize.height - 10))
+
+        win.setFrameOrigin(NSPoint(x: x, y: y))
+    }
+
     func closeMainWindow() {
         guard !PrivacyManager.shared.isAuthenticating else { return }
         stopClickOutsideMonitor()
+        isSettingsPreviewActive = false
         window?.orderOut(nil)
     }
 
@@ -207,6 +307,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         stopClickOutsideMonitor()
         clickOutsideMonitor = NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown]) { [weak self] _ in
             guard let self = self, let win = self.window, win.isVisible else { return }
+            guard !self.isSettingsPreviewActive else { return }
             guard !PrivacyManager.shared.isAuthenticating else { return }
             let clickLocation = NSEvent.mouseLocation
             if !win.frame.contains(clickLocation) {
@@ -279,6 +380,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         let menu = NSMenu()
         menu.addItem(NSMenuItem(title: "Open Clipmory", action: #selector(openMainWindowAction), keyEquivalent: ""))
         menu.addItem(NSMenuItem.separator())
+        menu.addItem(NSMenuItem(title: "Welcome Guide...", action: #selector(openOnboardingAction), keyEquivalent: ""))
         menu.addItem(NSMenuItem(title: "Settings...", action: #selector(openSettings), keyEquivalent: ","))
 #if !APP_STORE
         menu.addItem(NSMenuItem(title: "Check for Updates...", action: #selector(checkForUpdates), keyEquivalent: "u"))
@@ -290,6 +392,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
 
     @objc private func openMainWindowAction() {
         openMainWindow()
+    }
+    
+    @objc private func openOnboardingAction() {
+        closeMainWindow()
+        openOnboardingWindow()
     }
     
     @objc private func checkForUpdates() {
@@ -322,6 +429,25 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         win.collectionBehavior = [.moveToActiveSpace]
         
         settingsWindow = win
+        
+        NotificationCenter.default.addObserver(
+            forName: NSWindow.willCloseNotification,
+            object: win,
+            queue: .main
+        ) { [weak self] _ in
+            self?.stopAppearancePreview()
+            self?.settingsWindow = nil
+        }
+
+        NotificationCenter.default.addObserver(
+            forName: NSWindow.didMoveNotification,
+            object: win,
+            queue: .main
+        ) { [weak self] _ in
+            guard let self = self, self.isSettingsPreviewActive, let pWin = self.window, let sWin = self.settingsWindow else { return }
+            self.positionPreviewWindow(pWin, relativeTo: sWin)
+        }
+
         win.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)
     }
@@ -378,7 +504,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
             openMainWindow()
             return
         }
-        if win.isVisible {
+        if win.isVisible && !isSettingsPreviewActive {
             closeMainWindow()
         } else {
             recordPreviousApp()
@@ -386,7 +512,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         }
     }
 
-    private func openOnboardingWindow() {
+    func openOnboardingWindow() {
         NSApp.setActivationPolicy(.regular)
         if let existing = onboardingWindow {
             existing.center()
@@ -407,7 +533,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         let hostingController = NSHostingController(rootView: OnboardingView(viewModel: viewModel))
         
         let win = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 900, height: 900),
+            contentRect: NSRect(x: 0, y: 0, width: 740, height: 640),
             styleMask: [.titled, .closable, .fullSizeContentView],
             backing: .buffered,
             defer: false
@@ -435,31 +561,24 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         NSApp.activate(ignoringOtherApps: true)
     }
 
-    private func openMainWindow() {
-        recordPreviousApp()
-        PrivacyManager.shared.resetSessionAuth()
+    @discardableResult
+    func ensureMainWindowCreated() -> NSWindow {
         if let existing = window {
-            if NSApp.isHidden {
-                NSApp.unhideWithoutActivation()
-            }
-            moveWindowNearCursor(existing)
-            NotificationCenter.default.post(name: AppDelegate.windowWillOpenNotification, object: nil)
-            existing.orderFrontRegardless()
-            existing.makeKeyAndOrderFront(nil)
-            NSApp.activate(ignoringOtherApps: true)
-            startClickOutsideMonitor()
-            return
+            return existing
         }
+
+        let settings = SettingsRepository.shared.load()
+        let targetSize = settings.effectiveWindowSize
 
         let panelView = MainPanelView(store: clipboardStore, onClose: { [weak self] in
             self?.closeMainWindow()
         })
 
         let hostingController = NSHostingController(rootView: panelView)
-        hostingController.view.setFrameSize(NSSize(width: 420, height: 560))
+        hostingController.view.setFrameSize(NSSize(width: targetSize.width, height: targetSize.height))
 
         let win = ClipboardPanel(
-            contentRect: NSRect(x: 0, y: 0, width: 420, height: 560),
+            contentRect: NSRect(x: 0, y: 0, width: targetSize.width, height: targetSize.height),
             styleMask: [.titled, .fullSizeContentView],
             backing: .buffered,
             defer: false
@@ -470,9 +589,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         win.titleVisibility = .hidden
         win.isMovableByWindowBackground = true
         win.contentViewController = hostingController
-        win.setContentSize(NSSize(width: 420, height: 560))
-        win.minSize = NSSize(width: 420, height: 560)
-        win.maxSize = NSSize(width: 420, height: 560)
+        win.setContentSize(NSSize(width: targetSize.width, height: targetSize.height))
+        win.showsResizeIndicator = false
         
         // Setup window for transparent blur effect
         win.backgroundColor = .clear
@@ -486,14 +604,44 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         win.standardWindowButton(.miniaturizeButton)?.isHidden = true
         win.standardWindowButton(.zoomButton)?.isHidden = true
 
-        moveWindowNearCursor(win)
         win.delegate = self
+        self.window = win
+        return win
+    }
+
+    private func openMainWindow() {
+        recordPreviousApp()
+        PrivacyManager.shared.resetSessionAuth()
+
+        // Ensure settings window is not brought forward when summoning the clipboard
+        if let settingsWin = settingsWindow, settingsWin.isVisible || settingsWin.isMiniaturized {
+            stopAppearancePreview()
+            settingsWin.orderOut(nil)
+        } else {
+            isSettingsPreviewActive = false
+        }
+
+        let settings = SettingsRepository.shared.load()
+        let targetSize = settings.effectiveWindowSize
+        let win = ensureMainWindowCreated()
+
+        if NSApp.isHidden {
+            NSApp.unhideWithoutActivation()
+        }
+        if win.frame.size != targetSize {
+            var frame = win.frame
+            let oldHeight = frame.size.height
+            frame.size = targetSize
+            frame.origin.y += (oldHeight - targetSize.height)
+            win.setFrame(frame, display: true, animate: false)
+            win.setContentSize(targetSize)
+            win.contentViewController?.view.setFrameSize(targetSize)
+        }
+        moveWindowNearCursor(win)
         NotificationCenter.default.post(name: AppDelegate.windowWillOpenNotification, object: nil)
         win.orderFrontRegardless()
         win.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)
-
-        self.window = win
         startClickOutsideMonitor()
     }
 

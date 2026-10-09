@@ -31,11 +31,33 @@ else
     codesign -o runtime --entitlements "Clipmory/Resources/Clipmory.entitlements" --force --deep --sign - "$DIST_DIR/staging/Clipmory.app"
 fi
 
-# Create Applications symlink for drag-and-drop
-ln -s /Applications "$DIST_DIR/staging/Applications"
+echo "💿 [3/4] Creating styled Clipmory.dmg..."
+# Generate / verify DMG background assets if needed
+if [ ! -f "Clipmory/Resources/DMG/background.tiff" ]; then
+    python3 scripts/generate_dmg_assets.py
+fi
 
-echo "💿 [3/4] Creating Clipmory.dmg..."
-hdiutil create -volname "Clipmory" -srcfolder "$DIST_DIR/staging" -ov -format UDZO "$DIST_DIR/Clipmory.dmg" > /dev/null
+if command -v create-dmg &>/dev/null; then
+    rm -f "$DIST_DIR/staging/Applications"
+    create-dmg \
+      --volname "Clipmory" \
+      --volicon "Clipmory/Resources/AppIcon.icns" \
+      --background "Clipmory/Resources/DMG/background.tiff" \
+      --window-pos 200 120 \
+      --window-size 660 420 \
+      --icon-size 130 \
+      --text-size 13 \
+      --icon "Clipmory.app" 175 205 \
+      --hide-extension "Clipmory.app" \
+      --app-drop-link 485 205 \
+      --no-internet-enable \
+      --overwrite \
+      "$DIST_DIR/Clipmory.dmg" \
+      "$DIST_DIR/staging"
+else
+    ln -sf /Applications "$DIST_DIR/staging/Applications"
+    hdiutil create -volname "Clipmory" -srcfolder "$DIST_DIR/staging" -ov -format UDZO "$DIST_DIR/Clipmory.dmg" > /dev/null
+fi
 
 if [ -n "$DEV_ID" ]; then
     codesign --force --timestamp --sign "$DEV_ID" "$DIST_DIR/Clipmory.dmg" 2>/dev/null || true
@@ -43,16 +65,65 @@ fi
 
 ditto -c -k --sequesterRsrc --keepParent "$DIST_DIR/staging/Clipmory.app" "$DIST_DIR/Clipmory.zip"
 
+# Generate and cryptographically sign Sparkle appcast.xml
+SPARKLE_BIN=$(find "./build" -name "sign_update" 2>/dev/null | head -n 1)
+if [ -f "scripts/sparkle_priv.key" ] && [ -n "$SPARKLE_BIN" ]; then
+    echo "✨ Generating Sparkle appcast.xml with EdDSA cryptographic signature..."
+    SIGN_OUTPUT=$("$SPARKLE_BIN" -f "scripts/sparkle_priv.key" "$DIST_DIR/Clipmory.zip")
+    ED_SIG=$(echo "$SIGN_OUTPUT" | sed -n 's/.*sparkle:edSignature="\([^"]*\)".*/\1/p')
+    ZIP_LEN=$(stat -f%z "$DIST_DIR/Clipmory.zip")
+    APP_VERSION=$(/usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" "$DIST_DIR/staging/Clipmory.app/Contents/Info.plist")
+    BUILD_NUM=$(/usr/libexec/PlistBuddy -c "Print :CFBundleVersion" "$DIST_DIR/staging/Clipmory.app/Contents/Info.plist")
+    PUB_DATE=$(date -R 2>/dev/null || date +"%a, %d %b %Y %H:%M:%S %z")
+
+    cat <<EOF > "$DIST_DIR/appcast.xml"
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
+    <channel>
+        <title>Clipmory</title>
+        <link>https://clipmory.app/</link>
+        <description>Clipmory Updates</description>
+        <language>en</language>
+        <item>
+            <title>Clipmory $APP_VERSION</title>
+            <pubDate>$PUB_DATE</pubDate>
+            <sparkle:version>$BUILD_NUM</sparkle:version>
+            <sparkle:shortVersionString>$APP_VERSION</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>13.0</sparkle:minimumSystemVersion>
+            <enclosure url="https://clipmory.app/Clipmory.zip"
+                       sparkle:edSignature="$ED_SIG"
+                       length="$ZIP_LEN"
+                       type="application/octet-stream" />
+        </item>
+    </channel>
+</rss>
+EOF
+    echo "✅ appcast.xml generated (Version: $APP_VERSION, Build: $BUILD_NUM)"
+fi
+
 if [ -d "../../website" ]; then
     echo "🌐 [4/4] Copying to website folder..."
     cp "$DIST_DIR/Clipmory.dmg" "../../website/Clipmory.dmg"
     cp "$DIST_DIR/Clipmory.zip" "../../website/Clipmory.zip"
+    if [ -f "$DIST_DIR/appcast.xml" ]; then
+        cp "$DIST_DIR/appcast.xml" "../../website/appcast.xml"
+        echo "📄 Copied appcast.xml to ../../website/appcast.xml"
+    fi
 fi
 
-# Automatically update /Applications so local testing always runs the latest build
-rm -rf /Applications/Clipmory.app 2>/dev/null || true
-cp -R "$DIST_DIR/staging/Clipmory.app" /Applications/Clipmory.app 2>/dev/null || true
+# Automatically clean up old version and install the new one into /Applications
+echo "🔄 Installing fresh Clipmory.app into /Applications..."
+pkill -x Clipmory 2>/dev/null || true
+sleep 0.5
+rm -rf /Applications/Clipmory.app
+cp -R "$DIST_DIR/staging/Clipmory.app" /Applications/Clipmory.app
+/System/Library/Frameworks/CoreServices.framework/Versions/Current/Frameworks/LaunchServices.framework/Versions/Current/Support/lsregister -f -R /Applications/Clipmory.app 2>/dev/null || true
+echo "✨ Successfully replaced /Applications/Clipmory.app with the latest build."
 
-echo "✅ Web build complete! DMG and ZIP available at:"
+echo "✅ Web build complete! Artifacts available at:"
 echo "   - $DIST_DIR/Clipmory.dmg"
-echo "   - ../../website/Clipmory.dmg"
+echo "   - $DIST_DIR/Clipmory.zip"
+echo "   - $DIST_DIR/appcast.xml"
+if [ -d "../../website" ]; then
+    echo "   - ../../website/appcast.xml"
+fi
