@@ -6,10 +6,13 @@ import SQLite3
 // Implemented in TASK 7.
 
 final class ClipboardRepository {
-    private let db: OpaquePointer?
+    private let customDb: OpaquePointer?
+    private var db: OpaquePointer? {
+        return customDb ?? DatabaseManager.shared.db
+    }
 
-    init(db: OpaquePointer? = DatabaseManager.shared.db) {
-        self.db = db
+    init(db: OpaquePointer? = nil) {
+        self.customDb = db
     }
 
     // MARK: - Insert

@@ -53,9 +53,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
     // MARK: NSApplicationDelegate
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        setupDatabase()
         setupURLHandler()
         setupApplication()
-        setupDatabase()
         setupClipboardPipeline()
         
         // Only present the onboarding window on first launch.
@@ -450,9 +450,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         do {
             try DatabaseManager.shared.open()
             try DatabaseMigration.migrate(db: DatabaseManager.shared.db)
-            print("Database initialized and migrated successfully.")
+            clipboardStore.reloadFromDatabase()
+            NSLog("[Database] Database initialized and migrated successfully. Loaded %d items.", clipboardStore.items.count)
         } catch {
-            print("CRITICAL ERROR: Failed to initialize database: \(error)")
+            NSLog("[Database] CRITICAL ERROR: Failed to initialize database: %@", error.localizedDescription)
             // Fallback: app still runs but history won't persist
         }
     }

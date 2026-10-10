@@ -28,6 +28,11 @@ final class ClipboardStore: ObservableObject {
         }
     }
 
+    /// Explicitly reloads all clipboard history from disk (e.g. after database connection opens)
+    func reloadFromDatabase() {
+        loadFromDatabase()
+    }
+
     // MARK: - Add (with deduplication)
 
     /// Inserts a new item, or bubbles an existing duplicate to the top.
