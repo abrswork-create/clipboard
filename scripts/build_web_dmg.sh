@@ -120,14 +120,18 @@ if [ -d "../../website" ]; then
     fi
 fi
 
-# Automatically clean up old version and install the new one into /Applications
-echo "🔄 Installing fresh Clipmory.app into /Applications..."
-pkill -x Clipmory 2>/dev/null || true
-sleep 0.5
-rm -rf /Applications/Clipmory.app
-cp -R "$DIST_DIR/staging/Clipmory.app" /Applications/Clipmory.app
-/System/Library/Frameworks/CoreServices.framework/Versions/Current/Frameworks/LaunchServices.framework/Versions/Current/Support/lsregister -f -R /Applications/Clipmory.app 2>/dev/null || true
-echo "✨ Successfully replaced /Applications/Clipmory.app with the latest build."
+if [ "$SKIP_INSTALL" != "1" ]; then
+    # Automatically clean up old version and install the new one into /Applications
+    echo "🔄 Installing fresh Clipmory.app into /Applications..."
+    pkill -x Clipmory 2>/dev/null || true
+    sleep 0.5
+    rm -rf /Applications/Clipmory.app
+    cp -R "$DIST_DIR/staging/Clipmory.app" /Applications/Clipmory.app
+    /System/Library/Frameworks/CoreServices.framework/Versions/Current/Frameworks/LaunchServices.framework/Versions/Current/Support/lsregister -f -R /Applications/Clipmory.app 2>/dev/null || true
+    echo "✨ Successfully replaced /Applications/Clipmory.app with the latest build."
+else
+    echo "ℹ️  SKIP_INSTALL=1 set; leaving /Applications/Clipmory.app as-is for update testing."
+fi
 
 echo "✅ Web build complete! Artifacts available at:"
 echo "   - $DIST_DIR/Clipmory.dmg"
