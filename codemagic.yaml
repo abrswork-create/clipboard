@@ -377,8 +377,14 @@ workflows:
 
           codesign --verify --deep --strict --verbose=2 "$DIST_DIR/staging/Clipmory.app"
 
-          # Create DMG
-          ln -s /Applications "$DIST_DIR/staging/Applications"
+          # Create Styled DMG
+          mkdir -p "$DIST_DIR/staging/.background"
+          cp "Clipmory/Resources/DMG/background.tiff" "$DIST_DIR/staging/.background/background.tiff"
+          cp "Clipmory/Resources/DMG/ds_store" "$DIST_DIR/staging/.DS_Store"
+          cp "Clipmory/Resources/AppIcon.icns" "$DIST_DIR/staging/.VolumeIcon.icns"
+          SetFile -a C "$DIST_DIR/staging" 2>/dev/null || true
+          rm -f "$DIST_DIR/staging/Applications"
+          ln -sf /Applications "$DIST_DIR/staging/Applications"
           hdiutil create -volname "Clipmory" -srcfolder "$DIST_DIR/staging" -ov -format UDZO "$DIST_DIR/Clipmory.dmg"
           codesign --force --timestamp --sign "$DEV_ID" "$DIST_DIR/Clipmory.dmg"
 

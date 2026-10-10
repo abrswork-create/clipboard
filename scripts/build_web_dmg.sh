@@ -37,6 +37,15 @@ if [ ! -f "Clipmory/Resources/DMG/background.tiff" ]; then
     python3 scripts/generate_dmg_assets.py
 fi
 
+# Prepare DMG visual styling assets (.background, .DS_Store, VolumeIcon)
+mkdir -p "$DIST_DIR/staging/.background"
+cp "Clipmory/Resources/DMG/background.tiff" "$DIST_DIR/staging/.background/background.tiff"
+if [ -f "Clipmory/Resources/DMG/ds_store" ]; then
+    cp "Clipmory/Resources/DMG/ds_store" "$DIST_DIR/staging/.DS_Store"
+fi
+cp "Clipmory/Resources/AppIcon.icns" "$DIST_DIR/staging/.VolumeIcon.icns"
+SetFile -a C "$DIST_DIR/staging" 2>/dev/null || true
+
 if command -v create-dmg &>/dev/null; then
     rm -f "$DIST_DIR/staging/Applications"
     create-dmg \

@@ -1,4 +1,5 @@
 .DS_Store
+!Clipmory/Resources/DMG/.DS_Store
 dist/
 build/
 DerivedData/
