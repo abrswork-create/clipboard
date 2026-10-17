@@ -44,6 +44,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
     private var hotkeyObserver: NSObjectProtocol?
     private var statusItem: NSStatusItem?
     private var clickOutsideMonitor: Any?
+    private var lastWindowOpenTime: Date = .distantPast
 
     // Core clipboard pipeline — owned here and injected downward
     private let clipboardStore   = ClipboardStore()
@@ -63,7 +64,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         if !UserDefaults.standard.bool(forKey: "hasCompletedOnboarding") {
             openOnboardingWindow()
         } else {
-            openMainWindow()
+            openMainWindow(centered: true)
         }
         
         setupHotkey()
@@ -75,7 +76,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
             object: nil,
             queue: .main
         ) { [weak self] _ in
-            self?.closeMainWindow()
+            guard let self = self else { return }
+            guard Date().timeIntervalSince(self.lastWindowOpenTime) > 0.6 else { return }
+            self.closeMainWindow()
         }
 
         NotificationCenter.default.addObserver(
@@ -102,6 +105,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
             forEventClass: AEEventClass(kInternetEventClass),
             andEventID: AEEventID(kAEGetURL)
         )
+        NSAppleEventManager.shared().setEventHandler(
+            self,
+            andSelector: #selector(handleReopenEvent(event:withReplyEvent:)),
+            forEventClass: AEEventClass(kCoreEventClass),
+            andEventID: AEEventID(kAEReopenApplication)
+        )
     }
 
     @objc private func handleGetURL(event: NSAppleEventDescriptor, withReplyEvent reply: NSAppleEventDescriptor) {
@@ -112,9 +121,34 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         handleIncomingURL(url)
     }
 
+    @objc private func handleReopenEvent(event: NSAppleEventDescriptor, withReplyEvent reply: NSAppleEventDescriptor) {
+        NSApp.activate(ignoringOtherApps: true)
+        if !UserDefaults.standard.bool(forKey: "hasCompletedOnboarding") {
+            openOnboardingWindow()
+        } else {
+            openMainWindow(centered: true)
+        }
+    }
+
+    func applicationDidBecomeActive(_ notification: Notification) {
+        let hasWindow = (window?.isVisible == true) || (onboardingWindow?.isVisible == true) || (settingsWindow?.isVisible == true)
+        if !hasWindow {
+            if !UserDefaults.standard.bool(forKey: "hasCompletedOnboarding") {
+                openOnboardingWindow()
+            } else {
+                openMainWindow(centered: true)
+            }
+        }
+    }
+
     func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
-        // Re-show window if user clicks Dock icon while window is closed
-        if !flag { openMainWindow() }
+        if !flag {
+            if !UserDefaults.standard.bool(forKey: "hasCompletedOnboarding") {
+                openOnboardingWindow()
+            } else {
+                openMainWindow(centered: true)
+            }
+        }
         return true
     }
 
@@ -197,6 +231,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
 
     func windowDidResignKey(_ notification: Notification) {
         guard !isSettingsPreviewActive else { return }
+        guard Date().timeIntervalSince(lastWindowOpenTime) > 0.6 else { return }
         if let win = notification.object as? NSWindow, win == self.window {
             closeMainWindow()
         }
@@ -204,6 +239,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
 
     func windowDidResignMain(_ notification: Notification) {
         guard !isSettingsPreviewActive else { return }
+        guard Date().timeIntervalSince(lastWindowOpenTime) > 0.6 else { return }
         if let win = notification.object as? NSWindow, win == self.window {
             closeMainWindow()
         }
@@ -339,65 +375,23 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         
         // Enforce system start at login preference only if explicitly enabled by user
         if settings.launchAtLogin {
-            LaunchAtLoginManager.shared.setLaunchAtLogin(true)
-        }
-        
-        NotificationCenter.default.addObserver(forName: NSNotification.Name("clipmoryShowInMenuBarChanged"), object: nil, queue: .main) { @MainActor [weak self] _ in
-            let show = SettingsRepository.shared.load().showInMenuBar
-            self?.updateMenuBarIcon(show: show)
+            LaunchAtLoginManager.shared.setLaunchAtLogin(true, openSettingsIfApprovalRequired: false)
         }
     }
     
     private func updateMenuBarIcon(show: Bool) {
-        if show {
-            if statusItem == nil {
-                statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
-                if let button = statusItem?.button {
-                    if let customIcon = NSImage(named: "MenuBarIcon") {
-                        customIcon.isTemplate = true
-                        button.image = customIcon
-                    } else {
-                        button.image = NSImage(systemSymbolName: "doc.on.clipboard", accessibilityDescription: "Clipmory")
-                    }
-                    button.action = #selector(statusBarButtonClicked(_:))
-                    button.target = self
-                    button.sendAction(on: [.leftMouseUp, .rightMouseUp])
-                }
-            }
-        } else {
-            if let item = statusItem {
-                NSStatusBar.system.removeStatusItem(item)
-                statusItem = nil
-            }
-        }
+        // Menu bar extra is managed natively by SwiftUI MenuBarExtra in ClipmoryApp.
     }
     
-    @objc @MainActor private func statusBarButtonClicked(_ sender: Any) {
-        // Hide the floating clipboard window if open
-        closeMainWindow()
-        
-        // Pop up the menu with Open Clipmory, Settings, Check for Updates, and Quit Clipmory
-        let menu = NSMenu()
-        menu.addItem(NSMenuItem(title: "Open Clipmory", action: #selector(openMainWindowAction), keyEquivalent: ""))
-        menu.addItem(NSMenuItem.separator())
-        menu.addItem(NSMenuItem(title: "Settings...", action: #selector(openSettings), keyEquivalent: ","))
-#if !APP_STORE
-        menu.addItem(NSMenuItem(title: "Check for Updates...", action: #selector(checkForUpdates), keyEquivalent: "u"))
-#endif
-        menu.addItem(NSMenuItem.separator())
-        menu.addItem(NSMenuItem(title: "Quit Clipmory", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q"))
-        statusItem?.popUpMenu(menu)
-    }
-
-    @objc private func openMainWindowAction() {
-        openMainWindow()
+    @objc func openMainWindowAction() {
+        openMainWindow(centered: true)
     }
     
-    @objc private func checkForUpdates() {
+    @objc func checkForUpdates() {
         UpdateManager.shared.checkForUpdates()
     }
     
-    @objc private func openSettings() {
+    @objc func openSettings() {
         closeMainWindow()
         if let existing = settingsWindow {
             existing.makeKeyAndOrderFront(nil)
@@ -408,7 +402,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         let settingsView = SettingsView(store: clipboardStore)
         let hostingController = NSHostingController(rootView: settingsView)
         
-        let win = NSWindow(
+        let win = ClipboardPanel(
             contentRect: NSRect(x: 0, y: 0, width: 750, height: 600),
             styleMask: [.titled, .closable, .miniaturizable, .fullSizeContentView, .resizable],
             backing: .buffered,
@@ -522,12 +516,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
             NSApp.setActivationPolicy(.accessory)
             self?.onboardingWindow?.close()
             self?.onboardingWindow = nil
-            self?.openMainWindow()
+            self?.openMainWindow(centered: true)
         }
         
         let hostingController = NSHostingController(rootView: OnboardingView(viewModel: viewModel))
         
-        let win = NSWindow(
+        let win = ClipboardPanel(
             contentRect: NSRect(x: 0, y: 0, width: 740, height: 640),
             styleMask: [.titled, .closable, .fullSizeContentView],
             backing: .buffered,
@@ -604,7 +598,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         return win
     }
 
-    private func openMainWindow() {
+    func openMainWindow(centered: Bool = false) {
         recordPreviousApp()
         PrivacyManager.shared.resetSessionAuth()
 
@@ -632,7 +626,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
             win.setContentSize(targetSize)
             win.contentViewController?.view.setFrameSize(targetSize)
         }
-        moveWindowNearCursor(win)
+        if centered {
+            win.center()
+        } else {
+            moveWindowNearCursor(win)
+        }
+        lastWindowOpenTime = Date()
         NotificationCenter.default.post(name: AppDelegate.windowWillOpenNotification, object: nil)
         win.orderFrontRegardless()
         win.makeKeyAndOrderFront(nil)
@@ -692,13 +691,15 @@ final class LaunchAtLoginManager {
     }
     
     @discardableResult
-    func setLaunchAtLogin(_ enabled: Bool) -> Bool {
+    func setLaunchAtLogin(_ enabled: Bool, openSettingsIfApprovalRequired: Bool = false) -> Bool {
         let currentStatus = SMAppService.mainApp.status
         NSLog("[LaunchAtLogin] Target enabled: %d, Current SMAppService status: %@", enabled, statusDescription)
         do {
             if enabled {
                 if currentStatus == .requiresApproval {
-                    SMAppService.openSystemSettingsLoginItems()
+                    if openSettingsIfApprovalRequired {
+                        SMAppService.openSystemSettingsLoginItems()
+                    }
                 } else if currentStatus != .enabled {
                     try SMAppService.mainApp.register()
                     NSLog("[LaunchAtLogin] Successfully registered to launch at login. New status: %@", statusDescription)
@@ -712,7 +713,7 @@ final class LaunchAtLoginManager {
             return true
         } catch {
             NSLog("[LaunchAtLogin] Failed to set launch at login: %@", error.localizedDescription)
-            if SMAppService.mainApp.status == .requiresApproval {
+            if SMAppService.mainApp.status == .requiresApproval && openSettingsIfApprovalRequired {
                 SMAppService.openSystemSettingsLoginItems()
             }
             return false

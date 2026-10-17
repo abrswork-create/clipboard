@@ -195,7 +195,7 @@ struct GeneralSettingsView: View {
         }
         .onChange(of: settings.enableHistory) { _ in save() }
         .onChange(of: launchAtLogin) { newValue in
-            let success = LaunchAtLoginManager.shared.setLaunchAtLogin(newValue)
+            let success = LaunchAtLoginManager.shared.setLaunchAtLogin(newValue, openSettingsIfApprovalRequired: true)
             if success {
                 settings.launchAtLogin = newValue
                 save()

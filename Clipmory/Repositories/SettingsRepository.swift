@@ -16,12 +16,14 @@ final class SettingsRepository {
         let data = defaults.data(forKey: key) ?? defaults.data(forKey: legacyKey)
         guard let data = data,
               let settings = try? JSONDecoder().decode(AppSettings.self, from: data) else {
+            defaults.register(defaults: ["showInMenuBar": true])
             return AppSettings() // Return defaults if none saved
         }
         return settings
     }
     
     func save(_ settings: AppSettings) {
+        defaults.set(settings.showInMenuBar, forKey: "showInMenuBar")
         if let data = try? JSONEncoder().encode(settings) {
             defaults.set(data, forKey: key)
         }
