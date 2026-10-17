@@ -70,6 +70,9 @@ struct ScreenCaptureOverlayView: View {
             .onDisappear {
                 // Failsafe cleanup if window disappears
             }
+            .onExitCommand {
+                ScreenCaptureService.shared.cancelCapture()
+            }
             .onReceive(NotificationCenter.default.publisher(for: NSApplication.willResignActiveNotification)) { _ in
                 // Cancel if the app loses focus (e.g. Command-Tab)
                 dragStart = nil

@@ -122,6 +122,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
     }
 
     @objc private func handleReopenEvent(event: NSAppleEventDescriptor, withReplyEvent reply: NSAppleEventDescriptor) {
+        guard !ScreenCaptureService.shared.isCapturing else { return }
         NSApp.activate(ignoringOtherApps: true)
         if !UserDefaults.standard.bool(forKey: "hasCompletedOnboarding") {
             openOnboardingWindow()
@@ -131,17 +132,21 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
     }
 
     func applicationDidBecomeActive(_ notification: Notification) {
-        let hasWindow = (window?.isVisible == true) || (onboardingWindow?.isVisible == true) || (settingsWindow?.isVisible == true)
-        if !hasWindow {
-            if !UserDefaults.standard.bool(forKey: "hasCompletedOnboarding") {
+        guard !ScreenCaptureService.shared.isCapturing else { return }
+        // Only show onboarding if user has not completed onboarding yet.
+        // For general running state, we do not automatically pop open the window on didBecomeActive,
+        // because Clipmory is an accessory/menu bar app and reopening is properly handled by
+        // `applicationShouldHandleReopen`, hotkeys, and the Menu Bar Extra.
+        if !UserDefaults.standard.bool(forKey: "hasCompletedOnboarding") {
+            let hasWindow = (onboardingWindow?.isVisible == true)
+            if !hasWindow {
                 openOnboardingWindow()
-            } else {
-                openMainWindow(centered: true)
             }
         }
     }
 
     func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
+        guard !ScreenCaptureService.shared.isCapturing else { return false }
         if !flag {
             if !UserDefaults.standard.bool(forKey: "hasCompletedOnboarding") {
                 openOnboardingWindow()
@@ -599,6 +604,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
     }
 
     func openMainWindow(centered: Bool = false) {
+        guard !ScreenCaptureService.shared.isCapturing else { return }
         recordPreviousApp()
         PrivacyManager.shared.resetSessionAuth()
 

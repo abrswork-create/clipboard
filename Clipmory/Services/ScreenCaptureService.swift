@@ -9,16 +9,19 @@ final class ScreenCaptureService {
     private var overlayWindows: [NSWindow] = []
     
     private var isImageOnlyCapture: Bool = false
+    private(set) var isCapturing: Bool = false
     
     private init() {}
     
     func startCapture(forceImageOnly: Bool = false) {
         self.isImageOnlyCapture = forceImageOnly
+        self.isCapturing = true
         
         // Preflight Screen Recording Permissions
         if !CGPreflightScreenCaptureAccess() {
             let granted = CGRequestScreenCaptureAccess()
             if !granted {
+                self.isCapturing = false
                 showPermissionAlert()
                 return
             }
@@ -27,12 +30,18 @@ final class ScreenCaptureService {
         showOverlays()
     }
     
+    func cancelCapture() {
+        guard isCapturing || !overlayWindows.isEmpty else { return }
+        for window in overlayWindows {
+            window.close()
+        }
+        overlayWindows.removeAll()
+        NSCursor.pop()
+        isCapturing = false
+    }
+    
     private func showOverlays() {
         guard overlayWindows.isEmpty else { return }
-        
-        // Force the app to become active so the first click immediately starts the selection
-        // instead of just bringing the app to the foreground.
-        NSApp.activate(ignoringOtherApps: true)
         
         for screen in NSScreen.screens {
             let window = ScreenCaptureOverlayWindow(screen: screen) { [weak self] selectedRect in
@@ -41,6 +50,10 @@ final class ScreenCaptureService {
             overlayWindows.append(window)
             window.makeKeyAndOrderFront(nil)
         }
+        
+        // Force the app to become active so the first click immediately starts the selection
+        // instead of just bringing the app to the foreground.
+        NSApp.activate(ignoringOtherApps: true)
         
         // Hide cursor and maybe set a crosshair
         NSCursor.crosshair.push()
@@ -61,6 +74,7 @@ final class ScreenCaptureService {
             }
             self.overlayWindows.removeAll()
             NSCursor.pop()
+            self.isCapturing = false
             
             // If rect is essentially empty, cancel
             guard rect.width > 5 && rect.height > 5 else { return }

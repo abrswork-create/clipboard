@@ -32,4 +32,12 @@ class ScreenCaptureOverlayWindow: NSWindow {
     override var canBecomeKey: Bool {
         return true
     }
+    
+    override func keyDown(with event: NSEvent) {
+        if event.keyCode == 53 { // ESC key
+            ScreenCaptureService.shared.cancelCapture()
+        } else {
+            super.keyDown(with: event)
+        }
+    }
 }
