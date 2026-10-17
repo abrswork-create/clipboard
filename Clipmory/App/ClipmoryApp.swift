@@ -7,7 +7,7 @@ struct ClipmoryApp: App {
     @AppStorage("showInMenuBar") private var showInMenuBar: Bool = true
 
     var body: some Scene {
-        MenuBarExtra("Clipmory", image: "MenuBarIcon", isInserted: $showInMenuBar) {
+        MenuBarExtra(isInserted: $showInMenuBar) {
             Button("Open Clipmory") {
                 AppDelegate.shared?.openMainWindow()
             }
@@ -33,6 +33,9 @@ struct ClipmoryApp: App {
                 NSApplication.shared.terminate(nil)
             }
             .keyboardShortcut("q")
+        } label: {
+            Image("MenuBarIcon")
+                .renderingMode(.template)
         }
     }
 }
