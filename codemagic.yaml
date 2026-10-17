@@ -85,7 +85,9 @@ workflows:
           xcodebuild -project Clipmory.xcodeproj \
             -scheme Clipmory-AppStore \
             -configuration Release \
-            -destination 'platform=macOS' \
+            -destination 'generic/platform=macOS' \
+            ARCHS="arm64 x86_64" \
+            ONLY_ACTIVE_ARCH=NO \
             -derivedDataPath "./build/DerivedData-AppStore" \
             build
       - name: Package signed .pkg installer for App Store Connect
