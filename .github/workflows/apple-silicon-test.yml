@@ -1,0 +1,77 @@
+name: Apple Silicon (M1/M2) Test & Build
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch: # Allows manual trigger from GitHub Actions UI
+
+jobs:
+  test-on-apple-silicon:
+    name: Run & Verify on Apple Silicon (M-series)
+    # macos-14 runs on native Apple Silicon (arm64) runners on GitHub Actions
+    runs-on: macos-14
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Verify Apple Silicon Hardware & Environment
+        run: |
+          echo "=== Host Architecture ==="
+          uname -m
+          echo "=== CPU Brand ==="
+          sysctl -n machdep.cpu.brand_string
+          echo "=== macOS Version ==="
+          sw_vers
+          echo "=== Xcode Version ==="
+          xcodebuild -version
+
+      - name: Build Clipmory natively on Apple Silicon
+        run: |
+          xcodebuild -project Clipmory.xcodeproj \
+            -scheme Clipmory \
+            -configuration Release \
+            -destination 'platform=macOS' \
+            -derivedDataPath ./build/DerivedData \
+            build
+
+      - name: Run Tests on Apple Silicon CPU
+        run: |
+          xcodebuild -project Clipmory.xcodeproj \
+            -scheme Clipmory \
+            -destination 'platform=macOS' \
+            -derivedDataPath ./build/DerivedData \
+            test
+
+      - name: Verify Binary Architectures & Code Signature
+        run: |
+          APP_BIN="./build/DerivedData/Build/Products/Release/Clipmory.app/Contents/MacOS/Clipmory"
+          echo "=== File Analysis ==="
+          file "$APP_BIN"
+          echo "=== Lipo Architectures ==="
+          lipo -info "$APP_BIN"
+          echo "=== Codesign Verification ==="
+          codesign -vvv --deep --strict "./build/DerivedData/Build/Products/Release/Clipmory.app"
+
+      - name: Test Native Launch on Apple Silicon
+        run: |
+          APP_PATH="./build/DerivedData/Build/Products/Release/Clipmory.app/Contents/MacOS/Clipmory"
+          echo "Launching Clipmory on Apple Silicon..."
+          "$APP_PATH" &
+          APP_PID=$!
+          sleep 4
+          if ps -p $APP_PID > /dev/null; then
+            echo "✅ Clipmory successfully launched and running with PID $APP_PID on Apple Silicon!"
+            kill $APP_PID
+          else
+            echo "❌ Process terminated unexpectedly."
+            exit 1
+          fi
+
+      - name: Archive Apple Silicon Build Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Clipmory-AppleSilicon-macOS
+          path: ./build/DerivedData/Build/Products/Release/Clipmory.app
