@@ -41,6 +41,7 @@ enum PasteService {
         isPasting = true
         lastPasteTime = now
 
+        #if !APP_STORE
         // 1. Check Assistive Auto-Insert preference
         let shouldAutoInsert = settings.assistiveAutoInsert || AXIsProcessTrusted()
         
@@ -62,6 +63,7 @@ enum PasteService {
                 return
             }
         }
+        #endif
 
         // 2. Tell monitor to ignore changes
         NotificationCenter.default.post(name: willWriteToPasteboard, object: nil)
@@ -84,6 +86,7 @@ enum PasteService {
         // 4. Dismiss panel and restore target application focus
         dismissAndRestoreFocus()
         
+        #if !APP_STORE
         if shouldAutoInsert && AXIsProcessTrusted() {
             // Fire Cmd+V for assistive insertion after the target app regains full focus
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.22) {
@@ -100,6 +103,13 @@ enum PasteService {
                 isPasting = false
             }
         }
+        #else
+        // Standard App Store sandbox mode: Item is copied to pasteboard and focus restored
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+            NotificationCenter.default.post(name: didWriteToPasteboard, object: nil)
+            isPasting = false
+        }
+        #endif
     }
     
     @MainActor
@@ -141,6 +151,7 @@ enum PasteService {
         isPasting = true
         lastPasteTime = now
 
+        #if !APP_STORE
         let shouldAutoInsert = settings.assistiveAutoInsert || AXIsProcessTrusted()
 
         if shouldAutoInsert {
@@ -218,6 +229,16 @@ enum PasteService {
                 isPasting = false
             }
         }
+        #else
+        // Standard App Store multi-item copy: Write all items to pasteboard without keystroke injection
+        NotificationCenter.default.post(name: willWriteToPasteboard, object: nil)
+        _ = writeToPasteboard(items, textSeparator: textSeparator)
+        dismissAndRestoreFocus()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+            NotificationCenter.default.post(name: didWriteToPasteboard, object: nil)
+            isPasting = false
+        }
+        #endif
     }
 
     @MainActor
@@ -272,6 +293,7 @@ enum PasteService {
 
     @MainActor
     private static func writeToPasteboard(_ items: [ClipboardItem], textSeparator: String) -> Bool {
+        guard !items.isEmpty else { return false }
         let pasteboard = NSPasteboard.general
         pasteboard.clearContents()
 
@@ -286,19 +308,126 @@ enum PasteService {
             return true
         }
 
-        // 2. Multi-photo, file, or mixed items: Write rich NSPasteboardItems for each
+        // 2. If all items are pure non-image files, write them as file URLs for Finder
+        let isAllFiles = items.allSatisfy {
+            $0.type == .file && $0.filePath != nil && $0.imagePath == nil
+        }
+        if isAllFiles {
+            var fileURLs: [NSURL] = []
+            for item in items {
+                if let path = item.filePath, FileManager.default.fileExists(atPath: path) {
+                    fileURLs.append(NSURL(fileURLWithPath: path))
+                }
+            }
+            if !fileURLs.isEmpty {
+                return pasteboard.writeObjects(fileURLs)
+            }
+        }
+
+        // 3. Mixed content (Text + Images / Files):
+        // Build rich attributed string combining text and inline image attachments (RTFD + HTML)
+        let richText = NSMutableAttributedString()
+        var textParts: [String] = []
+        var firstImage: NSImage? = nil
+        var fileURLs: [NSURL] = []
         var pbItems: [NSPasteboardItem] = []
-        for item in items {
+
+        for (index, item) in items.enumerated() {
+            if index > 0 && richText.length > 0 {
+                richText.append(NSAttributedString(string: textSeparator))
+            }
+
+            if item.type == .image || item.imagePath != nil {
+                // Image item
+                if let path = item.imagePath ?? item.filePath,
+                   let img = FileStorage.loadImage(at: path) ?? NSImage(contentsOfFile: path) {
+                    if firstImage == nil {
+                        firstImage = img
+                    }
+                    
+                    let imgData: Data? = {
+                        if let tiff = img.tiffRepresentation {
+                            if let rep = NSBitmapImageRep(data: tiff),
+                               let png = rep.representation(using: .png, properties: [:]) {
+                                return png
+                            }
+                            return tiff
+                        }
+                        return nil
+                    }()
+
+                    if let data = imgData {
+                        let wrapper = FileWrapper(regularFileWithContents: data)
+                        wrapper.preferredFilename = "image_\(index).png"
+                        let attach = NSTextAttachment(fileWrapper: wrapper)
+                        richText.append(NSAttributedString(attachment: attach))
+                    }
+                } else if let txt = item.text {
+                    richText.append(NSAttributedString(string: txt))
+                    textParts.append(txt)
+                }
+
+                if let filePath = item.filePath, FileManager.default.fileExists(atPath: filePath) {
+                    fileURLs.append(NSURL(fileURLWithPath: filePath))
+                }
+            } else if let txt = item.text {
+                // Text item
+                richText.append(NSAttributedString(string: txt))
+                textParts.append(txt)
+            } else if let filePath = item.filePath, FileManager.default.fileExists(atPath: filePath) {
+                fileURLs.append(NSURL(fileURLWithPath: filePath))
+            }
+
             if let pbItem = makePasteboardItem(for: item) {
                 pbItems.append(pbItem)
             }
         }
 
-        if !pbItems.isEmpty {
-            return pasteboard.writeObjects(pbItems)
+        var wroteAny = false
+
+        // Write RTFD and HTML so rich text applications (Notes, Pages, Word, Mail, Slack, Web editors)
+        // paste both text and images inline in a single ⌘V action.
+        let range = NSRange(location: 0, length: richText.length)
+        if richText.length > 0 {
+            if let rtfd = richText.rtfd(from: range, documentAttributes: [:]) {
+                pasteboard.setData(rtfd, forType: .rtfd)
+                pasteboard.setData(rtfd, forType: NSPasteboard.PasteboardType("com.apple.flat-rtfd"))
+                wroteAny = true
+            }
+            if let html = try? richText.data(from: range, documentAttributes: [.documentType: NSAttributedString.DocumentType.html]) {
+                pasteboard.setData(html, forType: .html)
+                wroteAny = true
+            }
         }
 
-        return false
+        // Write primary image flavors if image was included (for image paste targets)
+        if let img = firstImage, let tiff = img.tiffRepresentation {
+            pasteboard.setData(tiff, forType: .tiff)
+            if let rep = NSBitmapImageRep(data: tiff),
+               let png = rep.representation(using: .png, properties: [:]) {
+                pasteboard.setData(png, forType: .png)
+            }
+            wroteAny = true
+        }
+
+        // Write file URLs if files were included (for Finder paste)
+        if !fileURLs.isEmpty {
+            pasteboard.writeObjects(fileURLs)
+            wroteAny = true
+        }
+
+        // Plain text fallback (for terminal / plain text fields)
+        let plainCombined = textParts.isEmpty ? richText.string : textParts.joined(separator: textSeparator)
+        if !plainCombined.isEmpty {
+            pasteboard.setString(plainCombined, forType: .string)
+            wroteAny = true
+        }
+
+        if !pbItems.isEmpty && !wroteAny {
+            wroteAny = pasteboard.writeObjects(pbItems)
+        }
+
+        return wroteAny
     }
 
     @MainActor
@@ -331,27 +460,43 @@ enum PasteService {
                     // Generate TIFF and PNG representations via NSImage
                     if let img = FileStorage.loadImage(at: path) ?? NSImage(contentsOfFile: path) {
                         if let tiff = img.tiffRepresentation {
-                            if !addedAnyImage,
-                               let rep = NSBitmapImageRep(data: tiff),
-                               let png = rep.representation(using: .png, properties: [:]) {
-                                pbItem.setData(png, forType: .png)
-                                addedAnyImage = true
-                            }
                             pbItem.setData(tiff, forType: .tiff)
                             addedAnyImage = true
+                            
+                            if let rep = NSBitmapImageRep(data: tiff),
+                               let png = rep.representation(using: .png, properties: [:]) {
+                                pbItem.setData(png, forType: .png)
+                            }
                         }
                     }
                 }
                 
-                // 2. Set fileURL AFTER image data so image data (.png / .tiff) has higher flavor precedence
-                pbItem.setString(fileURL.absoluteString, forType: .fileURL)
+                // 2. Set fileURL ONLY if the item has an original file path on the user's filesystem
+                // (Never expose private sandbox container paths to external apps)
+                if let originalFilePath = item.filePath, FileManager.default.fileExists(atPath: originalFilePath) {
+                    let originalURL = URL(fileURLWithPath: originalFilePath)
+                    pbItem.setString(originalURL.absoluteString, forType: .fileURL)
+                }
+                
+                // 3. Optional fallback text representation (filename or label)
+                if let text = item.text {
+                    pbItem.setString(text, forType: .string)
+                }
                 
                 if addedAnyImage {
                     return pbItem
                 }
             } else if item.type == .file {
                 // Non-image file
-                pbItem.setString(fileURL.absoluteString, forType: .fileURL)
+                if let originalFilePath = item.filePath, FileManager.default.fileExists(atPath: originalFilePath) {
+                    let originalURL = URL(fileURLWithPath: originalFilePath)
+                    pbItem.setString(originalURL.absoluteString, forType: .fileURL)
+                } else {
+                    pbItem.setString(fileURL.absoluteString, forType: .fileURL)
+                }
+                if let text = item.text {
+                    pbItem.setString(text, forType: .string)
+                }
                 return pbItem
             }
         }
@@ -378,6 +523,7 @@ enum PasteService {
         }
     }
     
+    #if !APP_STORE
     private static func triggerCmdV() {
         let vKeyCode: CGKeyCode = 0x09 // 'v'
         
@@ -397,4 +543,5 @@ enum PasteService {
             keyUp?.post(tap: .cghidEventTap)
         }
     }
+    #endif
 }

@@ -7,32 +7,66 @@ import Foundation
 
 enum ClipboardClassifier {
 
+    static let imageExtensions: Set<String> = [
+        "png", "jpg", "jpeg", "gif", "webp", "heic", "heif", "tiff", "tif", "bmp", "svg", "ico", "icns"
+    ]
+
+    static let imagePasteboardTypes: Set<NSPasteboard.PasteboardType> = [
+        .tiff,
+        .png,
+        NSPasteboard.PasteboardType("public.jpeg"),
+        NSPasteboard.PasteboardType("public.jpeg-2000"),
+        NSPasteboard.PasteboardType("public.heic"),
+        NSPasteboard.PasteboardType("public.heif"),
+        NSPasteboard.PasteboardType("org.webmproject.webp"),
+        NSPasteboard.PasteboardType("com.compuserve.gif"),
+        NSPasteboard.PasteboardType("com.apple.pict"),
+        NSPasteboard.PasteboardType("com.microsoft.bmp"),
+        NSPasteboard.PasteboardType("com.apple.icns"),
+        NSPasteboard.PasteboardType("public.image")
+    ]
+
     static func classify(pasteboard: NSPasteboard) -> ClipboardType {
         let types = Set(pasteboard.types ?? [])
 
-        // Image — TIFF, PNG
-        if types.contains(.tiff) || types.contains(.png) {
+        // 1. Direct Image or Image File
+        if !types.isDisjoint(with: imagePasteboardTypes) || NSImage.canInit(with: pasteboard) {
+            if types.contains(.fileURL) {
+                if let urls = pasteboard.readObjects(forClasses: [NSURL.self], options: nil) as? [URL],
+                   let url = urls.first {
+                    if imageExtensions.contains(url.pathExtension.lowercased()) {
+                        return .image
+                    } else {
+                        return .file
+                    }
+                }
+            }
             return .image
         }
 
-        // Rich text — RTF
+        // 2. File URL (prioritized over plain text string so Finder copies are not treated as text)
+        if types.contains(.fileURL) {
+            if let urls = pasteboard.readObjects(forClasses: [NSURL.self], options: nil) as? [URL],
+               let url = urls.first,
+               imageExtensions.contains(url.pathExtension.lowercased()) {
+                return .image
+            }
+            return .file
+        }
+
+        // 3. Rich text — RTF
         if types.contains(.rtf) || types.contains(NSPasteboard.PasteboardType("public.rtf")) {
             return .richText
         }
 
-        // URL — check string content
+        // 4. URL — check string content
         if let string = pasteboard.string(forType: .string), isHTTPURL(string) {
             return .url
         }
 
-        // Plain text
+        // 5. Plain text
         if types.contains(.string) {
             return .text
-        }
-
-        // File URL
-        if types.contains(.fileURL) {
-            return .file
         }
 
         return .unknown

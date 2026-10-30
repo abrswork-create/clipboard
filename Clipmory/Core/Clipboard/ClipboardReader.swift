@@ -133,7 +133,42 @@ final class ClipboardReader {
             )
         }
 
-        // 2. Standard image
+        // 2. Check if this is an image file URL copied from Finder or another app
+        if let urls = pasteboard.readObjects(forClasses: [NSURL.self], options: nil) as? [URL],
+           let url = urls.first,
+           ClipboardClassifier.imageExtensions.contains(url.pathExtension.lowercased()) {
+            
+            let originalPath = url.path
+            let mode = SettingsRepository.shared.load().fileStorageMode
+            let finalPath: String
+            if mode == .copyContents {
+                finalPath = FileStorage.copyFile(at: originalPath) ?? originalPath
+            } else {
+                finalPath = originalPath
+            }
+
+            var savedThumbnailPath: String? = nil
+            if let image = NSImage(contentsOfFile: finalPath) ?? NSImage(pasteboard: pasteboard) {
+                savedThumbnailPath = FileStorage.saveImage(image)
+            }
+
+            return ClipboardItem(
+                id: UUID(),
+                type: .image,
+                createdAt: now,
+                updatedAt: now,
+                text: url.lastPathComponent,
+                imagePath: savedThumbnailPath ?? finalPath,
+                filePath: finalPath,
+                sourceAppName: sourceApp?.localizedName,
+                sourceBundleIdentifier: sourceApp?.bundleIdentifier,
+                isPinned: false,
+                isFavorite: false,
+                contentHash: ContentHasher.hash(string: finalPath)
+            )
+        }
+
+        // 3. Direct image from pasteboard (screenshot, web browser, canvas, etc.)
         guard let image = NSImage(pasteboard: pasteboard) else { return nil }
 
         let savedPath = FileStorage.saveImage(image)

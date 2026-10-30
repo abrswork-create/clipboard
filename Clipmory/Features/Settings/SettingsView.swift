@@ -122,6 +122,7 @@ struct GeneralSettingsView: View {
                     isOn: $settings.enableHistory
                 )
 
+                #if !APP_STORE
                 SettingsToggleRow(
                     title: "Auto-Paste on Click",
                     subtitle: "Automatically insert (⌘+V) into active application when an item is selected.",
@@ -137,6 +138,7 @@ struct GeneralSettingsView: View {
                         }
                     )
                 )
+                #endif
                 
                 SettingsToggleRow(
                     title: "Launch at Login",
@@ -220,7 +222,11 @@ struct GeneralSettingsView: View {
             }
         }
         .onAppear {
-            launchAtLogin = LaunchAtLoginManager.shared.isEnabled
+            settings = SettingsRepository.shared.load()
+            if !settings.launchAtLogin && LaunchAtLoginManager.shared.isEnabled {
+                _ = LaunchAtLoginManager.shared.setLaunchAtLogin(false)
+            }
+            launchAtLogin = settings.launchAtLogin && LaunchAtLoginManager.shared.isEnabled
         }
     }
     
@@ -904,6 +910,7 @@ struct AccessibilitySettingsView: View {
     
     var body: some View {
         VStack(spacing: 24) {
+            #if !APP_STORE
             SettingsSection {
                 SettingsToggleRow(
                     title: "Assistive Auto-Insert",
@@ -937,7 +944,7 @@ struct AccessibilitySettingsView: View {
                                 .foregroundColor(.green)
                         }
                     } else {
-                        Button("Grant Permission") {
+                        Button("Continue to Settings") {
                             permissionManager.requestAccessibility()
                         }
                         .buttonStyle(.borderedProminent)
@@ -945,6 +952,7 @@ struct AccessibilitySettingsView: View {
                     }
                 }
             }
+            #endif
             
             SettingsSection {
                 SettingsRow(

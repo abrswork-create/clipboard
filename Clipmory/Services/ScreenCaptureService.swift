@@ -147,10 +147,10 @@ final class ScreenCaptureService {
     
     private func showPermissionAlert() {
         let alert = NSAlert()
-        alert.messageText = "Screen Recording Permission Required"
-        alert.informativeText = "Clipmory needs screen recording access to capture the selected area. Please grant permission in System Settings > Privacy & Security > Screen Recording."
-        alert.alertStyle = .warning
-        alert.addButton(withTitle: "Open System Settings")
+        alert.messageText = "Screen Recording Access"
+        alert.informativeText = "Clipmory needs Screen Recording access to capture screenshots and extract text from your screen. You can enable this access in System Settings."
+        alert.alertStyle = .informational
+        alert.addButton(withTitle: "Continue")
         alert.addButton(withTitle: "Cancel")
         
         let response = alert.runModal()

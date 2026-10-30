@@ -381,6 +381,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         // Enforce system start at login preference only if explicitly enabled by user
         if settings.launchAtLogin {
             LaunchAtLoginManager.shared.setLaunchAtLogin(true, openSettingsIfApprovalRequired: false)
+        } else if LaunchAtLoginManager.shared.isEnabled {
+            LaunchAtLoginManager.shared.setLaunchAtLogin(false, openSettingsIfApprovalRequired: false)
         }
     }
     

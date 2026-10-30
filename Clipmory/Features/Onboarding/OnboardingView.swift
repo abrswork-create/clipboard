@@ -958,18 +958,31 @@ struct OnboardingPermissionsSlide: View {
     
     @State private var isHoveringContinue = false
     @State private var isPressingContinue = false
+    @State private var isLaunchAtLogin: Bool = SettingsRepository.shared.load().launchAtLogin
     
     let timer = Timer.publish(every: 0.4, on: .main, in: .common).autoconnect()
     
     var hasGrantedPermission: Bool {
+        #if !APP_STORE
         return isScreenRecordingTrusted || isAccessibilityTrusted
+        #else
+        return true
+        #endif
     }
     
     var allGranted: Bool {
         #if !APP_STORE
         return isScreenRecordingTrusted && isAccessibilityTrusted
         #else
-        return isScreenRecordingTrusted
+        return true
+        #endif
+    }
+    
+    private var subtitleText: String {
+        #if !APP_STORE
+        return "Configure your preferences and permissions for the best experience."
+        #else
+        return "Quick setup to get started with Clipmory."
         #endif
     }
     
@@ -985,7 +998,7 @@ struct OnboardingPermissionsSlide: View {
                     .opacity(titleOpacity)
                     .offset(y: titleOffset)
                 
-                Text("Configure your preferences and permissions for the best experience.")
+                Text(subtitleText)
                     .font(.system(size: 12, weight: .regular, design: .monospaced))
                     .foregroundColor(.black.opacity(0.6))
                     .opacity(subtitleOpacity)
@@ -999,7 +1012,7 @@ struct OnboardingPermissionsSlide: View {
                 PermissionRow(
                     icon: "keyboard",
                     title: "Auto-Paste",
-                    description: "Grant permission to use auto-paste to insert items directly into your active apps.",
+                    description: "Enables auto-paste to insert items directly into your active apps.",
                     isGranted: isAccessibilityTrusted,
                     action: {
                         PermissionManager.shared.requestAccessibility()
@@ -1009,44 +1022,78 @@ struct OnboardingPermissionsSlide: View {
                         SettingsRepository.shared.save(current)
                     }
                 )
-                #else
-                PermissionRow(
-                    icon: "figure.roll",
-                    title: "Assistive Tools (Optional)",
-                    description: "Enables single-action insertion for users with motor difficulty or who cannot press keyboard shortcuts.",
-                    isGranted: isAccessibilityTrusted,
-                    action: {
-                        PermissionManager.shared.requestAccessibility()
-                        schedulePermissionChecks()
-                        var current = SettingsRepository.shared.load()
-                        current.assistiveAutoInsert = true
-                        SettingsRepository.shared.save(current)
-                    }
-                )
-                #endif
                 
                 PermissionRow(
                     icon: "camera.viewfinder",
                     title: "Screen Recording",
-                    description: "Grant permission to extract text from images and capture screenshots directly to your clipboard.",
+                    description: "Allows extracting text from images and capturing screenshots directly to your clipboard.",
                     isGranted: isScreenRecordingTrusted,
                     action: {
                         PermissionManager.shared.requestScreenRecording()
                         schedulePermissionChecks()
                     }
                 )
-                
-                VStack(spacing: 4) {
-                    Text("Click Grant to open System Settings, then turn on the switch for Clipmory.")
-                        .font(.system(size: 10, weight: .medium, design: .monospaced))
-                        .foregroundColor(.black.opacity(0.6))
+                #else
+                HStack(spacing: 12) {
+                    Image(systemName: "command")
+                        .font(.system(size: 20, weight: .light))
+                        .foregroundColor(.black.opacity(0.8))
+                        .frame(width: 26)
                     
-                    Text("If Clipmory is not in the list, click the '+' button below and choose Clipmory from Applications.")
-                        .font(.system(size: 9, weight: .regular, design: .monospaced))
-                        .foregroundColor(.black.opacity(0.4))
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Global Shortcut")
+                            .font(.system(size: 13, weight: .bold, design: .monospaced))
+                            .foregroundColor(.black)
+                        
+                        Text("Press ⌥⌘V anywhere to open your clipboard history.")
+                            .font(.system(size: 11, weight: .regular, design: .monospaced))
+                            .foregroundColor(.black.opacity(0.6))
+                    }
+                    
+                    Spacer()
+                    
+                    Text("⌥⌘V")
+                        .font(.system(size: 12, weight: .bold, design: .monospaced))
+                        .foregroundColor(.black)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                        .background(Color.black.opacity(0.06))
+                        .cornerRadius(6)
                 }
-                .multilineTextAlignment(.center)
-                .padding(.top, 6)
+                .padding(12)
+                .background(Color.white)
+                .cornerRadius(10)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 10)
+                        .stroke(Color.black.opacity(0.08), lineWidth: 1)
+                )
+
+                HStack(spacing: 12) {
+                    Image(systemName: "lock.shield")
+                        .font(.system(size: 20, weight: .light))
+                        .foregroundColor(.black.opacity(0.8))
+                        .frame(width: 26)
+                    
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Private & Secure")
+                            .font(.system(size: 13, weight: .bold, design: .monospaced))
+                            .foregroundColor(.black)
+                        
+                        Text("All clipboard history is stored locally on your Mac.")
+                            .font(.system(size: 11, weight: .regular, design: .monospaced))
+                            .foregroundColor(.black.opacity(0.6))
+                    }
+                    
+                    Spacer()
+                }
+                .padding(12)
+                .background(Color.white)
+                .cornerRadius(10)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 10)
+                        .stroke(Color.black.opacity(0.08), lineWidth: 1)
+                )
+                #endif
             }
             .frame(width: 440)
             .opacity(itemsOpacity)
@@ -1256,7 +1303,7 @@ struct PermissionRow: View {
                 .transition(.opacity.combined(with: .scale(scale: 0.95)))
             } else {
                 Button(action: action) {
-                    Text("Grant")
+                    Text("Continue")
                         .font(.system(size: 11, weight: .bold, design: .monospaced))
                         .foregroundColor(.white)
                         .padding(.horizontal, 14)

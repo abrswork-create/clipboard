@@ -50,10 +50,20 @@ enum FileStorage {
     @discardableResult
     @MainActor
     static func saveImage(_ image: NSImage) -> String? {
-        guard let tiff = image.tiffRepresentation,
-              let bitmap = NSBitmapImageRep(data: tiff),
-              let png = bitmap.representation(using: .png, properties: [:])
-        else { return nil }
+        let pngData: Data? = {
+            if let tiff = image.tiffRepresentation,
+               let bitmap = NSBitmapImageRep(data: tiff),
+               let png = bitmap.representation(using: .png, properties: [:]) {
+                return png
+            }
+            if let cgImage = image.cgImage(forProposedRect: nil, context: nil, hints: nil) {
+                let rep = NSBitmapImageRep(cgImage: cgImage)
+                return rep.representation(using: .png, properties: [:])
+            }
+            return nil
+        }()
+
+        guard let png = pngData else { return nil }
 
         let filename = UUID().uuidString + ".png"
         let url = imagesDirectory.appendingPathComponent(filename)

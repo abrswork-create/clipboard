@@ -19,7 +19,17 @@ struct ImagesView: View {
     @State private var baseSelectedIDs: Set<UUID> = []
     
     private var imageItems: [ClipboardItem] {
-        store.items.filter { $0.type == .image && $0.imagePath != nil && !$0.isGif }
+        store.items.filter { item in
+            guard !item.isGif else { return false }
+            if item.type == .image && (item.imagePath != nil || item.filePath != nil) {
+                return true
+            }
+            if item.type == .file, let path = item.filePath,
+               ClipboardClassifier.imageExtensions.contains(URL(fileURLWithPath: path).pathExtension.lowercased()) {
+                return true
+            }
+            return false
+        }
     }
     
     private var filteredItems: [ClipboardItem] {
@@ -231,10 +241,10 @@ struct ImagesView: View {
                             
                             if let gifUrl = item.gifURLString {
                                 GifURLThumbnailView(urlString: gifUrl, maxHeight: 100)
-                            } else if let path = item.imagePath {
+                            } else if let path = item.imagePath ?? item.filePath {
                                 if path.lowercased().hasSuffix(".gif"), let data = try? Data(contentsOf: URL(fileURLWithPath: path)) {
                                     GifCardThumbnailView(data: data, maxHeight: 100)
-                                } else if let nsImage = FileStorage.loadImage(at: path) {
+                                } else if let nsImage = FileStorage.loadImage(at: path) ?? NSImage(contentsOfFile: path) {
                                     Image(nsImage: nsImage)
                                         .resizable()
                                         .aspectRatio(contentMode: .fit)

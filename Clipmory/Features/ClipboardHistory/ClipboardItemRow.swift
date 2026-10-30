@@ -112,17 +112,24 @@ struct ClipboardItemRow: View {
                 if let gifUrl = item.gifURLString {
                     GifURLThumbnailView(urlString: gifUrl, maxHeight: mediaHeight)
                         .padding(.vertical, 4)
-                } else if item.type == .image, let imagePath = item.imagePath {
+                } else if let imagePath = item.imagePath ?? (item.type == .file && item.filePath != nil && ClipboardClassifier.imageExtensions.contains(URL(fileURLWithPath: item.filePath!).pathExtension.lowercased()) ? item.filePath : nil) {
                     if imagePath.lowercased().hasSuffix(".gif"), let data = try? Data(contentsOf: URL(fileURLWithPath: imagePath)) {
                         GifCardThumbnailView(data: data, maxHeight: mediaHeight)
                             .padding(.vertical, 4)
-                    } else if let nsImage = FileStorage.loadImage(at: imagePath) {
+                    } else if let nsImage = FileStorage.loadImage(at: imagePath) ?? NSImage(contentsOfFile: imagePath) {
                         Image(nsImage: nsImage)
                             .resizable()
                             .aspectRatio(contentMode: .fit)
                             .frame(maxWidth: .infinity, maxHeight: mediaHeight, alignment: .leading)
                             .clipShape(RoundedRectangle(cornerRadius: 6))
                             .padding(.vertical, 4)
+                    } else {
+                        Text(displayText)
+                            .font(.system(size: style == .compact ? 11 : (style == .spacious ? 14 : 13), weight: .regular))
+                            .foregroundStyle(item.type == .url ? CFColor.urlText : CFColor.primaryText)
+                            .lineLimit(style == .compact ? 2 : (style == .spacious ? 6 : 4))
+                            .multilineTextAlignment(.leading)
+                            .frame(maxWidth: .infinity, alignment: .leading)
                     }
                 } else {
                     Text(displayText)

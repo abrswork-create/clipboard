@@ -107,7 +107,7 @@ enum AutoDeleteHistory: Int, Codable, CaseIterable {
 struct AppSettings: Codable {
 
     // General
-    var launchAtLogin: Bool = true
+    var launchAtLogin: Bool = false
     var enableHistory: Bool = true // New
     var showInMenuBar: Bool = true // New
 
@@ -164,7 +164,7 @@ struct AppSettings: Codable {
 
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        launchAtLogin = try container.decodeIfPresent(Bool.self, forKey: .launchAtLogin) ?? true
+        launchAtLogin = try container.decodeIfPresent(Bool.self, forKey: .launchAtLogin) ?? false
         enableHistory = try container.decodeIfPresent(Bool.self, forKey: .enableHistory) ?? true
         showInMenuBar = try container.decodeIfPresent(Bool.self, forKey: .showInMenuBar) ?? true
         historyLimit = try container.decodeIfPresent(Int.self, forKey: .historyLimit) ?? 500
