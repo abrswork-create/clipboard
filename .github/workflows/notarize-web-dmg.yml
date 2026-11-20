@@ -1,0 +1,172 @@
+name: Build, Sign & Notarize Web DMG
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'v*'
+    branches:
+      - main
+    paths:
+      - 'Clipmory/**'
+      - 'scripts/**'
+      - '.github/workflows/notarize-web-dmg.yml'
+
+jobs:
+  notarize-dmg:
+    name: Build, Sign & Notarize Clipmory DMG
+    runs-on: macos-15
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Select Xcode 16+
+        run: |
+          if [ -d "/Applications/Xcode_16.2.app" ]; then
+            sudo xcode-select -s /Applications/Xcode_16.2.app
+          elif [ -d "/Applications/Xcode_16.1.app" ]; then
+            sudo xcode-select -s /Applications/Xcode_16.1.app
+          elif [ -d "/Applications/Xcode_16.0.app" ]; then
+            sudo xcode-select -s /Applications/Xcode_16.0.app
+          elif [ -d "/Applications/Xcode_16.app" ]; then
+            sudo xcode-select -s /Applications/Xcode_16.app
+          fi
+          xcodebuild -version
+
+      - name: Setup macOS Keychain & Import Developer ID Certificate
+        env:
+          DEVELOPER_ID_CERT_B64: ${{ secrets.DEVELOPER_ID_CERTIFICATE }}
+          DEVELOPER_ID_PWD: ${{ secrets.DEVELOPER_ID_PASSWORD }}
+        run: |
+          echo "=== Setting up Build Keychain ==="
+          KEYCHAIN_PATH=$RUNNER_TEMP/build.keychain
+          KEYCHAIN_PWD=$(openssl rand -hex 16)
+          
+          security create-keychain -p "$KEYCHAIN_PWD" "$KEYCHAIN_PATH"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
+          security unlock-keychain -p "$KEYCHAIN_PWD" "$KEYCHAIN_PATH"
+          
+          # Add build keychain to search list
+          security list-keychains -d user -s "$KEYCHAIN_PATH" $(security list-keychains -d user | tr -d '" ')
+          
+          # Download and install Apple Intermediate Certificates
+          curl -sSL https://www.apple.com/certificateauthority/AppleRootCA.cer -o /tmp/AppleRootCA.cer
+          curl -sSL https://www.apple.com/certificateauthority/DeveloperIDG2CA.cer -o /tmp/DeveloperIDG2CA.cer
+          curl -sSL https://www.apple.com/certificateauthority/AppleWWDRCAG3.cer -o /tmp/AppleWWDRCAG3.cer
+          
+          security import /tmp/AppleRootCA.cer -k "$KEYCHAIN_PATH" -T /usr/bin/codesign -T /usr/bin/security -A
+          security import /tmp/DeveloperIDG2CA.cer -k "$KEYCHAIN_PATH" -T /usr/bin/codesign -T /usr/bin/security -A
+          security import /tmp/AppleWWDRCAG3.cer -k "$KEYCHAIN_PATH" -T /usr/bin/codesign -T /usr/bin/security -A
+          
+          # Decode and import Developer ID Certificate
+          echo "$DEVELOPER_ID_CERT_B64" | base64 --decode > /tmp/DeveloperID.p12
+          
+          # Convert to legacy p12 for seamless security import if needed
+          openssl pkcs12 -in /tmp/DeveloperID.p12 -passin pass:"$DEVELOPER_ID_PWD" -nodes -out /tmp/devid.pem
+          openssl pkcs12 -export -in /tmp/devid.pem -out /tmp/DeveloperID_legacy.p12 -passout pass:"$DEVELOPER_ID_PWD" -legacy
+          
+          security import /tmp/DeveloperID_legacy.p12 -k "$KEYCHAIN_PATH" -P "$DEVELOPER_ID_PWD" -T /usr/bin/codesign -T /usr/bin/security -A
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PWD" "$KEYCHAIN_PATH"
+          
+          rm -f /tmp/DeveloperID.p12 /tmp/DeveloperID_legacy.p12 /tmp/devid.pem
+          
+          echo "=== Verified Signing Identities ==="
+          security find-identity -v -p codesigning "$KEYCHAIN_PATH"
+
+      - name: Build Universal Release Binary
+        run: |
+          xcodebuild -project Clipmory.xcodeproj \
+            -scheme Clipmory \
+            -configuration Release \
+            -destination 'generic/platform=macOS' \
+            ARCHS="arm64 x86_64" \
+            ONLY_ACTIVE_ARCH=NO \
+            -derivedDataPath ./build/DerivedData-Web \
+            build
+
+      - name: Codesign App with Developer ID & Hardened Runtime
+        run: |
+          BUILD_APP=$(find ./build/DerivedData-Web/Build/Products/Release -maxdepth 1 -name "*.app" | head -n 1)
+          SIGNING_IDENTITY=$(security find-identity -v -p codesigning | grep "Developer ID Application" | head -n 1 | sed -n 's/.*"\(.*\)".*/\1/p')
+          
+          echo "Signing with identity: '$SIGNING_IDENTITY'"
+          
+          # Sign embedded frameworks if present (e.g., Sparkle)
+          if [ -d "$BUILD_APP/Contents/Frameworks" ]; then
+            find "$BUILD_APP/Contents/Frameworks" -name "*.framework" -o -name "*.dylib" | while read -r item; do
+              codesign --force --timestamp --options runtime --sign "$SIGNING_IDENTITY" "$item"
+            done
+          fi
+          
+          # Sign main app bundle
+          codesign --force --deep --timestamp \
+            --options runtime \
+            --entitlements "Clipmory/Resources/Clipmory.entitlements" \
+            --sign "$SIGNING_IDENTITY" \
+            "$BUILD_APP"
+          
+          codesign --verify --deep --strict --verbose=2 "$BUILD_APP"
+
+      - name: Package Styled DMG
+        run: |
+          BUILD_APP=$(find ./build/DerivedData-Web/Build/Products/Release -maxdepth 1 -name "*.app" | head -n 1)
+          SIGNING_IDENTITY=$(security find-identity -v -p codesigning | grep "Developer ID Application" | head -n 1 | sed -n 's/.*"\(.*\)".*/\1/p')
+          
+          DIST_DIR="./dist/web"
+          mkdir -p "$DIST_DIR/staging"
+          cp -R "$BUILD_APP" "$DIST_DIR/staging/Clipmory.app"
+          
+          # Prepare DMG styling
+          mkdir -p "$DIST_DIR/staging/.background"
+          if [ -f "Clipmory/Resources/DMG/background.tiff" ]; then
+            cp "Clipmory/Resources/DMG/background.tiff" "$DIST_DIR/staging/.background/background.tiff"
+          fi
+          if [ -f "Clipmory/Resources/DMG/ds_store" ]; then
+            cp "Clipmory/Resources/DMG/ds_store" "$DIST_DIR/staging/.DS_Store"
+          fi
+          if [ -f "Clipmory/Resources/AppIcon.icns" ]; then
+            cp "Clipmory/Resources/AppIcon.icns" "$DIST_DIR/staging/.VolumeIcon.icns"
+          fi
+          
+          rm -f "$DIST_DIR/staging/Applications"
+          ln -sf /Applications "$DIST_DIR/staging/Applications"
+          
+          hdiutil create -volname "Clipmory" -srcfolder "$DIST_DIR/staging" -ov -format UDZO "$DIST_DIR/Clipmory.dmg"
+          
+          # Sign the DMG container
+          codesign --force --timestamp --sign "$SIGNING_IDENTITY" "$DIST_DIR/Clipmory.dmg"
+          echo "DMG container signed successfully."
+
+      - name: Submit to Apple Notary Service
+        env:
+          API_KEY_P8: ${{ secrets.APP_STORE_CONNECT_PRIVATE_KEY }}
+          KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_IDENTIFIER }}
+          ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+        run: |
+          echo "$API_KEY_P8" > /tmp/AuthKey.p8
+          
+          echo "Submitting dist/web/Clipmory.dmg to Apple Notary Service..."
+          xcrun notarytool submit ./dist/web/Clipmory.dmg \
+            --key /tmp/AuthKey.p8 \
+            --key-id "$KEY_ID" \
+            --issuer "$ISSUER_ID" \
+            --wait
+          
+          rm -f /tmp/AuthKey.p8
+
+      - name: Staple Notarization Ticket to DMG & Verify Gatekeeper
+        run: |
+          echo "Stapling notarization ticket..."
+          xcrun stapler staple ./dist/web/Clipmory.dmg
+          
+          echo "=== Gatekeeper Assessment ==="
+          spctl --assess --type open --context context:primary-signature --verbose ./dist/web/Clipmory.dmg
+          
+          echo "✅ DMG is fully notarized and approved by Apple Gatekeeper!"
+
+      - name: Upload Notarized DMG Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Clipmory-Notarized-DMG
+          path: ./dist/web/Clipmory.dmg
